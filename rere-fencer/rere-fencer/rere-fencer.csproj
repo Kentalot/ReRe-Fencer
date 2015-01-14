@@ -44,7 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Input\GenomeReader.cs" />
+    <Compile Include="Exceptions\InvalidTwoBitFileException.cs" />
+    <Compile Include="Input\TwoBitGenomeReader.cs" />
     <Compile Include="Input\IGenomeReader.cs" />
     <Compile Include="Input\IVCFReader.cs" />
     <Compile Include="Input\VCFReader.cs" />
@@ -62,8 +63,9 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Infrastructure\" />
+    <Content Include="Infrastructure\fa2bit.jar" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
