@@ -45,9 +45,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\InvalidTwoBitFileException.cs" />
-    <Compile Include="Input\TwoBitGenomeReader.cs" />
     <Compile Include="Input\IGenomeReader.cs" />
     <Compile Include="Input\IVCFReader.cs" />
+    <Compile Include="Input\TwoBitGenomeReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Input\VCFReader.cs" />
     <Compile Include="Processors\GenomeWriter.cs" />
     <Compile Include="Processors\IGenomeWriter.cs" />
