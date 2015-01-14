@@ -52,8 +52,7 @@ namespace rere_fencer.Input
 
         public string GetAByteOfSequence(uint start)
         {
-            var abyte = TwoBitGenomeReader.EndiannessIndexedByteArray[_contigSequence.ReadByte(start)];
-            var sequence = ((TwoBitGenomeReader.TetraNucleotide) abyte).ToString();
+            string sequence = GetAByteOfUnMaskedSequence(start);
             var overlappingIntervals = _specialBlocks.GetIntervals(start, start + 3);
             if (overlappingIntervals.Count < 1) return sequence;
             var seqArray = sequence.ToCharArray();
@@ -69,6 +68,16 @@ namespace rere_fencer.Input
             }
         }
 
+        private string GetAByteOfUnMaskedSequence(uint start)
+        {
+            return ByteToTetraNucleotide(_contigSequence.ReadByte(start));
+        }
+
+        private string ByteToTetraNucleotide(byte value)
+        {
+            return ((TwoBitGenomeReader.TetraNucleotide) TwoBitGenomeReader.EndiannessIndexedByteArray[value]).ToString();
+        }
+
         public string GetSequenceAt(uint start, uint end, bool ignoreNs = false)
         {
             throw new NotImplementedException();
@@ -76,10 +85,16 @@ namespace rere_fencer.Input
 
         public char GetNucleotideAt(uint position)
         {
-            if (OverlapsNBlock(position)) return 'N';
-            var nucByte = GetAByteOfSequence(position);
-            nucByte = OverlapsMaskBlock(position) ? nucByte.ToLower() : nucByte;
-            return nucByte[0];
+            var overlappingIntervals = _specialBlocks.GetIntervals(position);
+            if (overlappingIntervals.Count > 1) 
+                throw new OverlappingSpecialBlocksException(Name, 
+                    "Tried to get a Nucelotide at position that is mapped to >1 special position: " + position);
+            if (overlappingIntervals.Count == 1 && overlappingIntervals[0].Data) return 'N';
+
+            // Not N, but could still be masked
+            var nuc = GetAByteOfUnMaskedSequence(position)[0];
+            nuc = overlappingIntervals.Count == 0 ? nuc : Char.ToLower(nuc);
+            return nuc;
         }
 
         public uint? FirstPositionOfSequence(string sequence, uint offset = 0, bool strict = true)
@@ -88,16 +103,6 @@ namespace rere_fencer.Input
         }
 
         public uint? LastPositionOfSequence(string sequence, uint offset = 0, bool strict = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        private bool OverlapsMaskBlock(uint start, int size)
-        {
-            return 
-        }
-
-        private bool OverlapsNBlock(uint position, int size)
         {
             throw new NotImplementedException();
         }
