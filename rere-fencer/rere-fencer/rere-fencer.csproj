@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\OverlappingSpecialBlocksException.cs" />
+    <Compile Include="Exceptions\InvalidTwoBitContigFormatException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitFileException.cs" />
     <Compile Include="Input\IGenomeReader.cs" />
     <Compile Include="Input\IVCFReader.cs" />
@@ -65,9 +67,14 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="Infrastructure\fa2bit.jar" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\intervaltree\IntervalTreeLib\IntervalTreeLib.csproj">
+      <Project>{0207a18a-6bc1-490b-b010-7a3da3178890}</Project>
+      <Name>IntervalTreeLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

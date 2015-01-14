@@ -14,17 +14,24 @@ namespace rere_fencer
     {
         private static readonly OptionSet _optionSet = new OptionSet();
         public static FileInfo GenomeFilePath { get; private set; }
+        public static FileInfo VcfFilePath { get; private set; }
+        public static FileInfo SvVcfFilePath { get; private set; }
 
         static void Main(string[] args)
         {
             InitializeOptionSet();
-            new Rere_fencerLauncher(new GenomeReader(), new VCFReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter(), args).Launch();
+            new Rere_fencerLauncher(new TwoBitGenomeReader(), new VCFReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter(), args).Launch();
         }
 
         private static void InitializeOptionSet()
         {
             _optionSet.Add("g|genomePath=", "Path to the Genome input file. Must be in one fasta file",
                 s => GenomeFilePath = UpdateFileInfo(s));
+            _optionSet.Add("v|vcfPath=", "Path to the VCF file that contains the variants for the genome specified.",
+                s => VcfFilePath = UpdateFileInfo(s));
+            _optionSet.Add("sv|svVCFPath=",
+                "Path to the SV.VCF file that contains the Structural Variants (and possibly Copy Number Variants) for the genome specified.",
+                s => SvVcfFilePath = UpdateFileInfo(s));
         }
 
         private static FileInfo UpdateFileInfo(string filePath)

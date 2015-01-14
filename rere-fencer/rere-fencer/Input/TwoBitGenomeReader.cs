@@ -1,17 +1,117 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IntervalTreeLib;
 using rere_fencer.Exceptions;
 
 namespace rere_fencer.Input
 {
+
+
+    public class TwoBitGenomeContig : IGenomeContig
+    {
+        public string Name { get { return _name; } } private readonly string _name;
+        public uint Length { get { return _length; } } private readonly uint _length;
+        public bool ContainsNs { get { return _containsNs; } } private readonly bool _containsNs;
+        public bool ContainsMaskedSequences { get { return _containsMaskedSequences; } } private readonly bool _containsMaskedSequences;
+
+        public uint Reserved { get { return _reserved; } } private readonly uint _reserved;
+        private readonly IntervalTree<bool, uint> _specialBlocks;
+        private bool _isLastReadInNBlock = false; // used for slight optimization.
+
+        //public uint NBlockCount { get { return _nBlockCount; } }
+        private readonly MemoryMappedViewAccessor _contigSequence;
+
+        public TwoBitGenomeContig(uint length, uint[] nBlockStarts, uint[] nBlockSizes, 
+            uint[] maskBlockStarts, uint[] maskBlockSizes, uint reserved,
+            MemoryMappedViewAccessor contigSequence)
+        {
+            _length = length;
+            _specialBlocks = new IntervalTree<bool, uint>();
+            UpdateBlocksTree(_specialBlocks, nBlockStarts, nBlockSizes, true);
+            UpdateBlocksTree(_specialBlocks, maskBlockSizes, maskBlockStarts, false);
+            _reserved = reserved;
+            _contigSequence = contigSequence;
+        }
+
+        private void UpdateBlocksTree(IntervalTree<bool, uint> treeToUpdate, uint[] blockStarts, uint[] blockSizes, bool isNBlock)
+        {
+            var length = blockStarts.Length;
+            if (length != blockSizes.Length) 
+                throw new InvalidTwoBitContigFormatException(Name, 
+                    string.Format("The number of {0}BlockStarts and {0}BlockSizes differ!", isNBlock ? "n" : "mask"));
+            for (var i = 0; i < length; i++)
+                treeToUpdate.AddInterval(blockStarts[i], blockStarts[i] + blockSizes[i] - 1, isNBlock);
+        }
+
+        public string GetAByteOfSequence(uint start)
+        {
+            var abyte = TwoBitGenomeReader.EndiannessIndexedByteArray[_contigSequence.ReadByte(start)];
+            var sequence = ((TwoBitGenomeReader.TetraNucleotide) abyte).ToString();
+            var overlappingIntervals = _specialBlocks.GetIntervals(start, start + 3);
+            if (overlappingIntervals.Count < 1) return sequence;
+            var seqArray = sequence.ToCharArray();
+            for (uint i = 0; i < 4; i++)
+            {
+                Interval<bool, uint> overlapping = null;
+                try
+                {
+                    overlapping = overlappingIntervals.First(v => v.ContainsWithStartEnd(start + i));
+                } catch (InvalidOperationException){}
+                if (overlapping == null) continue;
+                seqArray[i] = overlapping.Data ? 'N' : Char.ToLower(seqArray[i]);
+            }
+        }
+
+        public string GetSequenceAt(uint start, uint end, bool ignoreNs = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public char GetNucleotideAt(uint position)
+        {
+            if (OverlapsNBlock(position)) return 'N';
+            var nucByte = GetAByteOfSequence(position);
+            nucByte = OverlapsMaskBlock(position) ? nucByte.ToLower() : nucByte;
+            return nucByte[0];
+        }
+
+        public uint? FirstPositionOfSequence(string sequence, uint offset = 0, bool strict = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public uint? LastPositionOfSequence(string sequence, uint offset = 0, bool strict = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        private bool OverlapsMaskBlock(uint start, int size)
+        {
+            return 
+        }
+
+        private bool OverlapsNBlock(uint position, int size)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
+        public bool SupportsMasking { get { return true; } }
+        public bool SupportsNs { get { return true; } }
+        public bool SupportsIupacAmbiguityCodes { get { return false; } }
+
+        private readonly SortedList<string, IGenomeContig> _contigs;
+        public SortedList<string, IGenomeContig> Contigs { get; private set; }
+
         private readonly MemoryMappedFile _mmf;
         private readonly SequenceInfo[] _sequenceInfos;
         private readonly bool _reverse = false;
@@ -19,59 +119,32 @@ namespace rere_fencer.Input
         private readonly uint _reserved;
         public uint Reserved { get { return _reserved; }}
         private string _fileError { get { return _twoBitFile ?? _mmf.ToString(); } }
-        internal static readonly byte[] MappedByteArray = new byte[256];
+        private const uint ForwardSignature = 0x1A412743;
+        private const uint ReverseSignature = 0x4327411A;
+        private const uint TwoBitVersion = 0;
+
+        internal static readonly byte[] EndiannessIndexedByteArray = new byte[256];
 
         private class SequenceInfo
         {
-            public class SequenceData
-            {
-                private readonly uint _size;
-                //public uint Size { get { return _size; } }
-                private readonly uint _nBlockCount;
-                private readonly uint[] _nBlockStarts;
-                private readonly uint[] _nBlockSizes;
-                private readonly uint _maskBlockCount;
-                private readonly uint[] _maskBlockStarts;
-                private readonly uint[] _maskBlockSizes;
-                private readonly uint _reserved;
-                public uint Reserved { get { return _reserved;} }
-
-                //public uint NBlockCount { get { return _nBlockCount; } }
-                private readonly MemoryMappedViewAccessor _contigSequence;
-
-                public SequenceData(uint size, uint nBlockCount, 
-                    MemoryMappedViewAccessor contigSequence)
-                {
-                    _size = size;
-                    _nBlockCount = nBlockCount;
-                    _contigSequence = contigSequence;
-                }
-
-                public string GetTetraNucleotideAt(long start)
-                {
-                    var abyte = MappedByteArray[_contigSequence.ReadByte(start)];
-                    return ((TetraNucleotide) abyte).ToString();
-                }
-
-                public char GetBaseAt(long position)
-                {
-                    return GetTetraNucleotideAt(position)[0];
-                }
-            }
             private readonly string _sequenceName;
             public string SequenceName { get { return _sequenceName; } }
             private readonly uint _origin;
             public uint Origin { get { return _origin; } }
-            public SequenceData Data { get; private set; }
+            private readonly SequenceData _data;
 
-            
+            public SequenceInfo(string sequenceName, uint origin, BinaryReader br)
+            {
+                _sequenceName = sequenceName;
+                _origin = origin;
+            }
 
-            
+            public void LoadSequenceData { }
         }
 
         //private static char[] bit_chars = {'T', 'C', 'A', 'G'};
 
-        enum TetraNucleotide : byte
+        public enum TetraNucleotide : byte
         {
             TTTT = 0x00,TTTC,TTTA,TTTG,TTCT,TTCC,TTCA,TTCG,TTAT,TTAC,TTAA,TTAG,TTGT,TTGC,TTGA,TTGG,
             TCTT,TCTC,TCTA,TCTG,TCCT,TCCC,TCCA,TCCG,TCAT,TCAC,TCAA,TCAG,TCGT,TCGC,TCGA,TCGG,
@@ -94,18 +167,26 @@ namespace rere_fencer.Input
         public TwoBitGenomeReader(string file)
         {
             _twoBitFile = file;
+            uint numSequences;
             using (var stream = File.OpenRead(file))
             {
                 using (var br = new BinaryReader(stream))
                 {
                     ReadSignature(br);
                     ReadVersion(br);
-                    _sequenceInfos = new SequenceInfo[ReadUint(br)];
+                    numSequences = ReadUint(br);
+                    //_sequenceInfos = new SequenceInfo[ReadUint(br)];
                     _reserved = ReadUint(br);
                 }
             }
-
             _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
+            ReadSequenceIndex();
+            
+        }
+
+        private void ReadSequenceIndex()
+        {
+            throw new NotImplementedException();
         }
 
         public TwoBitGenomeReader(FileInfo file) : this(file.FullName) { }
@@ -114,25 +195,25 @@ namespace rere_fencer.Input
         {
             var signature = ReadUint(br);
             bool reverse = false;
-            if (signature == 0x1A412743) reverse = true;
-            else if (signature != 0x4327411A) 
+            if (signature == ForwardSignature) reverse = true;
+            else if (signature != ReverseSignature) 
                 throw new InvalidTwoBitFileException(_fileError, "Invalid Signature found: " + signature);
-            for (byte i = 0; i < MappedByteArray.Length; i++)
-                MappedByteArray[i] = reverse ? ReverseByte(i) : i;
+            for (byte i = 0; i < EndiannessIndexedByteArray.Length; i++)
+                EndiannessIndexedByteArray[i] = reverse ? ReverseByte(i) : i;
             return reverse;
         }
 
         private void ReadVersion(BinaryReader br)
         {
             var version = ReadUint(br);
-            if (version != 0) throw new InvalidTwoBitFileException(_fileError, "Version is something other than 0: " + version);
+            if (version != TwoBitVersion) throw new InvalidTwoBitFileException(_fileError, "Version is something other than 0: " + version);
         }
 
         private byte[] ReadNBytes(BinaryReader br, int n)
         {
             var byteArray = new byte[n];
             for (var i = 0; i < n; i++)
-                byteArray[i] = MappedByteArray[br.ReadByte()];
+                byteArray[i] = EndiannessIndexedByteArray[br.ReadByte()];
             return byteArray;
         }
 
@@ -153,5 +234,6 @@ namespace rere_fencer.Input
         {
             _mmf.Dispose();
         }
+
     }
 }
