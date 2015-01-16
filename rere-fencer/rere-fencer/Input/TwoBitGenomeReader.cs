@@ -16,6 +16,8 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeContig : IGenomeContig
     {
+        
+
         public string Name { get { return _name; } } private readonly string _name;
         public uint Length { get { return _length; } } private readonly uint _length;
         public bool ContainsNs { get { return _containsNs; } } private readonly bool _containsNs;
@@ -73,11 +75,6 @@ namespace rere_fencer.Input
             return ByteToTetraNucleotide(_contigSequence.ReadByte(start));
         }
 
-        private string ByteToTetraNucleotide(byte value)
-        {
-            return ((TwoBitGenomeReader.TetraNucleotide) TwoBitGenomeReader.EndiannessIndexedByteArray[value]).ToString();
-        }
-
         public string GetSequenceAt(uint start, uint end, bool ignoreNs = false)
         {
             throw new NotImplementedException();
@@ -110,6 +107,114 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
+     
+        private class NSubSequence
+        {
+            public uint Start { get; private set; }
+            public uint End { get; private set; }
+            protected readonly uint Length;
+
+            public NSubSequence(uint start, uint end) { Start = start; End = end; Length = end - start + 1; }
+
+            public virtual string GetWholeSequence()
+            {
+                return GetSubSequence(Length, true);
+            }
+
+            public virtual string GetSubSequence(uint length, bool fromLeft)
+            {
+                return length > int.MaxValue 
+                    ? string.Format("{0}{1}", new String('N', int.MaxValue), new string('N', (int) (length - int.MaxValue)))
+                    : new string('N', (int) length);
+            }
+        }
+
+        private class SubSequence : NSubSequence, IDisposable
+        {
+            public ushort LeftNucsToTrim { get; private set; }
+            public ushort RightNucsToTrim { get; private set; }
+            private readonly MemoryMappedViewAccessor _sequenceAccessor;
+            private StringBuilder sb;
+            
+            public SubSequence(uint start, uint end)
+                : base(start, end)
+            {
+            }
+
+            public override string GetWholeSequence()
+            {
+                var leftover = (int) (Length - int.MaxValue);
+                var isLarge = leftover > 0;
+                var sb = new StringBuilder(isLarge ? int.MaxValue : (int) Length);
+                var numTetrads = (isLarge ? int.MaxValue / 4 : (int) (((long) Length)/4);
+                sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(0)).Substring(LeftNucsToTrim - 1));
+                for (var i = 1; i < numTetrads; i++)
+                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(i)));
+                if (!isLarge)
+                {
+                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(numTetrads)).Substring(0, 4 - RightNucsToTrim));
+                    return sb.ToString();
+                }
+                var stringSoFar = sb.ToString();
+                sb = new StringBuilder(leftover);
+                for (var i = 0; i < leftover / 4 - 1; i++)
+                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(i)));
+                sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(numTetrads)).Substring(RightNucsToTrim - 1));
+                return sb.ToString();
+            }
+
+            public override string GetSubSequence(uint length, bool fromLeft)
+            {
+                var paddedLength = length + (fromLeft ? LeftNucsToTrim : RightNucsToTrim);
+                var overfill = (int) (length - int.MaxValue);
+                var isLarge = overfill > 0;
+                var sb = new StringBuilder(isLarge ? int.MaxValue : (int) length);
+                var bytesToRead = isLarge ? int.MaxValue / 4 : (int)(((long)paddedLength) / 4);
+                long bytePosition, end;
+                var nucsLeftover = isLarge ? int.MaxValue - bytesToRead*4 : (int) (paddedLength - bytesToRead*4);
+                if (fromLeft)
+                {
+                    bytePosition = 0;
+                    end = bytesToRead;
+                    if (LeftNucsToTrim > 0) //prepend the first nucs and read one less byte.
+                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++)).Substring(LeftNucsToTrim - 1));
+                }
+                else
+                {
+                    end = _sequenceAccessor.Capacity;
+                    bytePosition = end - bytesToRead;
+                    if (nucsLeftover > 0) //prepend the extra nucs.
+                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition - 1)).Substring(nucsLeftover - 1));
+                    if (RightNucsToTrim > 0) end--; // read one less byte so I can postpend the last nucs
+                }
+
+                for (; bytePosition < end; bytePosition++)
+                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));
+
+                if (fromLeft && nucsLeftover > 0)
+                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(end)).Substring(0, 4 - nucsLeftover));
+
+                //todo: continue from here.
+                if (!isLarge)
+                {
+                    if (!fromLeft && RightNucsToTrim > 0)
+                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(end)).Substring(0, 4 - RightNucsToTrim));
+                    return sb.ToString();
+                }
+                var stringSoFar = sb.ToString();
+                sb = new StringBuilder(overfill);
+                for (bytePosition = 0; bytePosition < overfill / 4 - 1; bytePosition++)
+                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));
+                sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytesToRead)).Substring(RightNucsToTrim - 1));
+                return string.Format("{0}{1}", stringSoFar, sb);
+            }
+
+            public void Dispose()
+            {
+                _sequenceAccessor.Dispose();
+            }
+        }
+
         public bool SupportsMasking { get { return true; } }
         public bool SupportsNs { get { return true; } }
         public bool SupportsIupacAmbiguityCodes { get { return false; } }
@@ -167,6 +272,11 @@ namespace rere_fencer.Input
             GCTT,GCTC,GCTA,GCTG,GCCT,GCCC,GCCA,GCCG,GCAT,GCAC,GCAA,GCAG,GCGT,GCGC,GCGA,GCGG,
             GATT,GATC,GATA,GATG,GACT,GACC,GACA,GACG,GAAT,GAAC,GAAA,GAAG,GAGT,GAGC,GAGA,GAGG,
             GGTT,GGTC,GGTA,GGTG,GGCT,GGCC,GGCA,GGCG,GGAT,GGAC,GGAA,GGAG,GGGT,GGGC,GGGA,GGGG
+        }
+        
+        internal static string ByteToTetraNucleotide(byte value)
+        {
+            return ((TetraNucleotide) EndiannessIndexedByteArray[value]).ToString();
         }
 
         public TwoBitGenomeReader(string file)

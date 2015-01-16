@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\OutOfContigRangeException.cs" />
     <Compile Include="Exceptions\OverlappingSpecialBlocksException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitContigFormatException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitFileException.cs" />
