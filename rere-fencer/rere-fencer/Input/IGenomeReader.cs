@@ -8,6 +8,7 @@ namespace rere_fencer.Input
 {
     public interface IGenomeReader
     {
+        bool IsZeroBasedCoordinates { get; }
         bool SupportsMasking { get; }
         bool SupportsNs { get; }
         bool SupportsIupacAmbiguityCodes { get; }
@@ -20,7 +21,6 @@ namespace rere_fencer.Input
         uint Length { get; }
         bool ContainsNs { get; }
         bool ContainsMaskedSequences { get; }
-        string GetAByteOfSequence(uint start);
         string GetSequenceAt(uint start, uint end, bool ignoreNs = false);
         char GetNucleotideAt(uint position);
         uint? FirstPositionOfSequence(string sequence, uint offset = 0, bool strict = true);
