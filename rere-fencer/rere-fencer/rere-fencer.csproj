@@ -71,12 +71,6 @@
   <ItemGroup>
     <Content Include="Infrastructure\fa2bit.jar" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\intervaltree\IntervalTreeLib\IntervalTreeLib.csproj">
-      <Project>{0207a18a-6bc1-490b-b010-7a3da3178890}</Project>
-      <Name>IntervalTreeLib</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -16,8 +16,6 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeContig : IGenomeContig
     {
-        
-
         public string Name { get { return _name; } } private readonly string _name;
         public uint Length { get { return _length; } } private readonly uint _length;
         public bool ContainsNs { get { return _containsNs; } } private readonly bool _containsNs;
@@ -107,8 +105,11 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
-     
-        private class NSubSequence
+        public interface ITwoBitGenomeSubSequence
+        {
+            uint Start { get; }
+        }
+        private class NSubSequence : IDisposable
         {
             public uint Start { get; private set; }
             public uint End { get; private set; }
@@ -123,104 +124,105 @@ namespace rere_fencer.Input
 
             public virtual string GetSubSequence(uint length, bool fromLeft)
             {
-                return length > int.MaxValue 
-                    ? string.Format("{0}{1}", new String('N', int.MaxValue), new string('N', (int) (length - int.MaxValue)))
-                    : new string('N', (int) length);
+                if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "NSubSequence");
+                return new string('N', (int) length);
+            }
+
+            public virtual void Dispose()
+            {
             }
         }
 
-        private class SubSequence : NSubSequence, IDisposable
+        private class NormalSubSequence : NSubSequence, IDisposable
         {
-            public ushort LeftNucsToTrim { get; private set; }
-            public ushort RightNucsToTrim { get; private set; }
-            private readonly MemoryMappedViewAccessor _sequenceAccessor;
-            private StringBuilder sb;
+            public ushort LeftNucsToTrim { get; private set; } // these are partial bytes on the left that are
+            public ushort RightNucsToTrim { get; private set; } // from the previous sequence and need to be trimmed
+            protected readonly MemoryMappedViewAccessor _sequenceAccessor;
             
-            public SubSequence(uint start, uint end)
-                : base(start, end)
-            {
-            }
+            public NormalSubSequence(uint start, uint end, MemoryMappedViewAccessor sequenceAccessor)
+                : base(start, end) { _sequenceAccessor = sequenceAccessor; }
 
             public override string GetWholeSequence()
             {
-                var leftover = (int) (Length - int.MaxValue);
-                var isLarge = leftover > 0;
-                var sb = new StringBuilder(isLarge ? int.MaxValue : (int) Length);
-                var numTetrads = (isLarge ? int.MaxValue / 4 : (int) (((long) Length)/4);
-                sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(0)).Substring(LeftNucsToTrim - 1));
-                for (var i = 1; i < numTetrads; i++)
-                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(i)));
-                if (!isLarge)
-                {
-                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(numTetrads)).Substring(0, 4 - RightNucsToTrim));
-                    return sb.ToString();
-                }
-                var stringSoFar = sb.ToString();
-                sb = new StringBuilder(leftover);
-                for (var i = 0; i < leftover / 4 - 1; i++)
-                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(i)));
-                sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(numTetrads)).Substring(RightNucsToTrim - 1));
-                return sb.ToString();
+                var halfLength = Length/2;
+                var leftoverNucs = Length - (halfLength)*2;
+                return string.Format("{0}{1}", GetSubSequence(halfLength + leftoverNucs, true), 
+                    GetSubSequence(halfLength, false));                
             }
 
             public override string GetSubSequence(uint length, bool fromLeft)
             {
+                if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "NormalSubSequence");
                 var paddedLength = length + (fromLeft ? LeftNucsToTrim : RightNucsToTrim);
-                var overfill = (int) (length - int.MaxValue);
-                var isLarge = overfill > 0;
-                var sb = new StringBuilder(isLarge ? int.MaxValue : (int) length);
-                var bytesToRead = isLarge ? int.MaxValue / 4 : (int)(((long)paddedLength) / 4);
+                var sb = new StringBuilder((int) length);
+                var bytesToRead = (int) (((long) paddedLength)/4);
                 long bytePosition, end;
-                var nucsLeftover = isLarge ? int.MaxValue - bytesToRead*4 : (int) (paddedLength - bytesToRead*4);
+                var nucsLeftover = (int) (paddedLength - bytesToRead*4); // these are partial bytes that need to be added
                 if (fromLeft)
                 {
                     bytePosition = 0;
                     end = bytesToRead;
                     if (LeftNucsToTrim > 0) //prepend the first nucs and read one less byte.
-                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++)).Substring(LeftNucsToTrim - 1));
+                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++))
+                                .Substring(LeftNucsToTrim - 1));
                 }
                 else
                 {
                     end = _sequenceAccessor.Capacity;
                     bytePosition = end - bytesToRead;
                     if (nucsLeftover > 0) //prepend the extra nucs.
-                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition - 1)).Substring(nucsLeftover - 1));
+                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition - 1))
+                            .Substring(nucsLeftover - 1));
                     if (RightNucsToTrim > 0) end--; // read one less byte so I can postpend the last nucs
                 }
 
                 for (; bytePosition < end; bytePosition++)
                     sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));
 
-                if (fromLeft && nucsLeftover > 0)
-                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(end)).Substring(0, 4 - nucsLeftover));
-
-                //todo: continue from here.
-                if (!isLarge)
+                if (fromLeft)
                 {
-                    if (!fromLeft && RightNucsToTrim > 0)
-                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(end)).Substring(0, 4 - RightNucsToTrim));
-                    return sb.ToString();
+                    if (nucsLeftover > 0)
+                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(end)).Substring(0, 4 - nucsLeftover));
                 }
-                var stringSoFar = sb.ToString();
-                sb = new StringBuilder(overfill);
-                for (bytePosition = 0; bytePosition < overfill / 4 - 1; bytePosition++)
-                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));
-                sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytesToRead)).Substring(RightNucsToTrim - 1));
-                return string.Format("{0}{1}", stringSoFar, sb);
+                else if (RightNucsToTrim > 0)
+                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(end)).Substring(0, 4 - RightNucsToTrim));
+                return sb.ToString();                
             }
 
-            public void Dispose()
+            public override void Dispose()
             {
                 _sequenceAccessor.Dispose();
             }
         }
 
+        private class MaskedSubSequence : NormalSubSequence
+        {
+            public ushort LeftNucsToTrim { get; private set; } // these are partial bytes on the left that are
+            public ushort RightNucsToTrim { get; private set; } // from the previous sequence and need to be trimmed
+            private readonly MemoryMappedViewAccessor _sequenceAccessor;
+            
+            public MaskedSubSequence(uint start, uint end, MemoryMappedViewAccessor sequenceAccessor)
+                : base(start, end, sequenceAccessor) { }
+
+            public override string GetWholeSequence()
+            {
+                return base.GetWholeSequence().ToLower();
+            }
+
+            public override string GetSubSequence(uint length, bool fromLeft)
+            {
+                if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "MaskedSubSequence");
+                return base.GetSubSequence(length, fromLeft).ToLower();
+            }
+        }
+
+        public bool IsZeroBasedCoordinates { get { return false; } }
         public bool SupportsMasking { get { return true; } }
         public bool SupportsNs { get { return true; } }
         public bool SupportsIupacAmbiguityCodes { get { return false; } }
 
-        private readonly SortedList<string, IGenomeContig> _contigs;
-        public SortedList<string, IGenomeContig> Contigs { get; private set; }
+        private readonly List<NSubSequence> _contigs;
+        public List<NSubSequence> Contigs { get { return _contigs; } }
 
         private readonly MemoryMappedFile _mmf;
         private readonly SequenceInfo[] _sequenceInfos;
