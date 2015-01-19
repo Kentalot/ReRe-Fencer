@@ -21,9 +21,10 @@ namespace rere_fencer.Input
         uint Length { get; }
         bool ContainsNs { get; }
         bool ContainsMaskedSequences { get; }
-        string GetSequenceAt(uint start, uint end, bool ignoreNs = false);
+        string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false);
         char GetNucleotideAt(uint position);
-        uint? FirstPositionOfSequence(string sequence, uint offset = 0, bool strict = true);
-        uint? LastPositionOfSequence(string sequence, uint offset = 0, bool strict = true);
+        IEnumerable<char> GetEnumerableSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false); 
+        //uint? FirstPositionOfSequence(string sequence, uint offset = 0, bool strict = true);
+        //uint? LastPositionOfSequence(string sequence, uint offset = 0, bool strict = true);
     }
 }

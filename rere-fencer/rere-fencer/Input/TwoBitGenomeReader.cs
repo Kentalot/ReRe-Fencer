@@ -73,7 +73,7 @@ namespace rere_fencer.Input
             return ByteToTetraNucleotide(_contigSequence.ReadByte(start));
         }
 
-        public string GetSequenceAt(uint start, uint end, bool ignoreNs = false)
+        public string GetSequence(uint start, uint end, bool ignoreNs = false)
         {
             throw new NotImplementedException();
         }
@@ -91,36 +91,26 @@ namespace rere_fencer.Input
             nuc = overlappingIntervals.Count == 0 ? nuc : Char.ToLower(nuc);
             return nuc;
         }
-
-        public uint? FirstPositionOfSequence(string sequence, uint offset = 0, bool strict = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public uint? LastPositionOfSequence(string sequence, uint offset = 0, bool strict = true)
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
-        public interface ITwoBitGenomeSubSequence
+        public interface ITwoBitGenomeSubSequence : IGenomeContig
         {
             uint Start { get; }
+            uint End { get; }
         }
-        private class NSubSequence : IDisposable
+        private class NSubSequence : IDisposable, ITwoBitGenomeSubSequence
         {
+            public string Name { get; private set; }
             public uint Start { get; private set; }
             public uint End { get; private set; }
-            protected readonly uint Length;
+            public uint Length { get { return _length; } }
+            public bool ContainsNs { get { return true; } }
+            public bool ContainsMaskedSequences { get { return false; } }
+            protected readonly uint _length;
 
-            public NSubSequence(uint start, uint end) { Start = start; End = end; Length = end - start + 1; }
-
-            public virtual string GetWholeSequence()
-            {
-                return GetSubSequence(Length, true);
-            }
+            public NSubSequence(uint start, uint end) { Start = start; End = end; _length = end - start + 1; }
 
             public virtual string GetSubSequence(uint length, bool fromLeft)
             {
@@ -130,6 +120,23 @@ namespace rere_fencer.Input
 
             public virtual void Dispose()
             {
+            }
+
+            public virtual string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            {
+                var length = end - start + 1;
+                if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "NSubSequence");
+                return ignoreNs ? "" : new string('N', (int) length);
+            }
+
+            public char GetNucleotideAt(uint position)
+            {
+                return GetSequence(position, position)[0];
+            }
+
+            public IEnumerable<char> GetEnumerableSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            {
+                return GetSequence(start, end, ignoreMasks, ignoreNs);
             }
         }
 
