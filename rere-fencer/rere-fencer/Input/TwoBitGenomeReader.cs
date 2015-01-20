@@ -100,7 +100,7 @@ namespace rere_fencer.Input
             uint Start { get; }
             uint End { get; }
         }
-        private class NSubSequence : IDisposable, ITwoBitGenomeSubSequence
+        private class NSubSequence : ITwoBitGenomeSubSequence
         {
             public string Name { get; private set; }
             public uint Start { get; private set; }
@@ -118,10 +118,6 @@ namespace rere_fencer.Input
                 return new string('N', (int) length);
             }
 
-            public virtual void Dispose()
-            {
-            }
-
             public virtual string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
             {
                 var length = end - start + 1;
@@ -134,22 +130,52 @@ namespace rere_fencer.Input
                 return GetSequence(position, position)[0];
             }
 
-            public IEnumerable<char> GetEnumerableSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
             {
                 return GetSequence(start, end, ignoreMasks, ignoreNs);
             }
         }
 
-        private class NormalSubSequence : NSubSequence, IDisposable
+        private class NormalSubSequence : ITwoBitGenomeSubSequence, IDisposable
         {
-            public ushort LeftNucsToTrim { get; private set; } // these are partial bytes on the left that are
-            public ushort RightNucsToTrim { get; private set; } // from the previous sequence and need to be trimmed
-            protected readonly MemoryMappedViewAccessor _sequenceAccessor;
-            
-            public NormalSubSequence(uint start, uint end, MemoryMappedViewAccessor sequenceAccessor)
-                : base(start, end) { _sequenceAccessor = sequenceAccessor; }
+            public string Name { get; private set; }
+            public uint Start { get; private set; }
+            public uint End { get; private set; }
+            public uint Length { get { return _length; } }
+            public bool ContainsNs { get { return false; } }
+            public bool ContainsMaskedSequences { get { return false; } }
+            public string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            {
+                throw new NotImplementedException();
+            }
 
-            public override string GetWholeSequence()
+            public char GetNucleotideAt(uint position)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected readonly uint _length;
+            protected ushort LeftNucsToTrim { get; private set; } // these are partial bytes on the left that are
+            protected ushort RightNucsToTrim { get; private set; } // from the previous sequence and need to be trimmed
+            protected readonly MemoryMappedViewAccessor _sequenceAccessor;
+
+            public NormalSubSequence(uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
+                MemoryMappedViewAccessor sequenceAccessor)
+            {
+                Start = start;
+                End = end;
+                _length = end - start + 1;
+                LeftNucsToTrim = leftNucsToTrim;
+                RightNucsToTrim = rightNucsToTrim;
+                _sequenceAccessor = sequenceAccessor;
+            }
+
+            public string GetWholeSequence()
             {
                 var halfLength = Length/2;
                 var leftoverNucs = Length - (halfLength)*2;
@@ -157,7 +183,7 @@ namespace rere_fencer.Input
                     GetSubSequence(halfLength, false));                
             }
 
-            public override string GetSubSequence(uint length, bool fromLeft)
+            public string GetSubSequence(uint length, bool fromLeft)
             {
                 if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "NormalSubSequence");
                 var paddedLength = length + (fromLeft ? LeftNucsToTrim : RightNucsToTrim);
@@ -196,7 +222,7 @@ namespace rere_fencer.Input
                 return sb.ToString();                
             }
 
-            public override void Dispose()
+            public void Dispose()
             {
                 _sequenceAccessor.Dispose();
             }
@@ -204,8 +230,6 @@ namespace rere_fencer.Input
 
         private class MaskedSubSequence : NormalSubSequence
         {
-            public ushort LeftNucsToTrim { get; private set; } // these are partial bytes on the left that are
-            public ushort RightNucsToTrim { get; private set; } // from the previous sequence and need to be trimmed
             private readonly MemoryMappedViewAccessor _sequenceAccessor;
             
             public MaskedSubSequence(uint start, uint end, MemoryMappedViewAccessor sequenceAccessor)
