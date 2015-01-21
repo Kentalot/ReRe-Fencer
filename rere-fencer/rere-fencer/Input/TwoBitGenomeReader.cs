@@ -39,32 +39,21 @@ namespace rere_fencer.Input
                 if (start < Start || end > End) throw new OutOfContigRangeException(Name, start, end, 
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 var length = end - start + 1;
-                return GetSubSequence(Start - start + 1, End - end + 1, length, ignoreMasks, ignoreNs);
-            }
-        }
-
-        private class NSubcontig : TwoBitGenomeSubcontig
-        {
-            public NSubcontig(string name, uint start, uint end) : base(name, start, end) { }
-
-            protected override string GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool ignoreNs = false)
-            {
-                return ignoreNs ? "" : new string('N', (int) length);
+                return GetSubSequence(start - Start + 1, end - Start + 1, length, ignoreMasks, ignoreNs);
             }
         }
 
         private class NormalSubcontig : TwoBitGenomeSubcontig, IDisposable
         {
-            protected ushort LeftNucsToTrim { get; private set; } // these are partial bytes on the left that are
-            protected ushort RightNucsToTrim { get; private set; } // from the previous sequence and need to be trimmed
-            protected readonly MemoryMappedViewAccessor _sequenceAccessor;
+            private ushort LeftNucsToTrim { get; set; } // these are partial bytes on the left that are
+            //private ushort RightNucsToTrim { get; set; } // from the previous sequence and need to be trimmed, seems not necessary
+            private readonly MemoryMappedViewAccessor _sequenceAccessor;
 
-            public NormalSubcontig(string name, uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
+            public NormalSubcontig(string name, uint start, uint end, ushort leftNucsToTrim, //ushort rightNucsToTrim, 
                 MemoryMappedViewAccessor sequenceAccessor) : base (name, start, end)
             {
                 LeftNucsToTrim = leftNucsToTrim;
-                RightNucsToTrim = rightNucsToTrim;
+                //RightNucsToTrim = rightNucsToTrim;
                 _sequenceAccessor = sequenceAccessor;
             }
 
@@ -79,10 +68,19 @@ namespace rere_fencer.Input
             protected override string GetSubSequence(uint start, uint end, uint length, 
                 bool ignoreMasks = false, bool ignoreNs = false)//uint length, bool fromLeft)
             {
-                var sb = new StringBuilder((int) length);
+                var intLength = (int) length;
+                //var sb = new StringBuilder(intLength + RightNucsToTrim);
+                var returnChars = new char[intLength];
                 var paddedStart = start + LeftNucsToTrim - 1;
-                var leftSubStringIndex = (int) paddedStart%4; // calculate the 
+                var bytePosition = paddedStart/4; // calculate the starting position to read from.
+                var leftSubStringIndex = (int) paddedStart%4; // calculate the leftovers
                 var lastByte = (end + LeftNucsToTrim - 1) / 4;
+
+                var charPosition = 0;
+                var tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++));
+                for (var i = leftSubStringIndex; i < 4; i++) // copy the leftmost side
+                    returnChars[charPosition++] = tetNuc[i];
+                //sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++)), leftSubStringIndex, 4 - leftSubStringIndex));
                 /*var nucsLeftover = (int) (paddedLength - bytesToRead*4); // these are partial bytes that need to be added
                 if (fromLeft)
                 {
@@ -102,9 +100,14 @@ namespace rere_fencer.Input
                     if (RightNucsToTrim > 0) lastByte--; // read one less byte so I can postpend the last nucs
                 }*/
 
-                for (var bytePosition = paddedStart / 4; bytePosition <= lastByte; bytePosition++)
-                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));
-
+                for (; bytePosition <= lastByte; bytePosition++)
+                {
+                    tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++));
+                    for (var i = 0; i < 4 && charPosition < returnChars.Length; i++)
+                        returnChars[charPosition++] = tetNuc[i];
+                } 
+                //sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));}
+                //sb.Remove(intLength, sb.Length-intLength); //trim end.
                 /*if (fromLeft)
                 {
                     if (nucsLeftover > 0)
@@ -112,7 +115,8 @@ namespace rere_fencer.Input
                 }
                 else if (RightNucsToTrim > 0)
                     sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(lastByte)).Substring(0, 4 - RightNucsToTrim));*/
-                return sb.ToString().Substring(leftSubStringIndex, (int) length);                
+                //return sb.ToString();   
+                return new string(returnChars);
             }
 
             public void Dispose()
@@ -123,16 +127,26 @@ namespace rere_fencer.Input
 
         private class MaskedSubcontig : NormalSubcontig
         {
-
-            public MaskedSubcontig(string name, uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
+            public MaskedSubcontig(string name, uint start, uint end, ushort leftNucsToTrim, //ushort rightNucsToTrim, 
                 MemoryMappedViewAccessor sequenceAccessor)
-                : base(name, start, end, leftNucsToTrim, rightNucsToTrim, sequenceAccessor) { }
+                : base(name, start, end, leftNucsToTrim, sequenceAccessor) { }
 
             protected override string GetSubSequence(uint start, uint end, uint length, 
                 bool ignoreMasks = false, bool ignoreNs = false)
             {
                 var tempstr = base.GetSubSequence(start, end, length, ignoreMasks, ignoreNs);
  	            return ignoreMasks ? tempstr : tempstr.ToLower();
+            }
+        }
+
+        private class NSubcontig : TwoBitGenomeSubcontig
+        {
+            public NSubcontig(string name, uint start, uint end) : base(name, start, end) { }
+
+            protected override string GetSubSequence(uint start, uint end, uint length,
+                bool ignoreMasks = false, bool ignoreNs = false)
+            {
+                return ignoreNs ? "" : new string('N', (int)length);
             }
         }
 
@@ -159,15 +173,25 @@ namespace rere_fencer.Input
             {
                 if (start < 1 || end > Length) throw new OutOfContigRangeException(Name, start, end,
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
-                var i = BinarySearchForIndex(start, 0, _subSequences.Count - 1);
-                if (end < _subSequences[i].End) // all contained in one subSequence;
-                    return _subSequences[i].GetSequence(start, end, ignoreMasks, ignoreNs);
-
-                var endingIndex = BinarySearchForIndex(end, i + 1, _subSequences.Count - 1);
-                var seqString = _subSequences[i].GetSequence(start, _subSequences[i++].End, ignoreMasks, ignoreNs);
-                for (; i < endingIndex; i++)
-                    seqString += _subSequences[i].GetSequence(_subSequences[i].Start, _subSequences[i].End, ignoreMasks, ignoreNs);
-                seqString += _subSequences[i].GetSequence(_subSequences[i].Start, end, ignoreMasks, ignoreNs);
+                int position, endingIndex;
+                if (Length - end > start - 1) // end is closer to the middle, so do the first search using end
+                {
+                    endingIndex = BinarySearchForIndex(end, 0, _subSequences.Count - 1);
+                    if (start > _subSequences[endingIndex].Start) // all contained in one subSequence;
+                        return _subSequences[endingIndex].GetSequence(start, end, ignoreMasks, ignoreNs);
+                    position = BinarySearchForIndex(start, 0, endingIndex - 1);
+                }
+                else
+                {
+                    position = BinarySearchForIndex(start, 0, _subSequences.Count - 1);
+                    if (end < _subSequences[position].End) // all contained in one subSequence;
+                        return _subSequences[position].GetSequence(start, end, ignoreMasks, ignoreNs);
+                    endingIndex = BinarySearchForIndex(end, position + 1, _subSequences.Count - 1);
+                }
+                var seqString = _subSequences[position].GetSequence(start, _subSequences[position++].End, ignoreMasks, ignoreNs);
+                for (; position < endingIndex; position++)
+                    seqString += _subSequences[position].GetSequence(_subSequences[position].Start, _subSequences[position].End, ignoreMasks, ignoreNs);
+                seqString += _subSequences[position].GetSequence(_subSequences[position].Start, end, ignoreMasks, ignoreNs);
                 return seqString;
             }
 
@@ -251,7 +275,10 @@ namespace rere_fencer.Input
                     ReadSignature(br);
                     ReadVersion(br);
                     numSequences = ReadUint(br);
-                    //_sequenceInfos = new SequenceInfo[ReadUint(br)];
+                    unchecked
+                    {
+                        _contigs = new List<IGenomeContig>((int) ReadUint(br));
+                    }
                     _reserved = ReadUint(br);
                 }
             }
@@ -269,7 +296,7 @@ namespace rere_fencer.Input
 
         private bool ReadSignature(BinaryReader br)
         {
-            var signature = ReadUint(br);
+            var signature = ReadUint(br, true); // only time it will need to be read literally.
             bool reverse = false;
             if (signature == ForwardSignature) reverse = true;
             else if (signature != ReverseSignature) 
@@ -282,7 +309,8 @@ namespace rere_fencer.Input
         private void ReadVersion(BinaryReader br)
         {
             var version = ReadUint(br);
-            if (version != TwoBitVersion) throw new InvalidTwoBitFileException(_fileError, "Version is something other than 0: " + version);
+            if (version != TwoBitVersion) 
+                throw new InvalidTwoBitFileException(_fileError, "Version is something other than 0: " + version);
         }
 
         private byte[] ReadNBytes(BinaryReader br, int n)
@@ -293,9 +321,9 @@ namespace rere_fencer.Input
             return byteArray;
         }
 
-        private uint ReadUint(BinaryReader br, bool modify = false)
+        private uint ReadUint(BinaryReader br, bool readLiteral = false)
         {
-            return modify ? BitConverter.ToUInt32(ReadNBytes(br, 4), 0) : br.ReadUInt32();
+            return readLiteral ? br.ReadUInt32() : BitConverter.ToUInt32(ReadNBytes(br, 4), 0);
         }
 
         internal static byte ReverseByte(byte b)
