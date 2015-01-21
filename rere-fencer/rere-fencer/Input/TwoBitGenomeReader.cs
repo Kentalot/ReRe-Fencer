@@ -24,6 +24,7 @@ namespace rere_fencer.Input
 
         private abstract class TwoBitGenomeSubcontig : ITwoBitGenomeSubcontig
         {
+            protected const int NucsPerByte = 4;
             public string Name { get; private set; }
             public uint Start { get; private set; }
             public uint End { get; private set; }
@@ -73,14 +74,14 @@ namespace rere_fencer.Input
                 //var sb = new StringBuilder(intLength + RightNucsToTrim);
                 var returnChars = new char[intLength];
                 var paddedStart = start + LeftNucsToTrim - 1;
-                var bytePosition = paddedStart/4; // calculate the starting position to read from.
-                var leftSubStringIndex = (int) paddedStart%4; // calculate the leftovers
-                var lastByte = (end + LeftNucsToTrim - 1) / 4;
+                var bytePosition = paddedStart / NucsPerByte; // calculate the starting position to read from.
+                var leftSubStringIndex = (int)paddedStart % NucsPerByte; // calculate the leftovers
+                var lastByte = (end + LeftNucsToTrim - 1) / NucsPerByte;
 
                 var charPosition = 0;
                 var tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++));
-                for (var i = leftSubStringIndex; i < 4; i++) // copy the leftmost side
-                    returnChars[charPosition++] = tetNuc[i];
+                for (var i = leftSubStringIndex; i < NucsPerByte && charPosition < returnChars.Length; i++)
+                    returnChars[charPosition++] = tetNuc[i]; // copy the leftmost side
                 //sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++)), leftSubStringIndex, 4 - leftSubStringIndex));
                 /*var nucsLeftover = (int) (paddedLength - bytesToRead*4); // these are partial bytes that need to be added
                 if (fromLeft)
@@ -104,7 +105,7 @@ namespace rere_fencer.Input
                 for (; bytePosition <= lastByte; bytePosition++)
                 {
                     tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++));
-                    for (var i = 0; i < 4 && charPosition < returnChars.Length; i++) // charPos < returnChars.Length short circuits
+                    for (var i = 0; i < NucsPerByte && charPosition < returnChars.Length; i++) // charPos < returnChars.Length short circuits
                         returnChars[charPosition++] = tetNuc[i];
                 } 
                 //sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));}
@@ -193,9 +194,9 @@ namespace rere_fencer.Input
                 var returnChars = new char[end - start + 1];
                 var charPosition = 0;
                 var seqString = _subSequences[position].GetSequence(start, _subSequences[position++].End, ignoreMasks, ignoreNs);
-                for (var i = 0; i < seqString.Length; i++)
+                for (var i = 0; i < seqString.Length && charPosition < returnChars.Length; i++)
                     returnChars[charPosition++] = seqString[i];
-                for (; position < endingIndex; position++)
+                for (; position <= endingIndex; position++)
                 {
                     seqString = _subSequences[position].GetSequence(_subSequences[position].Start, _subSequences[position].End, ignoreMasks, ignoreNs);
                     for (var i = 0; i < seqString.Length && charPosition < returnChars.Length; i++)

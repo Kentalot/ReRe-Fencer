@@ -20,7 +20,7 @@ namespace rere_fencer
         static void Main(string[] args)
         {
             InitializeOptionSet();
-            new Rere_fencerLauncher(new TwoBitGenomeReader(), new VCFReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter(), args).Launch();
+            new Rere_fencerLauncher(new TwoBitGenomeReader("blah"), new VCFReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter(), args).Launch();
         }
 
         private static void InitializeOptionSet()
