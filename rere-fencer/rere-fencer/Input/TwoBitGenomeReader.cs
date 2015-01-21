@@ -38,6 +38,7 @@ namespace rere_fencer.Input
             {
                 if (start < Start || end > End) throw new OutOfContigRangeException(Name, start, end, 
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
+                if (end < start) throw new ArgumentException("Sequence end was less than start, what's up with that?");
                 var length = end - start + 1;
                 return GetSubSequence(start - Start + 1, end - Start + 1, length, ignoreMasks, ignoreNs);
             }
@@ -103,7 +104,7 @@ namespace rere_fencer.Input
                 for (; bytePosition <= lastByte; bytePosition++)
                 {
                     tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++));
-                    for (var i = 0; i < 4 && charPosition < returnChars.Length; i++)
+                    for (var i = 0; i < 4 && charPosition < returnChars.Length; i++) // charPos < returnChars.Length short circuits
                         returnChars[charPosition++] = tetNuc[i];
                 } 
                 //sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));}
@@ -173,6 +174,7 @@ namespace rere_fencer.Input
             {
                 if (start < 1 || end > Length) throw new OutOfContigRangeException(Name, start, end,
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
+                if (end < start) throw new ArgumentException("Sequence end was less than start, what's up with that?");
                 int position, endingIndex;
                 if (Length - end > start - 1) // end is closer to the middle, so do the first search using end
                 {
@@ -188,11 +190,20 @@ namespace rere_fencer.Input
                         return _subSequences[position].GetSequence(start, end, ignoreMasks, ignoreNs);
                     endingIndex = BinarySearchForIndex(end, position + 1, _subSequences.Count - 1);
                 }
+                var returnChars = new char[end - start + 1];
+                var charPosition = 0;
                 var seqString = _subSequences[position].GetSequence(start, _subSequences[position++].End, ignoreMasks, ignoreNs);
+                for (var i = 0; i < seqString.Length; i++)
+                    returnChars[charPosition++] = seqString[i];
                 for (; position < endingIndex; position++)
-                    seqString += _subSequences[position].GetSequence(_subSequences[position].Start, _subSequences[position].End, ignoreMasks, ignoreNs);
-                seqString += _subSequences[position].GetSequence(_subSequences[position].Start, end, ignoreMasks, ignoreNs);
-                return seqString;
+                {
+                    seqString = _subSequences[position].GetSequence(_subSequences[position].Start, _subSequences[position].End, ignoreMasks, ignoreNs);
+                    for (var i = 0; i < seqString.Length && charPosition < returnChars.Length; i++)
+                        returnChars[charPosition++] = seqString[i];
+                }
+                //seqString += _subSequences[position].GetSequence(_subSequences[position].Start, end, ignoreMasks, ignoreNs);
+                //return seqString;
+                return new string(returnChars);
             }
 
             private int BinarySearchForIndex(uint position, int begin, int end)
