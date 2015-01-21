@@ -13,213 +13,124 @@ using rere_fencer.Exceptions;
 namespace rere_fencer.Input
 {
 
-
-    public class TwoBitGenomeContig : IGenomeContig
-    {
-        public string Name { get { return _name; } } private readonly string _name;
-        public uint Length { get { return _length; } } private readonly uint _length;
-        public bool ContainsNs { get { return _containsNs; } } private readonly bool _containsNs;
-        public bool ContainsMaskedSequences { get { return _containsMaskedSequences; } } private readonly bool _containsMaskedSequences;
-
-        public uint Reserved { get { return _reserved; } } private readonly uint _reserved;
-        private readonly IntervalTree<bool, uint> _specialBlocks;
-        private bool _isLastReadInNBlock = false; // used for slight optimization.
-
-        //public uint NBlockCount { get { return _nBlockCount; } }
-        private readonly MemoryMappedViewAccessor _contigSequence;
-
-        public TwoBitGenomeContig(uint length, uint[] nBlockStarts, uint[] nBlockSizes, 
-            uint[] maskBlockStarts, uint[] maskBlockSizes, uint reserved,
-            MemoryMappedViewAccessor contigSequence)
-        {
-            _length = length;
-            _specialBlocks = new IntervalTree<bool, uint>();
-            UpdateBlocksTree(_specialBlocks, nBlockStarts, nBlockSizes, true);
-            UpdateBlocksTree(_specialBlocks, maskBlockSizes, maskBlockStarts, false);
-            _reserved = reserved;
-            _contigSequence = contigSequence;
-        }
-
-        private void UpdateBlocksTree(IntervalTree<bool, uint> treeToUpdate, uint[] blockStarts, uint[] blockSizes, bool isNBlock)
-        {
-            var length = blockStarts.Length;
-            if (length != blockSizes.Length) 
-                throw new InvalidTwoBitContigFormatException(Name, 
-                    string.Format("The number of {0}BlockStarts and {0}BlockSizes differ!", isNBlock ? "n" : "mask"));
-            for (var i = 0; i < length; i++)
-                treeToUpdate.AddInterval(blockStarts[i], blockStarts[i] + blockSizes[i] - 1, isNBlock);
-        }
-
-        public string GetAByteOfSequence(uint start)
-        {
-            string sequence = GetAByteOfUnMaskedSequence(start);
-            var overlappingIntervals = _specialBlocks.GetIntervals(start, start + 3);
-            if (overlappingIntervals.Count < 1) return sequence;
-            var seqArray = sequence.ToCharArray();
-            for (uint i = 0; i < 4; i++)
-            {
-                Interval<bool, uint> overlapping = null;
-                try
-                {
-                    overlapping = overlappingIntervals.First(v => v.ContainsWithStartEnd(start + i));
-                } catch (InvalidOperationException){}
-                if (overlapping == null) continue;
-                seqArray[i] = overlapping.Data ? 'N' : Char.ToLower(seqArray[i]);
-            }
-        }
-
-        private string GetAByteOfUnMaskedSequence(uint start)
-        {
-            return ByteToTetraNucleotide(_contigSequence.ReadByte(start));
-        }
-
-        public string GetSequence(uint start, uint end, bool ignoreNs = false)
-        {
-            throw new NotImplementedException();
-        }
-
-        public char GetNucleotideAt(uint position)
-        {
-            var overlappingIntervals = _specialBlocks.GetIntervals(position);
-            if (overlappingIntervals.Count > 1) 
-                throw new OverlappingSpecialBlocksException(Name, 
-                    "Tried to get a Nucelotide at position that is mapped to >1 special position: " + position);
-            if (overlappingIntervals.Count == 1 && overlappingIntervals[0].Data) return 'N';
-
-            // Not N, but could still be masked
-            var nuc = GetAByteOfUnMaskedSequence(position)[0];
-            nuc = overlappingIntervals.Count == 0 ? nuc : Char.ToLower(nuc);
-            return nuc;
-        }
-    }
-
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
-        public interface ITwoBitGenomeSubSequence : IGenomeContig
+        private interface ITwoBitGenomeSubSequence : IGenomeContig
         {
-            uint Start { get; }
-            uint End { get; }
+            ulong Start { get; }
+            ulong End { get; }
         }
-        private class NSubSequence : ITwoBitGenomeSubSequence
+
+        private abstract class TwoBitGenomeSubSequence : ITwoBitGenomeSubSequence
         {
-            public string Name { get; private set; }
-            public uint Start { get; private set; }
-            public uint End { get; private set; }
-            public uint Length { get { return _length; } }
-            public bool ContainsNs { get { return true; } }
-            public bool ContainsMaskedSequences { get { return false; } }
-            protected readonly uint _length;
+            public string Name { get; protected set; }
+            public ulong Start { get; protected set; }
+            public ulong End { get; protected set; }
+            public ulong Length { get; protected set; }
+            public abstract bool ContainsNs { get; }
+            public abstract bool ContainsMaskedSequences { get; }
 
-            public NSubSequence(uint start, uint end) { Start = start; End = end; _length = end - start + 1; }
+            public TwoBitGenomeSubSequence(string name, ulong start, ulong end)
+            { Name = name; Start = start; End = end; Length = end - start + 1; }
 
-            public virtual string GetSubSequence(uint length, bool fromLeft)
+            protected abstract string GetSubSequence(ulong start, ulong end, ulong length, 
+                bool ignoreMasks = false, bool ignoreNs = false);
+
+            public string GetSequence(ulong start, ulong end, bool ignoreMasks = false, bool ignoreNs = false)
             {
-                if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "NSubSequence");
-                return new string('N', (int) length);
-            }
-
-            public virtual string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
-            {
+                if (start < Start || end > End) throw new OutOfContigRangeException(Name, start, end, 
+                    string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 var length = end - start + 1;
-                if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "NSubSequence");
-                return ignoreNs ? "" : new string('N', (int) length);
+                return GetSubSequence(Start - start + 1, End - end + 1, length, ignoreMasks, ignoreNs);
             }
-
-            public char GetNucleotideAt(uint position)
+            
+            public char GetNucleotideAt(ulong position)
             {
                 return GetSequence(position, position)[0];
             }
 
-            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            public IEnumerable<char> GetNucleotides(ulong start, ulong end, bool ignoreMasks = false, bool ignoreNs = false)
             {
                 return GetSequence(start, end, ignoreMasks, ignoreNs);
             }
         }
 
-        private class NormalSubSequence : ITwoBitGenomeSubSequence, IDisposable
+        private class NSubSequence : TwoBitGenomeSubSequence
         {
-            public string Name { get; private set; }
-            public uint Start { get; private set; }
-            public uint End { get; private set; }
-            public uint Length { get { return _length; } }
-            public bool ContainsNs { get { return false; } }
-            public bool ContainsMaskedSequences { get { return false; } }
-            public string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
-            {
-                throw new NotImplementedException();
-            }
+            public override bool ContainsNs { get { return true; } }
+            public override bool ContainsMaskedSequences { get { return false; } }
 
-            public char GetNucleotideAt(uint position)
+            public NSubSequence(string name, uint start, uint end) : base(name, start, end) { }
+            
+            protected override string GetSubSequence(ulong start, ulong end, ulong length, 
+                bool ignoreMasks = false, bool ignoreNs = false)
             {
-                throw new NotImplementedException();
+                return ignoreNs ? "" : new string('N', (int) length);
             }
+        }
 
-            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
-            {
-                throw new NotImplementedException();
-            }
+        private class NormalSubSequence : TwoBitGenomeSubSequence, IDisposable
+        {
+            public override bool ContainsNs { get { return false; } }
+            public override bool ContainsMaskedSequences { get { return false; } }
 
-            protected readonly uint _length;
             protected ushort LeftNucsToTrim { get; private set; } // these are partial bytes on the left that are
             protected ushort RightNucsToTrim { get; private set; } // from the previous sequence and need to be trimmed
             protected readonly MemoryMappedViewAccessor _sequenceAccessor;
 
-            public NormalSubSequence(uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
-                MemoryMappedViewAccessor sequenceAccessor)
+            public NormalSubSequence(string name, uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
+                MemoryMappedViewAccessor sequenceAccessor) : base (name, start, end)
             {
-                Start = start;
-                End = end;
-                _length = end - start + 1;
                 LeftNucsToTrim = leftNucsToTrim;
                 RightNucsToTrim = rightNucsToTrim;
                 _sequenceAccessor = sequenceAccessor;
             }
 
-            public string GetWholeSequence()
+            /*public string GetWholeSequence()
             {
                 var halfLength = Length/2;
                 var leftoverNucs = Length - (halfLength)*2;
                 return string.Format("{0}{1}", GetSubSequence(halfLength + leftoverNucs, true), 
                     GetSubSequence(halfLength, false));                
-            }
+            }*/
 
-            public string GetSubSequence(uint length, bool fromLeft)
+            protected override string GetSubSequence(ulong start, ulong end, ulong length, 
+                bool ignoreMasks = false, bool ignoreNs = false)//uint length, bool fromLeft)
             {
-                if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "NormalSubSequence");
-                var paddedLength = length + (fromLeft ? LeftNucsToTrim : RightNucsToTrim);
                 var sb = new StringBuilder((int) length);
-                var bytesToRead = (int) (((long) paddedLength)/4);
-                long bytePosition, end;
-                var nucsLeftover = (int) (paddedLength - bytesToRead*4); // these are partial bytes that need to be added
+                var paddedStart = start + LeftNucsToTrim - 1;
+                var leftSubStringIndex = (int) paddedStart%4; // calculate the 
+                var lastByte = (end + LeftNucsToTrim - 1) / 4;
+                /*var nucsLeftover = (int) (paddedLength - bytesToRead*4); // these are partial bytes that need to be added
                 if (fromLeft)
                 {
                     bytePosition = 0;
-                    end = bytesToRead;
+                    lastByte = bytesToRead;
                     if (LeftNucsToTrim > 0) //prepend the first nucs and read one less byte.
                         sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++))
                                 .Substring(LeftNucsToTrim - 1));
                 }
                 else
                 {
-                    end = _sequenceAccessor.Capacity;
-                    bytePosition = end - bytesToRead;
+                    lastByte = _sequenceAccessor.Capacity;
+                    bytePosition = lastByte - bytesToRead;
                     if (nucsLeftover > 0) //prepend the extra nucs.
                         sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition - 1))
                             .Substring(nucsLeftover - 1));
-                    if (RightNucsToTrim > 0) end--; // read one less byte so I can postpend the last nucs
-                }
+                    if (RightNucsToTrim > 0) lastByte--; // read one less byte so I can postpend the last nucs
+                }*/
 
-                for (; bytePosition < end; bytePosition++)
+                for (var bytePosition = paddedStart / 4; bytePosition <= lastByte; bytePosition++)
                     sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition)));
 
-                if (fromLeft)
+                /*if (fromLeft)
                 {
                     if (nucsLeftover > 0)
-                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(end)).Substring(0, 4 - nucsLeftover));
+                        sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(lastByte)).Substring(0, 4 - nucsLeftover));
                 }
                 else if (RightNucsToTrim > 0)
-                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(end)).Substring(0, 4 - RightNucsToTrim));
-                return sb.ToString();                
+                    sb.Append(ByteToTetraNucleotide(_sequenceAccessor.ReadByte(lastByte)).Substring(0, 4 - RightNucsToTrim));*/
+                return sb.ToString().Substring(leftSubStringIndex, (int) length);                
             }
 
             public void Dispose()
@@ -230,20 +141,60 @@ namespace rere_fencer.Input
 
         private class MaskedSubSequence : NormalSubSequence
         {
-            private readonly MemoryMappedViewAccessor _sequenceAccessor;
-            
-            public MaskedSubSequence(uint start, uint end, MemoryMappedViewAccessor sequenceAccessor)
-                : base(start, end, sequenceAccessor) { }
+            public override bool ContainsMaskedSequences { get { return true; } }
 
-            public override string GetWholeSequence()
+            public MaskedSubSequence(string name, uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
+                MemoryMappedViewAccessor sequenceAccessor)
+                : base(name, start, end, leftNucsToTrim, rightNucsToTrim, sequenceAccessor) { }
+
+            protected override string GetSubSequence(ulong start, ulong end, ulong length, 
+                bool ignoreMasks = false, bool ignoreNs = false)
             {
-                return base.GetWholeSequence().ToLower();
+                var tempstr = base.GetSubSequence(start, end, length, ignoreMasks, ignoreNs);
+ 	            return ignoreMasks ? tempstr : tempstr.ToLower();
+            }
+        }
+
+        private class TwoBitGenomeContig : TwoBitGenomeSubSequence
+        {
+            public override bool ContainsNs { get { return _containsNs; } } 
+            private readonly bool _containsNs;
+            public override bool ContainsMaskedSequences { get { return _containsMaskedSequences; } } 
+            private readonly bool _containsMaskedSequences;
+
+            private readonly List<ITwoBitGenomeSubSequence> _subSequences;
+
+            public TwoBitGenomeContig(string name, ulong length, List<ITwoBitGenomeSubSequence> subSequences)
+                : base(name, 1, length)
+            {
+                _subSequences = subSequences;
+                _containsNs = _subSequences.Any(s => s.ContainsNs);
+                _containsMaskedSequences = _subSequences.Any(s => s.ContainsMaskedSequences);
             }
 
-            public override string GetSubSequence(uint length, bool fromLeft)
+            protected override string GetSubSequence(ulong start, ulong end, ulong length, 
+                bool ignoreMasks = false, bool ignoreNs = false)
             {
-                if (length > int.MaxValue - 4) throw new OutOfSubSequenceRangeException(Start, End, "MaskedSubSequence");
-                return base.GetSubSequence(length, fromLeft).ToLower();
+                var i = BinarySearchOverlappingRegions(start, 0, _subSequences.Count - 1);
+                if (end < _subSequences[i].End) // all contained in one subSequence;
+                    return _subSequences[i].GetSequence(start, end, ignoreMasks, ignoreNs);
+                var endingIndex = BinarySearchOverlappingRegions(end, i + 1, _subSequences.Count - 1);
+                var seqString = _subSequences[i].GetSequence(start, _subSequences[i++].End, ignoreMasks, ignoreNs);
+                for (; i < endingIndex; i++)
+                    seqString += _subSequences[i].GetSequence(_subSequences[i].Start, _subSequences[i].End, ignoreMasks, ignoreNs);
+                seqString += _subSequences[i].GetSequence(_subSequences[i].Start, end, ignoreMasks, ignoreNs);
+                return seqString;
+            }
+
+            private int BinarySearchOverlappingRegions(ulong position, int begin, int end)
+            {
+                if (begin == end) return begin; // already found it.
+                var middle = (begin + end)/2;
+                if (position < _subSequences[middle].Start) // before middle
+                    return BinarySearchOverlappingRegions(position, begin, middle - 1);
+                if (position > _subSequences[middle].End) // after middle
+                    return BinarySearchOverlappingRegions(position, middle + 1, end);
+                return middle;
             }
         }
 
@@ -252,11 +203,11 @@ namespace rere_fencer.Input
         public bool SupportsNs { get { return true; } }
         public bool SupportsIupacAmbiguityCodes { get { return false; } }
 
-        private readonly List<NSubSequence> _contigs;
-        public List<NSubSequence> Contigs { get { return _contigs; } }
+        private readonly List<IGenomeContig> _contigs;
+        public List<IGenomeContig> Contigs { get { return _contigs; } }
 
         private readonly MemoryMappedFile _mmf;
-        private readonly SequenceInfo[] _sequenceInfos;
+        private readonly ITwoBitGenomeSubSequence[] _sequenceInfos;
         private readonly bool _reverse = false;
         private string _twoBitFile = null;
         private readonly uint _reserved;
@@ -289,22 +240,22 @@ namespace rere_fencer.Input
 
         public enum TetraNucleotide : byte
         {
-            TTTT = 0x00,TTTC,TTTA,TTTG,TTCT,TTCC,TTCA,TTCG,TTAT,TTAC,TTAA,TTAG,TTGT,TTGC,TTGA,TTGG,
-            TCTT,TCTC,TCTA,TCTG,TCCT,TCCC,TCCA,TCCG,TCAT,TCAC,TCAA,TCAG,TCGT,TCGC,TCGA,TCGG,
-            TATT,TATC,TATA,TATG,TACT,TACC,TACA,TACG,TAAT,TAAC,TAAA,TAAG,TAGT,TAGC,TAGA,TAGG,
-            TGTT,TGTC,TGTA,TGTG,TGCT,TGCC,TGCA,TGCG,TGAT,TGAC,TGAA,TGAG,TGGT,TGGC,TGGA,TGGG,
-            CTTT,CTTC,CTTA,CTTG,CTCT,CTCC,CTCA,CTCG,CTAT,CTAC,CTAA,CTAG,CTGT,CTGC,CTGA,CTGG,
-            CCTT,CCTC,CCTA,CCTG,CCCT,CCCC,CCCA,CCCG,CCAT,CCAC,CCAA,CCAG,CCGT,CCGC,CCGA,CCGG,
-            CATT,CATC,CATA,CATG,CACT,CACC,CACA,CACG,CAAT,CAAC,CAAA,CAAG,CAGT,CAGC,CAGA,CAGG,
-            CGTT,CGTC,CGTA,CGTG,CGCT,CGCC,CGCA,CGCG,CGAT,CGAC,CGAA,CGAG,CGGT,CGGC,CGGA,CGGG,
-            ATTT,ATTC,ATTA,ATTG,ATCT,ATCC,ATCA,ATCG,ATAT,ATAC,ATAA,ATAG,ATGT,ATGC,ATGA,ATGG,
-            ACTT,ACTC,ACTA,ACTG,ACCT,ACCC,ACCA,ACCG,ACAT,ACAC,ACAA,ACAG,ACGT,ACGC,ACGA,ACGG,
-            AATT,AATC,AATA,AATG,AACT,AACC,AACA,AACG,AAAT,AAAC,AAAA,AAAG,AAGT,AAGC,AAGA,AAGG,
-            AGTT,AGTC,AGTA,AGTG,AGCT,AGCC,AGCA,AGCG,AGAT,AGAC,AGAA,AGAG,AGGT,AGGC,AGGA,AGGG,
-            GTTT,GTTC,GTTA,GTTG,GTCT,GTCC,GTCA,GTCG,GTAT,GTAC,GTAA,GTAG,GTGT,GTGC,GTGA,GTGG,
-            GCTT,GCTC,GCTA,GCTG,GCCT,GCCC,GCCA,GCCG,GCAT,GCAC,GCAA,GCAG,GCGT,GCGC,GCGA,GCGG,
-            GATT,GATC,GATA,GATG,GACT,GACC,GACA,GACG,GAAT,GAAC,GAAA,GAAG,GAGT,GAGC,GAGA,GAGG,
-            GGTT,GGTC,GGTA,GGTG,GGCT,GGCC,GGCA,GGCG,GGAT,GGAC,GGAA,GGAG,GGGT,GGGC,GGGA,GGGG
+            TTTT = 0x00, TTTC, TTTA, TTTG, TTCT, TTCC, TTCA, TTCG, TTAT, TTAC, TTAA, TTAG, TTGT, TTGC, TTGA, TTGG,
+            TCTT, TCTC, TCTA, TCTG, TCCT, TCCC, TCCA, TCCG, TCAT, TCAC, TCAA, TCAG, TCGT, TCGC, TCGA, TCGG,
+            TATT, TATC, TATA, TATG, TACT, TACC, TACA, TACG, TAAT, TAAC, TAAA, TAAG, TAGT, TAGC, TAGA, TAGG,
+            TGTT, TGTC, TGTA, TGTG, TGCT, TGCC, TGCA, TGCG, TGAT, TGAC, TGAA, TGAG, TGGT, TGGC, TGGA, TGGG,
+            CTTT, CTTC, CTTA, CTTG, CTCT, CTCC, CTCA, CTCG, CTAT, CTAC, CTAA, CTAG, CTGT, CTGC, CTGA, CTGG,
+            CCTT, CCTC, CCTA, CCTG, CCCT, CCCC, CCCA, CCCG, CCAT, CCAC, CCAA, CCAG, CCGT, CCGC, CCGA, CCGG,
+            CATT, CATC, CATA, CATG, CACT, CACC, CACA, CACG, CAAT, CAAC, CAAA, CAAG, CAGT, CAGC, CAGA, CAGG,
+            CGTT, CGTC, CGTA, CGTG, CGCT, CGCC, CGCA, CGCG, CGAT, CGAC, CGAA, CGAG, CGGT, CGGC, CGGA, CGGG,
+            ATTT, ATTC, ATTA, ATTG, ATCT, ATCC, ATCA, ATCG, ATAT, ATAC, ATAA, ATAG, ATGT, ATGC, ATGA, ATGG,
+            ACTT, ACTC, ACTA, ACTG, ACCT, ACCC, ACCA, ACCG, ACAT, ACAC, ACAA, ACAG, ACGT, ACGC, ACGA, ACGG,
+            AATT, AATC, AATA, AATG, AACT, AACC, AACA, AACG, AAAT, AAAC, AAAA, AAAG, AAGT, AAGC, AAGA, AAGG,
+            AGTT, AGTC, AGTA, AGTG, AGCT, AGCC, AGCA, AGCG, AGAT, AGAC, AGAA, AGAG, AGGT, AGGC, AGGA, AGGG,
+            GTTT, GTTC, GTTA, GTTG, GTCT, GTCC, GTCA, GTCG, GTAT, GTAC, GTAA, GTAG, GTGT, GTGC, GTGA, GTGG,
+            GCTT, GCTC, GCTA, GCTG, GCCT, GCCC, GCCA, GCCG, GCAT, GCAC, GCAA, GCAG, GCGT, GCGC, GCGA, GCGG,
+            GATT, GATC, GATA, GATG, GACT, GACC, GACA, GACG, GAAT, GAAC, GAAA, GAAG, GAGT, GAGC, GAGA, GAGG,
+            GGTT, GGTC, GGTA, GGTG, GGCT, GGCC, GGCA, GGCG, GGAT, GGAC, GGAA, GGAG, GGGT, GGGC, GGGA, GGGG
         }
         
         internal static string ByteToTetraNucleotide(byte value)
