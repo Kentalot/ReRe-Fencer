@@ -279,29 +279,27 @@ namespace rere_fencer.Input
         public TwoBitGenomeReader(string file)
         {
             _twoBitFile = file;
-            uint numSequences;
+            int numSequences;
+            List<Tuple<string, uint>> contigInfos;
             using (var stream = File.OpenRead(file))
             {
                 using (var br = new BinaryReader(stream))
                 {
                     ReadSignature(br);
                     ReadVersion(br);
-                    numSequences = ReadUint(br);
+                    numSequences = (int) ReadUint(br);
                     unchecked
                     {
-                        _contigs = new List<IGenomeContig>((int) ReadUint(br));
+                        _contigs = new List<IGenomeContig>(numSequences);
                     }
                     _reserved = ReadUint(br);
+                    contigInfos = new List<Tuple<string, uint>>(numSequences);
+                    for (var i = 0; i < numSequences; i++)
+                        contigInfos.Add(ReadSequenceIndex(br));
                 }
             }
             _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
-            ReadSequenceIndex();
             
-        }
-
-        private void ReadSequenceIndex()
-        {
-            throw new NotImplementedException();
         }
 
         public TwoBitGenomeReader(FileInfo file) : this(file.FullName) { }
@@ -323,6 +321,15 @@ namespace rere_fencer.Input
             var version = ReadUint(br);
             if (version != TwoBitVersion) 
                 throw new InvalidTwoBitFileException(_fileError, "Version is something other than 0: " + version);
+        }
+
+        private Tuple<string, uint> ReadSequenceIndex(BinaryReader br)
+        {
+            var nameSize = ReadNBytes(br, 1)[0];
+            var name = new char[nameSize];
+            for (var i = 0; i < nameSize; i++)
+                name[i] = (char)ReadNBytes(br, 1)[0];
+            return Tuple.Create(new string(name), ReadUint(br));
         }
 
         private byte[] ReadNBytes(BinaryReader br, int n)
