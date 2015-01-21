@@ -7,7 +7,6 @@ using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IntervalTreeLib;
 using rere_fencer.Exceptions;
 
 namespace rere_fencer.Input
@@ -15,7 +14,7 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
-        private interface ITwoBitGenomeSubSequence
+        private interface ITwoBitGenomeSubcontig
         {
             string Name { get; }
             uint Start { get; }
@@ -23,13 +22,13 @@ namespace rere_fencer.Input
             string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false);
         }
 
-        private abstract class TwoBitGenomeSubSequence : ITwoBitGenomeSubSequence
+        private abstract class TwoBitGenomeSubcontig : ITwoBitGenomeSubcontig
         {
             public string Name { get; private set; }
             public uint Start { get; private set; }
             public uint End { get; private set; }
 
-            public TwoBitGenomeSubSequence(string name, uint start, uint end)
+            public TwoBitGenomeSubcontig(string name, uint start, uint end)
             { Name = name; Start = start; End = end; }
 
             protected abstract string GetSubSequence(uint start, uint end, uint length, 
@@ -44,9 +43,9 @@ namespace rere_fencer.Input
             }
         }
 
-        private class NSubSequence : TwoBitGenomeSubSequence
+        private class NSubcontig : TwoBitGenomeSubcontig
         {
-            public NSubSequence(string name, uint start, uint end) : base(name, start, end) { }
+            public NSubcontig(string name, uint start, uint end) : base(name, start, end) { }
 
             protected override string GetSubSequence(uint start, uint end, uint length, 
                 bool ignoreMasks = false, bool ignoreNs = false)
@@ -55,13 +54,13 @@ namespace rere_fencer.Input
             }
         }
 
-        private class NormalSubSequence : TwoBitGenomeSubSequence, IDisposable
+        private class NormalSubcontig : TwoBitGenomeSubcontig, IDisposable
         {
             protected ushort LeftNucsToTrim { get; private set; } // these are partial bytes on the left that are
             protected ushort RightNucsToTrim { get; private set; } // from the previous sequence and need to be trimmed
             protected readonly MemoryMappedViewAccessor _sequenceAccessor;
 
-            public NormalSubSequence(string name, uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
+            public NormalSubcontig(string name, uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
                 MemoryMappedViewAccessor sequenceAccessor) : base (name, start, end)
             {
                 LeftNucsToTrim = leftNucsToTrim;
@@ -122,10 +121,10 @@ namespace rere_fencer.Input
             }
         }
 
-        private class MaskedSubSequence : NormalSubSequence
+        private class MaskedSubcontig : NormalSubcontig
         {
 
-            public MaskedSubSequence(string name, uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
+            public MaskedSubcontig(string name, uint start, uint end, ushort leftNucsToTrim, ushort rightNucsToTrim, 
                 MemoryMappedViewAccessor sequenceAccessor)
                 : base(name, start, end, leftNucsToTrim, rightNucsToTrim, sequenceAccessor) { }
 
@@ -144,15 +143,15 @@ namespace rere_fencer.Input
             public bool ContainsNs { get; private set; }
             public bool ContainsMaskedSequences { get; private set; }
 
-            private readonly List<ITwoBitGenomeSubSequence> _subSequences;
+            private readonly List<ITwoBitGenomeSubcontig> _subSequences;
 
-            public TwoBitGenomeContig(string name, uint length, List<ITwoBitGenomeSubSequence> subSequences)
+            public TwoBitGenomeContig(string name, uint length, List<ITwoBitGenomeSubcontig> subSequences)
             {
                 Name = name;
                 Length = length;
                 _subSequences = subSequences;
-                ContainsNs = _subSequences.Any(s => s.GetType() == typeof(NSubSequence));
-                ContainsMaskedSequences = _subSequences.Any(s => s.GetType() == typeof(MaskedSubSequence));
+                ContainsNs = _subSequences.Any(s => s.GetType() == typeof(NSubcontig));
+                ContainsMaskedSequences = _subSequences.Any(s => s.GetType() == typeof(MaskedSubcontig));
             }
 
             public string GetSequence(uint start, uint end,
