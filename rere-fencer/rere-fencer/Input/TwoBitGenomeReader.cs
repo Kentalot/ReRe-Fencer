@@ -19,7 +19,8 @@ namespace rere_fencer.Input
             string Name { get; }
             uint Start { get; }
             uint End { get; }
-            string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false);
+
+            string GetSequence(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
         }
 
         private abstract class TwoBitGenomeSubcontig : ITwoBitGenomeSubcontig
@@ -31,15 +32,16 @@ namespace rere_fencer.Input
             public TwoBitGenomeSubcontig(string name, uint start, uint end)
             { Name = name; Start = start; End = end; }
 
-            protected abstract string GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool ignoreNs = false);
+            protected abstract string GetSubSequence(uint start, uint end, uint length,
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
 
-            public string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            public string GetSequence(uint start, uint end,
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
                 if (start < Start || end > End) throw new OutOfContigRangeException(Name, start, end, 
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 var length = end - start + 1;
-                return GetSubSequence(Start - start + 1, End - end + 1, length, ignoreMasks, ignoreNs);
+                return GetSubSequence(Start - start + 1, End - end + 1, length, ignoreMasks, skipMasks, skipNs);
             }
         }
 
@@ -47,10 +49,10 @@ namespace rere_fencer.Input
         {
             public NSubcontig(string name, uint start, uint end) : base(name, start, end) { }
 
-            protected override string GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool ignoreNs = false)
+            protected override string GetSubSequence(uint start, uint end, uint length,
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
-                return ignoreNs ? "" : new string('N', (int) length);
+                return skipNs ? string.Empty : new string('N', (int)length);
             }
         }
 
@@ -76,8 +78,8 @@ namespace rere_fencer.Input
                     GetSubSequence(halfLength, false));                
             }*/
 
-            protected override string GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool ignoreNs = false)//uint length, bool fromLeft)
+            protected override string GetSubSequence(uint start, uint end, uint length,
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)//uint length, bool fromLeft)
             {
                 var sb = new StringBuilder((int) length);
                 var paddedStart = start + LeftNucsToTrim - 1;
@@ -128,10 +130,11 @@ namespace rere_fencer.Input
                 MemoryMappedViewAccessor sequenceAccessor)
                 : base(name, start, end, leftNucsToTrim, rightNucsToTrim, sequenceAccessor) { }
 
-            protected override string GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool ignoreNs = false)
+            protected override string GetSubSequence(uint start, uint end, uint length,
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
-                var tempstr = base.GetSubSequence(start, end, length, ignoreMasks, ignoreNs);
+                if (skipMasks) return String.Empty;
+                var tempstr = base.GetSubSequence(start, end, length, ignoreMasks, skipMasks, skipNs);
  	            return ignoreMasks ? tempstr : tempstr.ToLower();
             }
         }
@@ -155,19 +158,19 @@ namespace rere_fencer.Input
             }
 
             public string GetSequence(uint start, uint end,
-                bool ignoreMasks = false, bool ignoreNs = false)
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
                 if (start < 1 || end > Length) throw new OutOfContigRangeException(Name, start, end,
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 var i = BinarySearchForIndex(start, 0, _subSequences.Count - 1);
                 if (end < _subSequences[i].End) // all contained in one subSequence;
-                    return _subSequences[i].GetSequence(start, end, ignoreMasks, ignoreNs);
+                    return _subSequences[i].GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
 
                 var endingIndex = BinarySearchForIndex(end, i + 1, _subSequences.Count - 1);
-                var seqString = _subSequences[i].GetSequence(start, _subSequences[i++].End, ignoreMasks, ignoreNs);
+                var seqString = _subSequences[i].GetSequence(start, _subSequences[i++].End, ignoreMasks, skipMasks, skipNs);
                 for (; i < endingIndex; i++)
-                    seqString += _subSequences[i].GetSequence(_subSequences[i].Start, _subSequences[i].End, ignoreMasks, ignoreNs);
-                seqString += _subSequences[i].GetSequence(_subSequences[i].Start, end, ignoreMasks, ignoreNs);
+                    seqString += _subSequences[i].GetSequence(_subSequences[i].Start, _subSequences[i].End, ignoreMasks, skipMasks, skipNs);
+                seqString += _subSequences[i].GetSequence(_subSequences[i].Start, end, ignoreMasks, skipMasks, skipNs);
                 return seqString;
             }
 
@@ -187,9 +190,9 @@ namespace rere_fencer.Input
                 return GetSequence(position, position)[0];
             }
 
-            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
-                return GetSequence(start, end, ignoreMasks, ignoreNs);
+                return GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
             }
         }
 
