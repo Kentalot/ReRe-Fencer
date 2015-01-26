@@ -19,7 +19,8 @@ namespace rere_fencer.Input
             string Name { get; }
             uint Start { get; }
             uint End { get; }
-            string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false);
+
+            string GetSequence(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
         }
 
         private abstract class TwoBitGenomeSubcontig : ITwoBitGenomeSubcontig
@@ -33,15 +34,16 @@ namespace rere_fencer.Input
             { Name = name; Start = start; End = end; }
 
             protected abstract string GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool ignoreNs = false);
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
 
-            public string GetSequence(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            public string GetSequence(uint start, uint end,
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
                 if (start < Start || end > End) throw new OutOfContigRangeException(Name, start, end, 
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 if (end < start) throw new ArgumentException("Sequence end was less than start, what's up with that?");
                 var length = end - start + 1;
-                return GetSubSequence(start - Start + 1, end - Start + 1, length, ignoreMasks, ignoreNs);
+                return GetSubSequence(Start - start + 1, End - end + 1, length, ignoreMasks, skipMasks, skipNs);
             }
         }
 
@@ -68,7 +70,7 @@ namespace rere_fencer.Input
             }*/
 
             protected override string GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool ignoreNs = false)//uint length, bool fromLeft)
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)//uint length, bool fromLeft)
             {
                 var intLength = (int) length;
                 //var sb = new StringBuilder(intLength + RightNucsToTrim);
@@ -134,9 +136,10 @@ namespace rere_fencer.Input
                 : base(name, start, end, leftNucsToTrim, sequenceAccessor) { }
 
             protected override string GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool ignoreNs = false)
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
-                var tempstr = base.GetSubSequence(start, end, length, ignoreMasks, ignoreNs);
+                if (skipMasks) return String.Empty;
+                var tempstr = base.GetSubSequence(start, end, length, ignoreMasks, skipMasks, skipNs);
  	            return ignoreMasks ? tempstr : tempstr.ToLower();
             }
         }
@@ -171,7 +174,7 @@ namespace rere_fencer.Input
             }
 
             public string GetSequence(uint start, uint end,
-                bool ignoreMasks = false, bool ignoreNs = false)
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
                 if (start < 1 || end > Length) throw new OutOfContigRangeException(Name, start, end,
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
@@ -223,9 +226,9 @@ namespace rere_fencer.Input
                 return GetSequence(position, position)[0];
             }
 
-            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool ignoreNs = false)
+            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
-                return GetSequence(start, end, ignoreMasks, ignoreNs);
+                return GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
             }
         }
 
@@ -299,7 +302,7 @@ namespace rere_fencer.Input
                 }
             }
             _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
-            
+
         }
 
         public TwoBitGenomeReader(FileInfo file) : this(file.FullName) { }
