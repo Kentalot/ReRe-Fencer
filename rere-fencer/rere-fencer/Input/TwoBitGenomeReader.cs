@@ -149,9 +149,9 @@ namespace rere_fencer.Input
             public NSubcontig(string name, uint start, uint end) : base(name, start, end) { }
 
             protected override string GetSubSequence(uint start, uint end, uint length,
-                bool ignoreMasks = false, bool ignoreNs = false)
+                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
-                return ignoreNs ? "" : new string('N', (int)length);
+                return skipNs ? "" : new string('N', (int)length);
             }
         }
 
@@ -184,24 +184,25 @@ namespace rere_fencer.Input
                 {
                     endingIndex = BinarySearchForIndex(end, 0, _subSequences.Count - 1);
                     if (start > _subSequences[endingIndex].Start) // all contained in one subSequence;
-                        return _subSequences[endingIndex].GetSequence(start, end, ignoreMasks, ignoreNs);
+                        return _subSequences[endingIndex].GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
                     position = BinarySearchForIndex(start, 0, endingIndex - 1);
                 }
                 else
                 {
                     position = BinarySearchForIndex(start, 0, _subSequences.Count - 1);
                     if (end < _subSequences[position].End) // all contained in one subSequence;
-                        return _subSequences[position].GetSequence(start, end, ignoreMasks, ignoreNs);
+                        return _subSequences[position].GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
                     endingIndex = BinarySearchForIndex(end, position + 1, _subSequences.Count - 1);
                 }
                 var returnChars = new char[end - start + 1];
                 var charPosition = 0;
-                var seqString = _subSequences[position].GetSequence(start, _subSequences[position++].End, ignoreMasks, ignoreNs);
+                var seqString = _subSequences[position].GetSequence(start, _subSequences[position++].End, ignoreMasks, skipMasks, skipNs);
                 for (var i = 0; i < seqString.Length && charPosition < returnChars.Length; i++)
                     returnChars[charPosition++] = seqString[i];
                 for (; position <= endingIndex; position++)
                 {
-                    seqString = _subSequences[position].GetSequence(_subSequences[position].Start, _subSequences[position].End, ignoreMasks, ignoreNs);
+                    seqString = _subSequences[position].GetSequence(_subSequences[position].Start, 
+                        _subSequences[position].End, ignoreMasks, skipMasks, skipNs);
                     for (var i = 0; i < seqString.Length && charPosition < returnChars.Length; i++)
                         returnChars[charPosition++] = seqString[i];
                 }
