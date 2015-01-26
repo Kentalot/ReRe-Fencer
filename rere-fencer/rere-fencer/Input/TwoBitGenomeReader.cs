@@ -332,7 +332,7 @@ namespace rere_fencer.Input
             return Tuple.Create(new string(name), ReadUint(br));
         }
 
-        private byte[] ReadNBytes(BinaryReader br, int n)
+        private byte[] ReadNBytes(BinaryReader br, uint n)
         {
             var byteArray = new byte[n];
             for (var i = 0; i < n; i++)
