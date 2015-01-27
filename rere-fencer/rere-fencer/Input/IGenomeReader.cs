@@ -12,7 +12,7 @@ namespace rere_fencer.Input
         bool SupportsMasking { get; }
         bool SupportsNs { get; }
         bool SupportsIupacAmbiguityCodes { get; }
-        List<IGenomeContig> Contigs { get; }
+        IReadOnlyList<IGenomeContig> Contigs { get; }
     }
 
     public interface IGenomeContig
