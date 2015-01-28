@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
@@ -110,7 +111,7 @@ namespace rere_fencer.Input
             {
                 if (skipMasks) return String.Empty;
                 var tempstr = base.GetSubSequence(start, end, length, ignoreMasks, skipMasks, skipNs);
- 	            return ignoreMasks ? tempstr : tempstr.ToLower();
+ 	            return ignoreMasks ? tempstr : tempstr.ToLower(CultureInfo.CurrentCulture);
             }
         }
 
