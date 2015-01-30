@@ -242,12 +242,13 @@ namespace rere_fencer.Input
         private const uint ReverseSignature = 0x4327411A;
         private const uint TwoBitVersion = 0;
 
-        internal static readonly byte[] EndiannessIndexedByteArray = new byte[256];
+        private static readonly byte[] EndiannessIndexedByteArray = new byte[256];
+        private static readonly Dictionary<byte, string> ByteToTetraNucleotideMap = new Dictionary<byte, string>(byte.MaxValue); 
         
         //private static char[] bit_chars = {'T', 'C', 'A', 'G'};
 
         public const uint NucsPerByte = 4;
-        public enum TetraNucleotide : byte
+        /*public enum TetraNucleotide : byte
         {
             TTTT = 0x00, TTTC, TTTA, TTTG, TTCT, TTCC, TTCA, TTCG, TTAT, TTAC, TTAA, TTAG, TTGT, TTGC, TTGA, TTGG,
             TCTT, TCTC, TCTA, TCTG, TCCT, TCCC, TCCA, TCCG, TCAT, TCAC, TCAA, TCAG, TCGT, TCGC, TCGA, TCGG,
@@ -265,11 +266,11 @@ namespace rere_fencer.Input
             GCTT, GCTC, GCTA, GCTG, GCCT, GCCC, GCCA, GCCG, GCAT, GCAC, GCAA, GCAG, GCGT, GCGC, GCGA, GCGG,
             GATT, GATC, GATA, GATG, GACT, GACC, GACA, GACG, GAAT, GAAC, GAAA, GAAG, GAGT, GAGC, GAGA, GAGG,
             GGTT, GGTC, GGTA, GGTG, GGCT, GGCC, GGCA, GGCG, GGAT, GGAC, GGAA, GGAG, GGGT, GGGC, GGGA, GGGG
-        }
+        }*/
         
         internal static string ByteToTetraNucleotide(byte value)
         {
-            return ((TetraNucleotide) EndiannessIndexedByteArray[value]).ToString();
+            return ByteToTetraNucleotideMap[EndiannessIndexedByteArray[value]];
         }
 
         public TwoBitGenomeReader(FileInfo file) : this(file.FullName) { }
@@ -305,8 +306,19 @@ namespace rere_fencer.Input
             if (signature == ForwardSignature) reverse = true;
             else if (signature != ReverseSignature) 
                 throw new InvalidTwoBitFileException(_fileError, "Invalid Signature found: " + signature);
-            for (byte i = 0; i < EndiannessIndexedByteArray.Length; i++)
-                EndiannessIndexedByteArray[i] = reverse ? ReverseByte(i) : i;
+            //for (byte i = 0; i < EndiannessIndexedByteArray.Length; i++)
+            //    EndiannessIndexedByteArray[i] = reverse ? ReverseByte(i) : i;
+            byte i = 0;
+            var temparray = new[] {'T', 'C', 'A', 'G'};
+            foreach (var c in temparray)
+                foreach (var d in temparray)
+                    foreach (var e in temparray)
+                        foreach (var f in temparray)
+                        {
+                            EndiannessIndexedByteArray[i] = reverse ? ReverseByte(i) : i;
+                            ByteToTetraNucleotideMap[i] = new string(new[] { c, d, e, f });
+                            i++;
+                        }
             return reverse;
         }
 
