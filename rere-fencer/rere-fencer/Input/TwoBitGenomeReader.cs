@@ -242,8 +242,9 @@ namespace rere_fencer.Input
         private const uint ReverseSignature = 0x4327411A;
         private const uint TwoBitVersion = 0;
 
-        private static readonly byte[] EndiannessIndexedByteArray = new byte[256];
-        private static readonly Dictionary<byte, string> ByteToTetraNucleotideMap = new Dictionary<byte, string>(byte.MaxValue); 
+        private const int maxByte = byte.MaxValue + 1;
+        private static readonly byte[] EndiannessIndexedByteArray = new byte[maxByte];
+        private static readonly Dictionary<byte, string> ByteToTetraNucleotideMap = new Dictionary<byte, string>(maxByte); 
         
         //private static char[] bit_chars = {'T', 'C', 'A', 'G'};
 
@@ -309,7 +310,7 @@ namespace rere_fencer.Input
             //for (byte i = 0; i < EndiannessIndexedByteArray.Length; i++)
             //    EndiannessIndexedByteArray[i] = reverse ? ReverseByte(i) : i;
             byte i = 0;
-            var temparray = new[] {'T', 'C', 'A', 'G'};
+            var temparray = new[] { 'T', 'C', 'A', 'G' };
             foreach (var c in temparray)
                 foreach (var d in temparray)
                     foreach (var e in temparray)
