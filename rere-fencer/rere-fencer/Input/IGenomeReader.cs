@@ -36,4 +36,12 @@ namespace rere_fencer.Input
         uint Start { get; }
         uint End { get; }
     }
+
+    internal class ContigRegion : IContigRegion
+    {
+        private readonly Tuple<uint, uint> _regionInfo;
+        public uint Start { get { return _regionInfo.Item1; } }
+        public uint End { get { return _regionInfo.Item2; } }
+        public ContigRegion(uint start, uint end) { _regionInfo = Tuple.Create(start, end); }
+    }
 }

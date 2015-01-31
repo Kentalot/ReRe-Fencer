@@ -16,13 +16,7 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
-        private class ContigRegion : IContigRegion
-        {
-            private readonly Tuple<uint, uint> _regionInfo;
-            public uint Start { get { return _regionInfo.Item1; } }
-            public uint End { get { return _regionInfo.Item2; } }
-            public ContigRegion(uint start, uint end) { _regionInfo = Tuple.Create(start, end); }
-        }
+        
 
         private interface ITwoBitGenomeSubcontig: IDisposable
         {
@@ -51,7 +45,7 @@ namespace rere_fencer.Input
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 if (end < start) throw new ArgumentException("Sequence end was less than start, what's up with that?");
                 var length = end - start + 1;
-                return GetSubSequence(RegionInfo.Start - start + 1, RegionInfo.End - end + 1, length, ignoreMasks, skipMasks, skipNs);
+                return GetSubSequence(start, end, length, ignoreMasks, skipMasks, skipNs);
             }
 
             public abstract void Dispose();
@@ -81,13 +75,15 @@ namespace rere_fencer.Input
                 var lastByte = (end + LeftNucsToTrim - 1) / NucsPerByte;
 
                 var charPosition = 0;
+                Console.WriteLine("Reading from {0} to {1} starting from BytePostion {2} and lastByte is {3}", start,
+                    end, bytePosition, lastByte);
                 var tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++));
                 for (var i = leftSubStringIndex; i < NucsPerByte && charPosition < returnChars.Length; i++)
                     returnChars[charPosition++] = tetNuc[i]; // copy the leftmost side
 
                 for (; bytePosition <= lastByte; bytePosition++)
                 {
-                    tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++));
+                    tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition));
                     for (var i = 0; i < NucsPerByte && charPosition < returnChars.Length; i++) // charPos < returnChars.Length short circuits
                         returnChars[charPosition++] = tetNuc[i];
                 } 
@@ -169,14 +165,14 @@ namespace rere_fencer.Input
                 if (Length - end > start - 1) // end is closer to the middle, so do the first search using end
                 {
                     endingIndex = BinarySearchForIndex(end, 0, _subcontigs.Count - 1);
-                    if (start > _subcontigs[endingIndex].RegionInfo.Start) // all contained in one subSequence;
+                    if (start >= _subcontigs[endingIndex].RegionInfo.Start) // all contained in one subSequence;
                         return _subcontigs[endingIndex].GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
                     position = BinarySearchForIndex(start, 0, endingIndex - 1);
                 }
                 else
                 {
                     position = BinarySearchForIndex(start, 0, _subcontigs.Count - 1);
-                    if (end < _subcontigs[position].RegionInfo.End) // all contained in one subSequence;
+                    if (end <= _subcontigs[position].RegionInfo.End) // all contained in one subSequence;
                         return _subcontigs[position].GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
                     endingIndex = BinarySearchForIndex(end, position + 1, _subcontigs.Count - 1);
                 }
@@ -227,8 +223,8 @@ namespace rere_fencer.Input
         public bool SupportsNs { get { return true; } }
         public bool SupportsIupacAmbiguityCodes { get { return false; } }
 
-        private readonly List<IGenomeContig> _contigs;
-        public IReadOnlyList<IGenomeContig> Contigs { get { return _contigs.AsReadOnly(); } }
+        private readonly IGenomeContig[] _contigs;
+        public IReadOnlyList<IGenomeContig> Contigs { get { return Array.AsReadOnly(_contigs); } }
 
         private readonly MemoryMappedFile _mmf;
         private readonly bool _reverse = false;
@@ -287,9 +283,11 @@ namespace rere_fencer.Input
                     ReadSignature(br);
                     ReadVersion(br);
                     unchecked { numSequences = (int) ReadUint(br); }
-                    _contigs = new List<IGenomeContig>(numSequences);
+                    _contigs = new IGenomeContig[numSequences];
                     _contigReserved = new uint[numSequences];
                     _reserved = ReadUint(br);
+                    if (_reserved != 0)
+                        throw new InvalidTwoBitFileException(_fileError, "Reserved is something other than 0: " + _reserved);
                     contigInfos = new List<Tuple<string, uint>>(numSequences);
                     for (var i = 0; i < numSequences; i++)
                         contigInfos.Add(ReadSequenceIndex(br));
@@ -297,7 +295,8 @@ namespace rere_fencer.Input
             }
             _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
             for (var i = 0; i < numSequences; i++)
-                _contigs.Add(GetSequenceContent(contigInfos[i].Item1, contigInfos[i].Item2, _mmf, i));
+                _contigs[i] = GetSequenceContent(contigInfos[i].Item1, contigInfos[i].Item2, _mmf, i);
+            Array.Reverse(_contigs);
         }
 
         private bool ReadSignature(BinaryReader br)
@@ -433,8 +432,9 @@ namespace rere_fencer.Input
         private byte[] ReadNBytes(BinaryReader br, uint n)
         {
             var byteArray = new byte[n];
-            for (var i = 0; i < n; i++)
+            for (var i = 0; i < n; i ++)
                 byteArray[i] = EndiannessIndexedByteArray[br.ReadByte()];
+            if (BitConverter.IsLittleEndian) Array.Reverse(byteArray);
             return byteArray;
         }
 
@@ -443,6 +443,7 @@ namespace rere_fencer.Input
             var byteArray = new byte[n];
             for (var i = 0; i < n; i++)
                 byteArray[i] = EndiannessIndexedByteArray[mmva.ReadByte(start + i)];
+            if (BitConverter.IsLittleEndian) Array.Reverse(byteArray);
             return byteArray;
         }
 
@@ -466,7 +467,8 @@ namespace rere_fencer.Input
 
         public void Dispose()
         {
-            _contigs.ForEach(c => ((TwoBitGenomeContig)c).Dispose());
+            foreach (IGenomeContig t in _contigs)
+                ((TwoBitGenomeContig)t).Dispose();
             _mmf.Dispose();
         }
 

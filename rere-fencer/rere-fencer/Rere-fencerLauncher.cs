@@ -18,7 +18,7 @@ namespace rere_fencer
         private IGenomeWriter _genomeWriter;
 
         public Rere_fencerLauncher(IGenomeReader genomeReader, IVCFReader vcfReader, IRRFProcessor rrfProcessor,
-            IRRFResolver rrfResolver, IGenomeWriter genomeWriter, string[] args)
+            IRRFResolver rrfResolver, IGenomeWriter genomeWriter)
         {
             _genomeReader = genomeReader;
             _vcfReader = vcfReader;
@@ -29,7 +29,13 @@ namespace rere_fencer
 
         public void Launch()
         {
-            
+            foreach (var contig in _genomeReader.Contigs)
+                try
+                {
+                    Console.WriteLine("From " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
+                                      contig.GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End));
+                }
+            catch{}
         }
     }
 }
