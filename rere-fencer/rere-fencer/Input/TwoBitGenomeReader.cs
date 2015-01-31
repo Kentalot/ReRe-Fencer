@@ -16,9 +16,7 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
-        
-
-        private interface ITwoBitGenomeSubcontig: IDisposable
+        private interface ITwoBitGenomeSubcontig
         {
             string Name { get; }
             IContigRegion RegionInfo { get; }
@@ -32,7 +30,8 @@ namespace rere_fencer.Input
             public IContigRegion RegionInfo { get; private set; }
 
             public TwoBitGenomeSubcontig(string name, IContigRegion region)
-            { Name = name; RegionInfo = region;
+            { 
+                Name = name; RegionInfo = region;
             }
 
             protected abstract string GetSubSequence(uint start, uint end, uint length, 
@@ -47,19 +46,18 @@ namespace rere_fencer.Input
                 var length = end - start + 1;
                 return GetSubSequence(start, end, length, ignoreMasks, skipMasks, skipNs);
             }
-
-            public abstract void Dispose();
         }
 
         private class NormalSubcontig : TwoBitGenomeSubcontig
         {
-            private ushort LeftNucsToTrim { get; set; } // these are partial bytes on the left that are trimmed before returning
+            private readonly ushort _leftNucsToTrim; // these are partial bytes on the left that are trimmed before returning
             private readonly MemoryMappedViewAccessor _sequenceAccessor;
 
-            public NormalSubcontig(string name, IContigRegion region, ushort leftNucsToTrim, MemoryMappedViewAccessor sequenceAccessor) 
+            public NormalSubcontig(string name, IContigRegion region, ushort leftNucsToTrim, 
+                MemoryMappedViewAccessor sequenceAccessor) 
                 : base (name, region)
             {
-                LeftNucsToTrim = leftNucsToTrim;
+                _leftNucsToTrim = leftNucsToTrim;
                 _sequenceAccessor = sequenceAccessor;
             }
             
@@ -67,12 +65,11 @@ namespace rere_fencer.Input
                 bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)//uint length, bool fromLeft)
             {
                 var intLength = (int) length;
-                //var sb = new StringBuilder(intLength + RightNucsToTrim);
                 var returnChars = new char[intLength];
-                var paddedStart = start + LeftNucsToTrim - 1;
-                var bytePosition = paddedStart / NucsPerByte; // calculate the starting position to read from.
-                var leftSubStringIndex = (int)(paddedStart % NucsPerByte); // calculate the leftovers
-                var lastByte = (end + LeftNucsToTrim - 1) / NucsPerByte;
+                var bytePosition = start / NucsPerByte; // calculate the starting position to read from.
+                var leftSubStringIndex = (int)(start % NucsPerByte); // calculate the leftovers
+                //var lastByte = bytePosition + (uint) Math.Ceiling(paddedLength/(double)NucsPerByte);
+                var lastByte = (int) Math.Ceiling((end + (double)_leftNucsToTrim)/ NucsPerByte);
 
                 var charPosition = 0;
                 Console.WriteLine("Reading from {0} to {1} starting from BytePostion {2} and lastByte is {3}", start,
@@ -88,11 +85,6 @@ namespace rere_fencer.Input
                         returnChars[charPosition++] = tetNuc[i];
                 } 
                 return new string(returnChars);
-            }
-
-            public override void Dispose()
-            {
-                _sequenceAccessor.Dispose();
             }
         }
 
@@ -120,11 +112,9 @@ namespace rere_fencer.Input
             {
                 return skipNs ? "" : new string('N', (int)length);
             }
-
-            public override void Dispose() { }
         }
 
-        private class TwoBitGenomeContig : IGenomeContig, IDisposable
+        private class TwoBitGenomeContig : IGenomeContig
         {
             public string Name { get; private set; }
             public uint Length { get; private set; }
@@ -181,13 +171,17 @@ namespace rere_fencer.Input
                 var seqString = _subcontigs[position].GetSequence(start, _subcontigs[position++].RegionInfo.End, ignoreMasks, skipMasks, skipNs);
                 for (var i = 0; i < seqString.Length && charPosition < returnChars.Length; i++)
                     returnChars[charPosition++] = seqString[i];
-                for (; position <= endingIndex; position++)
+                for (; position < endingIndex; position++)
                 {
                     seqString = _subcontigs[position].GetSequence(_subcontigs[position].RegionInfo.Start, 
                         _subcontigs[position].RegionInfo.End, ignoreMasks, skipMasks, skipNs);
                     for (var i = 0; i < seqString.Length && charPosition < returnChars.Length; i++)
                         returnChars[charPosition++] = seqString[i];
                 }
+                seqString = _subcontigs[position].GetSequence(_subcontigs[position].RegionInfo.Start, end, ignoreMasks,
+                    skipMasks, skipNs);
+                for (var i = 0; i < seqString.Length && charPosition < returnChars.Length; i++)
+                    returnChars[charPosition++] = seqString[i];
                 return new string(returnChars);
             }
 
@@ -211,14 +205,9 @@ namespace rere_fencer.Input
             {
                 return GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
             }
-
-            public void Dispose()
-            {
-                _subcontigs.ForEach(s => s.Dispose());
-            }
         }
 
-        public bool IsZeroBasedCoordinates { get { return false; } }
+        public bool IsZeroBasedCoordinates { get { return true; } }
         public bool SupportsMasking { get { return true; } }
         public bool SupportsNs { get { return true; } }
         public bool SupportsIupacAmbiguityCodes { get { return false; } }
@@ -226,14 +215,15 @@ namespace rere_fencer.Input
         private readonly IGenomeContig[] _contigs;
         public IReadOnlyList<IGenomeContig> Contigs { get { return Array.AsReadOnly(_contigs); } }
 
-        private readonly MemoryMappedFile _mmf;
+        private static MemoryMappedFile _genomeFile;
+        private static MemoryMappedViewAccessor[] _genomeAccessors;
         private readonly bool _reverse = false;
-        private string _twoBitFile = null;
+        private string _twoBitFile;
         private readonly uint _reserved;
         public uint Reserved { get { return _reserved; }}
         private readonly uint[] _contigReserved;
         public uint[] ContigReserved { get { return _contigReserved; } }
-        private string _fileError { get { return _twoBitFile ?? _mmf.ToString(); } }
+        private string _fileError { get { return _twoBitFile ?? _genomeFile.ToString(); } }
         private const uint ForwardSignature = 0x1A412743;
         private const uint ReverseSignature = 0x4327411A;
         private const uint TwoBitVersion = 0;
@@ -285,6 +275,7 @@ namespace rere_fencer.Input
                     unchecked { numSequences = (int) ReadUint(br); }
                     _contigs = new IGenomeContig[numSequences];
                     _contigReserved = new uint[numSequences];
+                    _genomeAccessors = new MemoryMappedViewAccessor[numSequences];
                     _reserved = ReadUint(br);
                     if (_reserved != 0)
                         throw new InvalidTwoBitFileException(_fileError, "Reserved is something other than 0: " + _reserved);
@@ -293,9 +284,9 @@ namespace rere_fencer.Input
                         contigInfos.Add(ReadSequenceIndex(br));
                 }
             }
-            _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
+            _genomeFile = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
             for (var i = 0; i < numSequences; i++)
-                _contigs[i] = GetSequenceContent(contigInfos[i].Item1, contigInfos[i].Item2, _mmf, i);
+                _contigs[i] = GetSequenceContent(contigInfos[i].Item1, contigInfos[i].Item2, i == numSequences - 1 ? 0 : contigInfos[i + 1].Item2, i);
             Array.Reverse(_contigs);
         }
 
@@ -338,58 +329,58 @@ namespace rere_fencer.Input
             return Tuple.Create(new string(name), ReadUint(br));
         }
 
-        private IGenomeContig GetSequenceContent(string contigName, uint memoryOffset, MemoryMappedFile mmf, int reservedIndex)
+        private IGenomeContig GetSequenceContent(string contigName, uint memoryOffset, uint nextContigOffset, int contigIndex)
         {
             var start = 4U;
             SortedList<uint, uint> nBlocks, maskBlocks;
             uint dnaSize;
-            using (var tempViewer = mmf.CreateViewAccessor(memoryOffset, 0, MemoryMappedFileAccess.Read))
+            using (var tempViewer = _genomeFile.CreateViewAccessor(memoryOffset, 0, MemoryMappedFileAccess.Read))
             {
                 dnaSize = ReadUint(tempViewer);
                 start = GetBlockCountFromSequenceIndex(tempViewer, start, out nBlocks);
                 start = GetBlockCountFromSequenceIndex(tempViewer, start, out maskBlocks);
-                _contigReserved[reservedIndex] = ReadUint(tempViewer, start);
+                _contigReserved[contigIndex] = ReadUint(tempViewer, start);
                 start += 4;
             }
 
             var subcontigs = new List<ITwoBitGenomeSubcontig>(2 * (nBlocks.Count + maskBlocks.Count + 1));
             var byteOffset = start + memoryOffset;
-            ushort nucsToLeft = 0;
-            uint currentBytePosition = 0, nextBlock = 1, currentSequencePosition = 0, numNs = 0;
+            _genomeAccessors[contigIndex] = _genomeFile.CreateViewAccessor(byteOffset, nextContigOffset, MemoryMappedFileAccess.Read);
+            ushort firstIndex = 0;
+            uint nextBlock = 0, currentSequencePosition = 0;
             for (int currentNIndex = 0, currentMaskIndex = 0; currentNIndex < nBlocks.Count || currentMaskIndex < maskBlocks.Count; )
             {
                 if (currentNIndex < nBlocks.Count && currentSequencePosition == nBlocks.Keys[currentNIndex])
                 {
                     nextBlock = currentSequencePosition + nBlocks.Values[currentNIndex++];
-                    subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition + 1, nextBlock));
-                    numNs = nextBlock - currentSequencePosition;
+                    subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1));
                 }
                 else if (currentMaskIndex < maskBlocks.Count && currentSequencePosition == maskBlocks.Keys[currentMaskIndex])
                 {
                     nextBlock = currentSequencePosition + maskBlocks.Values[currentMaskIndex++];
-                    subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition + 1, nextBlock,
-                        mmf, nucsToLeft, currentBytePosition, byteOffset, true));
+                    subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1,
+                        _genomeAccessors[contigIndex], firstIndex, true));
                 }
                 else
                 {
-                    var nBlockKey = currentNIndex == nBlocks.Count ? dnaSize : nBlocks.Keys[currentNIndex];
-                    var maskBlockKey = currentMaskIndex == maskBlocks.Count ? dnaSize : maskBlocks.Keys[currentMaskIndex];
+                    var nBlockKey = currentNIndex == nBlocks.Count ? dnaSize - 1 : nBlocks.Keys[currentNIndex];
+                    var maskBlockKey = currentMaskIndex == maskBlocks.Count ? dnaSize - 1 : maskBlocks.Keys[currentMaskIndex];
                     if (currentSequencePosition < nBlockKey && currentSequencePosition < maskBlockKey)
                     {
                         nextBlock = maskBlockKey < nBlockKey ? maskBlockKey : nBlockKey;
-                        subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition + 1, nextBlock,
-                            mmf, nucsToLeft, currentBytePosition, byteOffset));
+                        subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1,
+                            _genomeAccessors[contigIndex], firstIndex));
                     }
                 }
-                nucsToLeft = (ushort)(nextBlock % NucsPerByte);
                 currentSequencePosition = nextBlock;
-                currentBytePosition = (nextBlock - numNs) / NucsPerByte;
+                firstIndex = (ushort)(nextBlock % NucsPerByte);
+                //currentBytePosition = nextBlock / NucsPerByte;
             }
 
             var lastOne = subcontigs.LastOrDefault();
             if (lastOne == null || lastOne.RegionInfo.End != dnaSize) // means that there's one more normal block left to make
                 subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition + 1, dnaSize,
-                    mmf, nucsToLeft, currentBytePosition, byteOffset));
+                    _genomeAccessors[contigIndex], firstIndex));
 
             return new TwoBitGenomeContig(contigName, dnaSize, subcontigs);
         }
@@ -416,17 +407,15 @@ namespace rere_fencer.Input
         }
 
         private ITwoBitGenomeSubcontig GenerateNewSubcontig(string name, uint start, uint end,
-            MemoryMappedFile mmf = null, ushort nucsToLeft = 0, uint currentBytePosition = 0, uint byteOffset = 0, bool isMaskedContig = false)
+            MemoryMappedViewAccessor mmva = null, ushort nucsToLeft = 0, bool isMaskedContig = false)
         {
             var region = new ContigRegion(start, end);
             var newName = string.Format("{0}:{1}-{2}", name, start, end);
-            if (mmf == null) return new NSubcontig(newName, region);
-            var numBytes = (uint)Math.Ceiling(end / (decimal)NucsPerByte) - currentBytePosition;
+            if (mmva == null) return new NSubcontig(newName, region);
+            //var numBytes = (uint)Math.Ceiling(end / (decimal)NucsPerByte) - currentBytePosition;
             return isMaskedContig
-                ? new MaskedSubcontig(newName, region, nucsToLeft,
-                    mmf.CreateViewAccessor(byteOffset + currentBytePosition, numBytes, MemoryMappedFileAccess.Read))
-                : new NormalSubcontig(newName, region, nucsToLeft,
-                    mmf.CreateViewAccessor(byteOffset + currentBytePosition, numBytes, MemoryMappedFileAccess.Read));
+                ? new MaskedSubcontig(newName, region, nucsToLeft, mmva)
+                : new NormalSubcontig(newName, region, nucsToLeft, mmva);
         }
 
         private byte[] ReadNBytes(BinaryReader br, uint n)
@@ -467,9 +456,9 @@ namespace rere_fencer.Input
 
         public void Dispose()
         {
-            foreach (IGenomeContig t in _contigs)
-                ((TwoBitGenomeContig)t).Dispose();
-            _mmf.Dispose();
+            foreach (var mmva in _genomeAccessors)
+                mmva.Dispose();
+            _genomeFile.Dispose();
         }
 
     }

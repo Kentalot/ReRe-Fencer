@@ -23,7 +23,8 @@ namespace rere_fencer
             InitializeOptionSet();
             _optionSet.Parse(args);
             ValidateOptions();
-            new Rere_fencerLauncher(new TwoBitGenomeReader(GenomeFilePath.FullName), new VCFReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter()).Launch();
+            using (var genomeReader = new TwoBitGenomeReader(GenomeFilePath.FullName))
+                new Rere_fencerLauncher(genomeReader, new VCFReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter()).Launch();
         }
 
         private static void ValidateOptions()

@@ -32,10 +32,10 @@ namespace rere_fencer
             foreach (var contig in _genomeReader.Contigs)
                 try
                 {
-                    Console.WriteLine("From " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
+                    Console.WriteLine("Chr " + contig.Name + " from " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
                                       contig.GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End));
                 }
-            catch{}
+            catch (Exception E){ Console.Error.WriteLine(E.Message + "\n" + E.StackTrace);}
         }
     }
 }
