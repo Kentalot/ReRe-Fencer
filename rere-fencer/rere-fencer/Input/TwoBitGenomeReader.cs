@@ -125,6 +125,7 @@ namespace rere_fencer.Input
         {
             public string Name { get; private set; }
             public uint Length { get; private set; }
+            public uint Reserved { get; private set; }
             public bool ContainsNs { get { return NRegions.Any(); } }
             public bool ContainsMaskedSequences { get { return MaskedRegions.Any(); } }
             public IEnumerable<IContigRegion> NRegions 
@@ -143,13 +144,17 @@ namespace rere_fencer.Input
                 } 
             }
 
+            private readonly uint _offset;
+            private readonly uint _nextOffset; // offset of next contig.  Required to make MemoryMappedViewAccessor.
             private readonly List<ITwoBitGenomeSubcontig> _subcontigs;
 
-            public TwoBitGenomeContig(string name, uint length, List<ITwoBitGenomeSubcontig> subcontigs)
+            public TwoBitGenomeContig(string name, uint offset, uint nextContigOffset)//uint length, List<ITwoBitGenomeSubcontig> subcontigs)
             {
                 Name = name;
-                Length = length;
-                _subcontigs = subcontigs;
+                _offset = offset;
+                _nextOffset = nextContigOffset;
+                //Length = length;
+                //_subcontigs = subcontigs;
             }
 
             public IEnumerable<char> GetSequence(uint start, uint end,
@@ -239,6 +244,95 @@ namespace rere_fencer.Input
             {
                 return GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
             }
+
+            private IGenomeContig GetSequenceContent(string contigName, uint memoryOffset, uint nextContigOffset, int contigIndex)
+            {
+                var start = 4U;
+                SortedList<uint, uint> nBlocks, maskBlocks;
+                uint dnaSize;
+                using (var tempViewer = _genomeFile.CreateViewAccessor(memoryOffset, nextContigOffset, MemoryMappedFileAccess.Read))
+                {
+                    dnaSize = ReadUint(tempViewer);
+                    start = GetBlockCountFromSequenceIndex(tempViewer, start, out nBlocks);
+                    start = GetBlockCountFromSequenceIndex(tempViewer, start, out maskBlocks);
+                    Reserved = ReadUint(tempViewer, start);
+                    start += 4;
+                }
+
+                var subcontigs = new List<ITwoBitGenomeSubcontig>(2 * (nBlocks.Count + maskBlocks.Count + 1));
+                var byteOffset = start + memoryOffset;
+                _genomeAccessors[contigIndex] = _genomeFile.CreateViewAccessor(byteOffset, nextContigOffset, MemoryMappedFileAccess.Read);
+                ushort firstIndex = 0;
+                uint nextBlock = 0, currentSequencePosition = 0;
+                for (int currentNIndex = 0, currentMaskIndex = 0; currentNIndex < nBlocks.Count || currentMaskIndex < maskBlocks.Count; )
+                {
+                    if (currentNIndex < nBlocks.Count && currentSequencePosition == nBlocks.Keys[currentNIndex])
+                    {
+                        nextBlock = currentSequencePosition + nBlocks.Values[currentNIndex++];
+                        subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1));
+                    }
+                    else if (currentMaskIndex < maskBlocks.Count && currentSequencePosition == maskBlocks.Keys[currentMaskIndex])
+                    {
+                        nextBlock = currentSequencePosition + maskBlocks.Values[currentMaskIndex++];
+                        subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1,
+                            _genomeAccessors[contigIndex], firstIndex, true));
+                    }
+                    else
+                    {
+                        var nBlockKey = currentNIndex == nBlocks.Count ? dnaSize - 1 : nBlocks.Keys[currentNIndex];
+                        var maskBlockKey = currentMaskIndex == maskBlocks.Count ? dnaSize - 1 : maskBlocks.Keys[currentMaskIndex];
+                        if (currentSequencePosition < nBlockKey && currentSequencePosition < maskBlockKey)
+                        {
+                            nextBlock = maskBlockKey < nBlockKey ? maskBlockKey : nBlockKey;
+                            subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1,
+                                _genomeAccessors[contigIndex], firstIndex));
+                        }
+                    }
+                    currentSequencePosition = nextBlock;
+                    firstIndex = (ushort)(nextBlock % NucsPerByte);
+                    //currentBytePosition = nextBlock / NucsPerByte;
+                }
+
+                var lastOne = subcontigs.LastOrDefault();
+                if (lastOne == null || lastOne.RegionInfo.End != dnaSize) // means that there's one more normal block left to make
+                    subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition + 1, dnaSize,
+                        _genomeAccessors[contigIndex], firstIndex));
+
+                return new TwoBitGenomeContig(contigName, dnaSize, subcontigs);
+            }
+
+            private uint GetBlockCountFromSequenceIndex(MemoryMappedViewAccessor tempViewer, uint start, out SortedList<uint, uint> blocks)
+            {
+                const uint uintByteCount = 4;
+                var blockCount = ReadUint(tempViewer, start);
+                var position = uintByteCount + start;
+                var capacity = blockCount > (uint)Int32.MaxValue ? Int32.MaxValue : (int)blockCount;
+                var blockStarts = new List<uint>(capacity); // not sure if this will break if uint > Int32.MaxValue
+                for (var i = 0; i < blockCount; i++)
+                {
+                    blockStarts.Add(ReadUint(tempViewer, position));
+                    position += uintByteCount;
+                }
+                blocks = new SortedList<uint, uint>(capacity);
+                for (var i = 0; i < blockCount; i++)
+                {
+                    blocks.Add(blockStarts[i], ReadUint(tempViewer, position));
+                    position += uintByteCount;
+                }
+                return position;
+            }
+
+            private ITwoBitGenomeSubcontig GenerateNewSubcontig(string name, uint start, uint end,
+                MemoryMappedViewAccessor mmva = null, ushort nucsToLeft = 0, bool isMaskedContig = false)
+            {
+                var region = new ContigRegion(start, end);
+                var newName = string.Format("{0}:{1}-{2}", name, start, end);
+                if (mmva == null) return new NSubcontig(newName, region);
+                //var numBytes = (uint)Math.Ceiling(end / (decimal)NucsPerByte) - currentBytePosition;
+                return isMaskedContig
+                    ? new MaskedSubcontig(newName, region, nucsToLeft, mmva)
+                    : new NormalSubcontig(newName, region, nucsToLeft, mmva);
+            }
         }
 
         public bool IsZeroBasedCoordinates { get { return true; } }
@@ -255,8 +349,6 @@ namespace rere_fencer.Input
         private string _twoBitFile;
         private readonly uint _reserved;
         public uint Reserved { get { return _reserved; }}
-        private readonly uint[] _contigReserved;
-        public uint[] ContigReserved { get { return _contigReserved; } }
         private string _fileError { get { return _twoBitFile ?? _genomeFile.ToString(); } }
         private const uint ForwardSignature = 0x1A412743;
         private const uint ReverseSignature = 0x4327411A;
@@ -311,7 +403,6 @@ namespace rere_fencer.Input
                     ReadVersion(br);
                     unchecked { numSequences = (int) ReadUint(br); }
                     _contigs = new IGenomeContig[numSequences];
-                    _contigReserved = new uint[numSequences];
                     _genomeAccessors = new MemoryMappedViewAccessor[numSequences];
                     _reserved = ReadUint(br);
                     if (_reserved != 0)
@@ -319,12 +410,13 @@ namespace rere_fencer.Input
                     contigInfos = new Tuple<string, uint>[numSequences];
                     for (var i = 0; i < numSequences; i++)
                         contigInfos[i] = ReadSequenceIndex(br);
-                    Array.Reverse(contigInfos);
                 }
             }
             _genomeFile = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
             for (var i = 0; i < numSequences; i++)
-                _contigs[i] = GetSequenceContent(contigInfos[i].Item1, contigInfos[i].Item2, i == numSequences - 1 ? 0 : contigInfos[i + 1].Item2, i);
+                _contigs[i] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2, i == numSequences - 1 ? 0 : contigInfos[i + 1].Item2);
+                    //GetSequenceContent(contigInfos[i].Item1, contigInfos[i].Item2, i == numSequences - 1 ? 0 : contigInfos[i + 1].Item2, i);
+            Array.Reverse(_contigs);
         }
 
         private bool ReadSignature(BinaryReader br)
@@ -372,95 +464,6 @@ namespace rere_fencer.Input
             return Tuple.Create(new string(name), ReadUint(br));
         }
 
-        private IGenomeContig GetSequenceContent(string contigName, uint memoryOffset, uint nextContigOffset, int contigIndex)
-        {
-            var start = 4U;
-            SortedList<uint, uint> nBlocks, maskBlocks;
-            uint dnaSize;
-            using (var tempViewer = _genomeFile.CreateViewAccessor(memoryOffset, 0, MemoryMappedFileAccess.Read))
-            {
-                dnaSize = ReadUint(tempViewer);
-                start = GetBlockCountFromSequenceIndex(tempViewer, start, out nBlocks);
-                start = GetBlockCountFromSequenceIndex(tempViewer, start, out maskBlocks);
-                _contigReserved[contigIndex] = ReadUint(tempViewer, start);
-                start += 4;
-            }
-
-            var subcontigs = new List<ITwoBitGenomeSubcontig>(2 * (nBlocks.Count + maskBlocks.Count + 1));
-            var byteOffset = start + memoryOffset;
-            _genomeAccessors[contigIndex] = _genomeFile.CreateViewAccessor(byteOffset, nextContigOffset, MemoryMappedFileAccess.Read);
-            ushort firstIndex = 0;
-            uint nextBlock = 0, currentSequencePosition = 0;
-            for (int currentNIndex = 0, currentMaskIndex = 0; currentNIndex < nBlocks.Count || currentMaskIndex < maskBlocks.Count; )
-            {
-                if (currentNIndex < nBlocks.Count && currentSequencePosition == nBlocks.Keys[currentNIndex])
-                {
-                    nextBlock = currentSequencePosition + nBlocks.Values[currentNIndex++];
-                    subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1));
-                }
-                else if (currentMaskIndex < maskBlocks.Count && currentSequencePosition == maskBlocks.Keys[currentMaskIndex])
-                {
-                    nextBlock = currentSequencePosition + maskBlocks.Values[currentMaskIndex++];
-                    subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1,
-                        _genomeAccessors[contigIndex], firstIndex, true));
-                }
-                else
-                {
-                    var nBlockKey = currentNIndex == nBlocks.Count ? dnaSize - 1 : nBlocks.Keys[currentNIndex];
-                    var maskBlockKey = currentMaskIndex == maskBlocks.Count ? dnaSize - 1 : maskBlocks.Keys[currentMaskIndex];
-                    if (currentSequencePosition < nBlockKey && currentSequencePosition < maskBlockKey)
-                    {
-                        nextBlock = maskBlockKey < nBlockKey ? maskBlockKey : nBlockKey;
-                        subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1,
-                            _genomeAccessors[contigIndex], firstIndex));
-                    }
-                }
-                currentSequencePosition = nextBlock;
-                firstIndex = (ushort)(nextBlock % NucsPerByte);
-                //currentBytePosition = nextBlock / NucsPerByte;
-            }
-
-            var lastOne = subcontigs.LastOrDefault();
-            if (lastOne == null || lastOne.RegionInfo.End != dnaSize) // means that there's one more normal block left to make
-                subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition + 1, dnaSize,
-                    _genomeAccessors[contigIndex], firstIndex));
-
-            return new TwoBitGenomeContig(contigName, dnaSize, subcontigs);
-        }
-
-        private uint GetBlockCountFromSequenceIndex(MemoryMappedViewAccessor tempViewer, uint start, out SortedList<uint, uint> blocks)
-        {
-            const uint uintByteCount = 4;
-            var blockCount = ReadUint(tempViewer, start);
-            var position = uintByteCount + start;
-            var capacity = blockCount > (uint)Int32.MaxValue ? Int32.MaxValue : (int)blockCount;
-            var blockStarts = new List<uint>(capacity); // not sure if this will break if uint > Int32.MaxValue
-            for (var i = 0; i < blockCount; i++)
-            {
-                blockStarts.Add(ReadUint(tempViewer, position));
-                position += uintByteCount;
-            }
-            blocks = new SortedList<uint, uint>(capacity);
-            for (var i = 0; i < blockCount; i++)
-            {
-                blocks.Add(blockStarts[i], ReadUint(tempViewer, position));
-                position += uintByteCount;
-            }
-            return position;
-        }
-
-        private ITwoBitGenomeSubcontig GenerateNewSubcontig(string name, uint start, uint end,
-            MemoryMappedViewAccessor mmva = null, ushort nucsToLeft = 0, bool isMaskedContig = false)
-        {
-            var region = new ContigRegion(start, end);
-            var newName = string.Format("{0}:{1}-{2}", name, start, end);
-            if (mmva == null) return new NSubcontig(newName, region);
-            //var numBytes = (uint)Math.Ceiling(end / (decimal)NucsPerByte) - currentBytePosition;
-            return isMaskedContig
-                ? new MaskedSubcontig(newName, region, nucsToLeft, mmva)
-                : new NormalSubcontig(newName, region, nucsToLeft, mmva);
-        }
-
         private byte[] ReadNBytes(BinaryReader br, uint n)
         {
             var byteArray = new byte[n];
@@ -470,7 +473,7 @@ namespace rere_fencer.Input
             return byteArray;
         }
 
-        private byte[] ReadNBytes(MemoryMappedViewAccessor mmva, uint n, uint start = 0)
+        private static byte[] ReadNBytes(MemoryMappedViewAccessor mmva, uint n, uint start = 0)
         {
             var byteArray = new byte[n];
             for (var i = 0; i < n; i++)
@@ -484,7 +487,7 @@ namespace rere_fencer.Input
             return readLiteral ? br.ReadUInt32() : BitConverter.ToUInt32(ReadNBytes(br, 4), 0);
         }
 
-        private uint ReadUint(MemoryMappedViewAccessor mmva, uint start = 0)
+        internal static uint ReadUint(MemoryMappedViewAccessor mmva, uint start = 0)
         {
             return BitConverter.ToUInt32(ReadNBytes(mmva, 4, start), 0);
         }
