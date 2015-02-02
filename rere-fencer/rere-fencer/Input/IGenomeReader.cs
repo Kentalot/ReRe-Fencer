@@ -21,7 +21,7 @@ namespace rere_fencer.Input
         uint Length { get; }
         bool ContainsNs { get; }
         bool ContainsMaskedSequences { get; }
-        string GetSequence(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
+        IEnumerable<char> GetSequence(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
         char GetNucleotideAt(uint position);
         IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
         IEnumerable<IContigRegion> MaskedRegions { get; }
