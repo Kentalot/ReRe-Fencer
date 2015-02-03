@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -23,8 +24,18 @@ namespace rere_fencer
             InitializeOptionSet();
             _optionSet.Parse(args);
             ValidateOptions();
+            var sw = new Stopwatch();
+            sw.Start();
             using (var genomeReader = new TwoBitGenomeReader(GenomeFilePath.FullName))
+            {
+                sw.Stop();
+                Console.WriteLine(sw.Elapsed);
+                sw.Reset();
+                sw.Start();
                 new Rere_fencerLauncher(genomeReader, new VCFReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter()).Launch();
+                sw.Stop();
+                Console.WriteLine(sw.Elapsed);
+            }
         }
 
         private static void ValidateOptions()

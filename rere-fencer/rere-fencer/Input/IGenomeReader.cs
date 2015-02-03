@@ -23,7 +23,6 @@ namespace rere_fencer.Input
         bool ContainsMaskedSequences { get; }
         IEnumerable<char> GetSequence(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
         char GetNucleotideAt(uint position);
-        IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
         IEnumerable<IContigRegion> MaskedRegions { get; }
         IEnumerable<IContigRegion> NRegions { get; }
         IEnumerable<IContigRegion> NormalRegions { get; }

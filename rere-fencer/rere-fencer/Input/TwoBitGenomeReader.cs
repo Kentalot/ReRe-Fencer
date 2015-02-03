@@ -17,7 +17,7 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
-        private class TwoBitGenomeContig : IGenomeContig
+        private class TwoBitGenomeContig : IGenomeContig, IDisposable
         {
             public string Name { get; private set; }
             public uint Length { get; private set; }
@@ -28,9 +28,11 @@ namespace rere_fencer.Input
                 { get { return _nBlockStarts.Zip(_nBlockEnds, (x, y) => new ContigRegion(x, y)); } }
             public IEnumerable<IContigRegion> MaskedRegions
             { get { return _maskBlockStarts.Zip(_maskBlockEnds, (x, y) => new ContigRegion(x, y)); } }
+
+            private IList<IContigRegion> _normalRegions; 
             public IEnumerable<IContigRegion> NormalRegions
             { 
-                get { return null; } 
+                get { return GetNormalRegions(); } 
             }
 
             //private readonly List<ITwoBitGenomeSubcontig> _subcontigs;
@@ -69,90 +71,86 @@ namespace rere_fencer.Input
             public IEnumerable<char> GetSequence(uint start, uint end,
                 bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
             {
-                if (start < 1 || end > Length) throw new OutOfContigRangeException(Name, start, end,
+                if (end >= Length) throw new OutOfContigRangeException(Name, start, end,
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 if (end < start) throw new ArgumentException("Sequence end was less than start, what's up with that?");
                 var length = end - start + 1;
                 uint charPosition = 0, bytePosition = start/NucsPerByte;
                 var leftStartIndex = start % NucsPerByte;
                 var numBytes = (int) Math.Ceiling((length + leftStartIndex)/(decimal)NucsPerByte);
-                var overlappingNBlocks = skipNs ? new List<int>() : GetAllOverlappingBlocks(start, end, true);
-                var overlappingMaskBlocks = ignoreMasks ? new List<int>() : GetAllOverlappingBlocks(start, end, false);
-                if (!overlappingNBlocks.Any()) skipNs = true;
-                if (!overlappingMaskBlocks.Any()) ignoreMasks = true;
-                int nIndex = 0, maskIndex = 0;
+                var overlappingNRange = GetOverlappingBlocksRange(start, end, true);
+                var overlappingMaskRange = ignoreMasks ? null : GetOverlappingBlocksRange(start, end, false);
+                bool noMoreNs = false, noMoreMasks = false;
+                int nIndex, maskIndex;
+                if (overlappingNRange == null)
+                {
+                    noMoreNs = true;
+                    nIndex = -1;
+                }
+                else nIndex = overlappingNRange.Item1;
+                if (overlappingMaskRange == null)
+                {
+                    noMoreMasks = true;
+                    maskIndex = -1;
+                }
+                else maskIndex = overlappingMaskRange.Item1;
                 var position = start;
-                var inNBlock = !skipNs &&
-                               IsOverlapping(position, overlappingNBlocks, _nBlockStarts, _nBlockEnds, nIndex);
-                var inMaskBlock = !ignoreMasks &&
-                                  IsOverlapping(position, overlappingMaskBlocks, _maskBlockStarts, _maskBlockEnds, maskIndex);
+                var inNBlock = IsOverlapping(position, _nBlockStarts, _nBlockEnds, nIndex);
+                var inMaskBlock = IsOverlapping(position, _maskBlockStarts, _maskBlockEnds, maskIndex);
                 for (var j = 0; j < numBytes; j++)
                 {
                     var tetNuc = ByteToTetraNucleotide(_contigAccessor.ReadByte(bytePosition));
                     for (var i = j == 0 ? (int) leftStartIndex : 0; i < NucsPerByte; i++)
                     {
-                        if (inNBlock)
+                        if (!noMoreNs && inNBlock)
                         {
-                            yield return 'N';
-                            charPosition++;
+                            if (!skipNs) yield return 'N';
+                            if (++charPosition == length) yield break;
                             position++;
-                            if (charPosition == length) yield break;
-                            inNBlock = IsOverlapping(position, overlappingNBlocks, _nBlockStarts, _nBlockEnds, nIndex);
+                            inNBlock = IsOverlapping(position, _nBlockStarts, _nBlockEnds, nIndex);
                             if (inNBlock) continue;
-                            if (++nIndex == overlappingNBlocks.Count)
-                                skipNs = true; // already at the end of the nBlocks.
-                            else
-                                inNBlock = IsOverlapping(position, overlappingNBlocks, _nBlockStarts, _nBlockEnds, nIndex);
+                            if (++nIndex == overlappingNRange.Item2 + 1) noMoreNs = true; // already at the end of the nBlocks
+                            else inNBlock = IsOverlapping(position, _nBlockStarts, _nBlockEnds, nIndex);
                         }
-                        else if (inMaskBlock)
+                        else if (!noMoreMasks && inMaskBlock)
                         {
-                            yield return char.ToLower(tetNuc[i], CultureInfo.CurrentCulture);
-                            charPosition++;
+                            if (!skipMasks) yield return char.ToLower(tetNuc[i], CultureInfo.CurrentCulture);
+                            if (++charPosition == length) yield break;
                             position++;
-                            if (charPosition == length) yield break;
-                            inMaskBlock = IsOverlapping(position, overlappingMaskBlocks, _maskBlockStarts, _maskBlockEnds, maskIndex);
+                            inMaskBlock = IsOverlapping(position, _maskBlockStarts, _maskBlockEnds, maskIndex);
                             if (inMaskBlock) continue;
-                            if (++maskIndex == overlappingMaskBlocks.Count) ignoreMasks = true;
-                            else
-                                inMaskBlock =
-                                  IsOverlapping(position, overlappingMaskBlocks, _maskBlockStarts, _maskBlockEnds, maskIndex);
+                            if (++maskIndex == overlappingMaskRange.Item2 + 1) noMoreMasks = true; // already at the end of maskBlocks
+                            else inMaskBlock = IsOverlapping(position, _maskBlockStarts, _maskBlockEnds, maskIndex);
                         }
                         else
                         {
                             yield return tetNuc[i];
-                            charPosition++;
+                            if (++charPosition == length) yield break;
                             position++;
-                            if (charPosition == length) yield break;
-                            if (!ignoreMasks)
-                                inMaskBlock =
-                                  IsOverlapping(position, overlappingMaskBlocks, _maskBlockStarts, _maskBlockEnds, maskIndex);
-                            if (!skipNs && !inMaskBlock)
-                                inNBlock = IsOverlapping(position, overlappingNBlocks, _nBlockStarts, _nBlockEnds, nIndex);
+                            if (!noMoreNs) inNBlock = IsOverlapping(position, _nBlockStarts, _nBlockEnds, nIndex);
+                            else if (!noMoreMasks) inMaskBlock = IsOverlapping(position, _maskBlockStarts, _maskBlockEnds, maskIndex); 
                         }
                     }
                     bytePosition++;
                 }
             }
 
-            private bool IsOverlapping(uint position, IList<int> overlappingBlocks, uint[] blockStarts, uint[] blockEnds, int index)
+            private bool IsOverlapping(uint position, uint[] blockStarts, uint[] blockEnds, int index)
             {
-                return position >= blockStarts[overlappingBlocks[index]] && position <= blockEnds[overlappingBlocks[index]];
+                return index >= 0 && position >= blockStarts[index] && position <= blockEnds[index];
             }
 
-            private IList<int> GetAllOverlappingBlocks(uint start, uint end, bool searchNs)
+            private Tuple<int, int> GetOverlappingBlocksRange(uint start, uint end, bool searchNs)
             {
                 var starts = searchNs ? _nBlockStarts : _maskBlockStarts;
                 var ends = searchNs ? _nBlockEnds : _maskBlockEnds;
-                var tempList = new List<int>();
-                if (!starts.Any()) return tempList;
+                if (!starts.Any()) return null;
                 var firstPossibleOverlap = BinarySearchForFirstOverlappingBlock(starts, ends, start, 0, starts.Length);
-                if (firstPossibleOverlap < 0 || end < ends[firstPossibleOverlap]) // no overlaps possible.
-                    return tempList;
+                if (firstPossibleOverlap < 0 || end < starts[firstPossibleOverlap]) // no overlaps possible.
+                    return null;
                 var lastPossibleOverlap = BinarySearchForLastOverlappingBlock(starts, ends, end, firstPossibleOverlap, starts.Length);
-                if (lastPossibleOverlap < 0) return new List<int>{firstPossibleOverlap};
-                for (var i = firstPossibleOverlap; i <= lastPossibleOverlap; i++)
-                    tempList.Add(i);
-                return tempList;
+                if (lastPossibleOverlap < 0) return Tuple.Create(firstPossibleOverlap, firstPossibleOverlap);
+                return Tuple.Create(firstPossibleOverlap, lastPossibleOverlap);
             }
 
             private int BinarySearchForLastOverlappingBlock(uint[] starts, uint[] ends, uint position, int begin, int end)
@@ -209,27 +207,67 @@ namespace rere_fencer.Input
                 return GetSequence(position, position).First();
             }
 
-            public IEnumerable<char> GetNucleotides(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
-            {
-                return GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
-            }
-
             private uint GetBlockStartsAndEnds(MemoryMappedViewAccessor tempViewer, uint start, uint[] blockStarts, uint[] blockEnds)
             {
                 const uint uintByteCount = 4;
                 var blockCount = blockStarts.Length;
-                 // not sure if this will break if uint > Int32.MaxValue
-                for (var i = 0; i < blockCount; i++)
+                
+                Parallel.For(0, blockCount, i =>
                 {
-                    blockStarts[i] = ReadUint(tempViewer, start);
-                    start += uintByteCount;
-                }
-                for (var i = 0; i < blockCount; i++)
+                    blockStarts[i] = ReadUint(tempViewer, (uint) (i*uintByteCount + start));
+                    blockEnds[i] = blockStarts[i] + ReadUint(tempViewer, (uint) (i*uintByteCount + blockCount*uintByteCount + start)) - 1;
+                });
+
+                return (uint) (start + blockCount*uintByteCount*2);
+            }
+
+            private IEnumerable<IContigRegion> GetNormalRegions()
+            {
+                if (_normalRegions == null)
                 {
-                    blockEnds[i] = blockStarts[i] + ReadUint(tempViewer, start) - 1;
-                    start += uintByteCount;
+                    _normalRegions = new List<IContigRegion>();
+                    uint nextBlock = 0, currentSequencePosition = 0;
+                    for (int currentNIndex = 0, currentMaskIndex = 0;
+                        currentNIndex < _nBlockStarts.Length || currentMaskIndex < _maskBlockStarts.Length; )
+                    {
+                        if (currentNIndex < _nBlockStarts.Length &&
+                            currentSequencePosition == _nBlockStarts[currentNIndex])
+                        {
+                            nextBlock = _nBlockEnds[currentNIndex++];
+                        }
+                        else if (currentMaskIndex < _maskBlockStarts.Length &&
+                                 currentSequencePosition == _maskBlockStarts[currentMaskIndex])
+                        {
+                            nextBlock = _maskBlockEnds[currentMaskIndex++];
+                        }
+                        else
+                        {
+                            var nBlockKey = currentNIndex == _nBlockStarts.Length
+                                ? Length - 1
+                                : _nBlockStarts[currentNIndex];
+                            var maskBlockKey = currentMaskIndex == _maskBlockStarts.Length
+                                ? Length - 1
+                                : _maskBlockStarts[currentMaskIndex];
+                            if (currentSequencePosition < nBlockKey && currentSequencePosition < maskBlockKey)
+                            {
+                                nextBlock = maskBlockKey < nBlockKey ? maskBlockKey : nBlockKey;
+                                _normalRegions.Add(new ContigRegion(currentSequencePosition, nextBlock - 1));
+                            }
+                        }
+                        currentSequencePosition = nextBlock;
+                    }
+
+                    var lastOne = _normalRegions.LastOrDefault();
+                    if (lastOne == null || lastOne.End != Length - 1)
+                        // means that there's one more normal block left to make
+                        _normalRegions.Add(new ContigRegion(currentSequencePosition, Length - 1));
                 }
-                return start;
+                return _normalRegions;
+            }
+            
+            public void Dispose()
+            {
+                _contigAccessor.Dispose();
             }
         }
 
@@ -242,7 +280,6 @@ namespace rere_fencer.Input
         public IReadOnlyList<IGenomeContig> Contigs { get { return Array.AsReadOnly(_contigs); } }
 
         private static MemoryMappedFile _genomeFile;
-        private static MemoryMappedViewAccessor[] _genomeAccessors;
         private readonly bool _reverse = false;
         private string _twoBitFile;
         private readonly uint _reserved;
@@ -255,36 +292,12 @@ namespace rere_fencer.Input
         private const int maxByte = byte.MaxValue + 1;
         private static readonly byte[] EndiannessIndexedByteArray = new byte[maxByte];
         private static readonly Dictionary<byte, string> ByteToTetraNucleotideMap = new Dictionary<byte, string>(maxByte); 
-        private static readonly Dictionary<byte, string> ByteToMaskedTetraNucleotideMap = new Dictionary<byte, string>(maxByte); 
-        
-        //private static char[] bit_chars = {'T', 'C', 'A', 'G'};
 
         public const uint NucsPerByte = 4;
-        /*public enum TetraNucleotide : byte
-        {
-            TTTT = 0x00, TTTC, TTTA, TTTG, TTCT, TTCC, TTCA, TTCG, TTAT, TTAC, TTAA, TTAG, TTGT, TTGC, TTGA, TTGG,
-            TCTT, TCTC, TCTA, TCTG, TCCT, TCCC, TCCA, TCCG, TCAT, TCAC, TCAA, TCAG, TCGT, TCGC, TCGA, TCGG,
-            TATT, TATC, TATA, TATG, TACT, TACC, TACA, TACG, TAAT, TAAC, TAAA, TAAG, TAGT, TAGC, TAGA, TAGG,
-            TGTT, TGTC, TGTA, TGTG, TGCT, TGCC, TGCA, TGCG, TGAT, TGAC, TGAA, TGAG, TGGT, TGGC, TGGA, TGGG,
-            CTTT, CTTC, CTTA, CTTG, CTCT, CTCC, CTCA, CTCG, CTAT, CTAC, CTAA, CTAG, CTGT, CTGC, CTGA, CTGG,
-            CCTT, CCTC, CCTA, CCTG, CCCT, CCCC, CCCA, CCCG, CCAT, CCAC, CCAA, CCAG, CCGT, CCGC, CCGA, CCGG,
-            CATT, CATC, CATA, CATG, CACT, CACC, CACA, CACG, CAAT, CAAC, CAAA, CAAG, CAGT, CAGC, CAGA, CAGG,
-            CGTT, CGTC, CGTA, CGTG, CGCT, CGCC, CGCA, CGCG, CGAT, CGAC, CGAA, CGAG, CGGT, CGGC, CGGA, CGGG,
-            ATTT, ATTC, ATTA, ATTG, ATCT, ATCC, ATCA, ATCG, ATAT, ATAC, ATAA, ATAG, ATGT, ATGC, ATGA, ATGG,
-            ACTT, ACTC, ACTA, ACTG, ACCT, ACCC, ACCA, ACCG, ACAT, ACAC, ACAA, ACAG, ACGT, ACGC, ACGA, ACGG,
-            AATT, AATC, AATA, AATG, AACT, AACC, AACA, AACG, AAAT, AAAC, AAAA, AAAG, AAGT, AAGC, AAGA, AAGG,
-            AGTT, AGTC, AGTA, AGTG, AGCT, AGCC, AGCA, AGCG, AGAT, AGAC, AGAA, AGAG, AGGT, AGGC, AGGA, AGGG,
-            GTTT, GTTC, GTTA, GTTG, GTCT, GTCC, GTCA, GTCG, GTAT, GTAC, GTAA, GTAG, GTGT, GTGC, GTGA, GTGG,
-            GCTT, GCTC, GCTA, GCTG, GCCT, GCCC, GCCA, GCCG, GCAT, GCAC, GCAA, GCAG, GCGT, GCGC, GCGA, GCGG,
-            GATT, GATC, GATA, GATG, GACT, GACC, GACA, GACG, GAAT, GAAC, GAAA, GAAG, GAGT, GAGC, GAGA, GAGG,
-            GGTT, GGTC, GGTA, GGTG, GGCT, GGCC, GGCA, GGCG, GGAT, GGAC, GGAA, GGAG, GGGT, GGGC, GGGA, GGGG
-        }*/
         
-        internal static string ByteToTetraNucleotide(byte value, bool masked = false)
+        internal static string ByteToTetraNucleotide(byte value)
         {
-            return masked
-                ? ByteToMaskedTetraNucleotideMap[EndiannessIndexedByteArray[value]]
-                : ByteToTetraNucleotideMap[EndiannessIndexedByteArray[value]];
+            return ByteToTetraNucleotideMap[EndiannessIndexedByteArray[value]];
         }
 
         public TwoBitGenomeReader(FileInfo file) : this(file.FullName) { }
@@ -301,7 +314,6 @@ namespace rere_fencer.Input
                     ReadVersion(br);
                     unchecked { numSequences = (int) ReadUint(br); }
                     _contigs = new IGenomeContig[numSequences];
-                    _genomeAccessors = new MemoryMappedViewAccessor[numSequences];
                     _reserved = ReadUint(br);
                     if (_reserved != 0)
                         throw new InvalidTwoBitFileException(_fileError, "Reserved is something other than 0: " + _reserved);
@@ -339,13 +351,6 @@ namespace rere_fencer.Input
                             EndiannessIndexedByteArray[i] = reverse ? ReverseByte(i) : i;
                             ByteToTetraNucleotideMap[i++] = new string(new[] { c, d, e, f });
                         }
-            temparray = new[] { 't', 'c', 'a', 'g' };
-            i = 0;
-            foreach (var c in temparray)
-                foreach (var d in temparray)
-                    foreach (var e in temparray)
-                        foreach (var f in temparray)
-                            ByteToMaskedTetraNucleotideMap[i++] = new string(new[] { c, d, e, f });
             return reverse;
         }
 
@@ -403,8 +408,8 @@ namespace rere_fencer.Input
 
         public void Dispose()
         {
-            foreach (var mmva in _genomeAccessors)
-                if (mmva != null) mmva.Dispose();
+            foreach (var contig in _contigs)
+                ((TwoBitGenomeContig) contig).Dispose();
             _genomeFile.Dispose();
         }
 
