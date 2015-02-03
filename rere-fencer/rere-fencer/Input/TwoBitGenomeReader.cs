@@ -299,18 +299,17 @@ namespace rere_fencer.Input
         public IReadOnlyList<IGenomeContig> Contigs { get { return Array.AsReadOnly(_contigs); } }
 
         private static MemoryMappedFile _genomeFile;
-        private readonly bool _reverse = false;
-        private string _twoBitFile;
+        private readonly string _twoBitFile;
         private readonly uint _reserved;
         public uint Reserved { get { return _reserved; }}
-        private string _fileError { get { return _twoBitFile ?? _genomeFile.ToString(); } }
+        private string FileError { get { return _twoBitFile ?? _genomeFile.ToString(); } }
         private const uint ForwardSignature = 0x1A412743;
         private const uint ReverseSignature = 0x4327411A;
         private const uint TwoBitVersion = 0;
 
-        private const int maxByte = byte.MaxValue + 1;
-        private static readonly byte[] EndiannessIndexedByteArray = new byte[maxByte];
-        private static readonly Dictionary<byte, string> ByteToTetraNucleotideMap = new Dictionary<byte, string>(maxByte); 
+        private const int MaxByte = byte.MaxValue + 1;
+        private static readonly byte[] EndiannessIndexedByteArray = new byte[MaxByte];
+        private static readonly Dictionary<byte, string> ByteToTetraNucleotideMap = new Dictionary<byte, string>(MaxByte); 
 
         public const uint NucsPerByte = 4;
         
@@ -325,47 +324,41 @@ namespace rere_fencer.Input
             _twoBitFile = file;
             int numSequences;
             Tuple<string, uint>[] contigInfos;
-            using (var stream = File.OpenRead(file))
-            {
-                using (var br = new BinaryReader(stream))
-                {
-                    ReadSignature(br);
-                    ReadVersion(br);
-                    unchecked { numSequences = (int) ReadUint(br); }
-                    _contigs = new IGenomeContig[numSequences];
-                    _reserved = ReadUint(br);
-                    if (_reserved != 0)
-                        throw new InvalidTwoBitFileException(_fileError, "Reserved is something other than 0: " + _reserved);
-                    contigInfos = new Tuple<string, uint>[numSequences];
-                    for (var i = 0; i < numSequences; i++)
-                        contigInfos[i] = ReadSequenceIndex(br);
-                }
-            }
             _genomeFile = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
-            /*for (var i = 0; i < numSequences; i++)
-                _contigs[i] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2,
-                    i == numSequences - 1 
-                        ? 0 // means end of file.
-                        : (uint) Math.Abs((long) contigInfos[i + 1].Item2 - (contigInfos[i].Item2)));*/
+            var bytePosition = 4U;
+            using (var br = _genomeFile.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Read))
+            {
+                ReadSignature(br);
+                ReadVersion(br, bytePosition);
+                bytePosition += 4;
+                unchecked { numSequences = (int)ReadUint(br, bytePosition); }
+                bytePosition += 4;
+                _contigs = new IGenomeContig[numSequences];
+                _reserved = ReadUint(br, bytePosition);
+                bytePosition += 4;
+                if (_reserved != 0)
+                    throw new InvalidTwoBitFileException(FileError, "Reserved is something other than 0: " + _reserved);
+                contigInfos = new Tuple<string, uint>[numSequences];
+                for (var i = 0; i < numSequences; i++)
+                    contigInfos[i] = ReadSequenceIndex(br, bytePosition, out bytePosition);
+            }
             Parallel.For(0, numSequences, i =>
             {
                 _contigs[i] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2,
                     i == numSequences - 1
                         ? 0 // means end of file.
-                        : (uint) Math.Abs((long) contigInfos[i + 1].Item2 - (contigInfos[i].Item2)));
+                        : (uint)Math.Abs((long)contigInfos[i + 1].Item2 - (contigInfos[i].Item2)));
             });
             Array.Reverse(_contigs); // turns out the order is always reverse.
         }
 
-        private bool ReadSignature(BinaryReader br)
+        private bool ReadSignature(MemoryMappedViewAccessor mmva)
         {
-            var signature = ReadUint(br, true); // only time it will need to be read literally.
+            var signature = ReadUintLiteral(mmva); // only time it will need to be read literally.
             bool reverse = false;
             if (signature == ForwardSignature) reverse = true;
-            else if (signature != ReverseSignature) 
-                throw new InvalidTwoBitFileException(_fileError, "Invalid Signature found: " + signature);
-            //for (byte i = 0; i < EndiannessIndexedByteArray.Length; i++)
-            //    EndiannessIndexedByteArray[i] = reverse ? ReverseByte(i) : i;
+            else if (signature != ReverseSignature)
+                throw new InvalidTwoBitFileException(FileError, "Invalid Signature found: " + signature);
             byte i = 0;
             var temparray = new[] { 'T', 'C', 'A', 'G' };
             foreach (var c in temparray)
@@ -379,29 +372,26 @@ namespace rere_fencer.Input
             return reverse;
         }
 
-        private void ReadVersion(BinaryReader br)
+        private void ReadVersion(MemoryMappedViewAccessor mmva, uint bytePosition)
         {
-            var version = ReadUint(br);
-            if (version != TwoBitVersion) 
-                throw new InvalidTwoBitFileException(_fileError, "Version is something other than 0: " + version);
+            var version = ReadUint(mmva, bytePosition);
+            if (version != TwoBitVersion)
+                throw new InvalidTwoBitFileException(FileError, "Version is something other than 0: " + version);
         }
 
-        private Tuple<string, uint> ReadSequenceIndex(BinaryReader br)
+        private Tuple<string, uint> ReadSequenceIndex(MemoryMappedViewAccessor mmva, uint start, out uint bytePosition)
         {
-            var nameSize = ReadNBytes(br, 1)[0];
+            var nameSize = ReadNBytes(mmva, 1, start)[0];
+            bytePosition = start + 1;
             var name = new char[nameSize];
             for (var i = 0; i < nameSize; i++)
-                name[i] = (char)ReadNBytes(br, 1)[0];
-            return Tuple.Create(new string(name), ReadUint(br));
-        }
-
-        private byte[] ReadNBytes(BinaryReader br, uint n)
-        {
-            var byteArray = new byte[n];
-            for (var i = 0; i < n; i ++)
-                byteArray[i] = EndiannessIndexedByteArray[br.ReadByte()];
-            if (BitConverter.IsLittleEndian) Array.Reverse(byteArray);
-            return byteArray;
+            {
+                name[i] = (char)ReadNBytes(mmva, 1, bytePosition)[0];
+                bytePosition++;
+            }
+            start = bytePosition;
+            bytePosition += 4;
+            return Tuple.Create(new string(name), ReadUint(mmva, start));
         }
 
         private static byte[] ReadNBytes(MemoryMappedViewAccessor mmva, uint n, uint start = 0)
@@ -409,34 +399,30 @@ namespace rere_fencer.Input
             var byteArray = new byte[n];
             for (var i = 0; i < n; i++)
                 byteArray[i] = EndiannessIndexedByteArray[mmva.ReadByte(start + i)];
-            if (BitConverter.IsLittleEndian) Array.Reverse(byteArray);
+            if (byteArray.Length > 1 && BitConverter.IsLittleEndian) Array.Reverse(byteArray);
             return byteArray;
         }
 
-        private uint ReadUint(BinaryReader br, bool readLiteral = false)
-        {
-            return readLiteral ? br.ReadUInt32() : BitConverter.ToUInt32(ReadNBytes(br, 4), 0);
-        }
+        private uint ReadUintLiteral(MemoryMappedViewAccessor mmva) { return mmva.ReadUInt32(0); }
 
         internal static uint ReadUint(MemoryMappedViewAccessor mmva, uint start = 0)
         {
             return BitConverter.ToUInt32(ReadNBytes(mmva, 4, start), 0);
         }
 
-        internal static byte ReverseByte(byte b)
+        private byte ReverseByte(byte b)
         {
             int rev = (b >> 4) | ((b & 0xf) << 4);
             rev = ((rev & 0xcc) >> 2) | ((rev & 0x33) << 2);
             rev = ((rev & 0xaa) >> 1) | ((rev & 0x55) << 1);
-            return (byte)rev; 
+            return (byte)rev;
         }
 
         public void Dispose()
         {
             foreach (var contig in _contigs)
-                ((TwoBitGenomeContig) contig).Dispose();
+                ((TwoBitGenomeContig)contig).Dispose();
             _genomeFile.Dispose();
         }
-
     }
 }
