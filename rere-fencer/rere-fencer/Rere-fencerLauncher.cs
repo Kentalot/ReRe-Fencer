@@ -29,13 +29,16 @@ namespace rere_fencer
 
         public void Launch()
         {
-            foreach (var contig in _genomeReader.Contigs)
+            foreach (var contig in _genomeReader.Contigs.Values)
                 try
                 {
                     Console.WriteLine("Chr " + contig.Name + " from " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
                                       new string(contig.GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End).ToArray()));
                 }
             catch (Exception E){ Console.Error.WriteLine(E.Message + "\n" + E.StackTrace);}
+            var contig2 = new Contig("chr17");
+            Console.WriteLine("Chr " + contig2.Name + " from " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
+                                      new string(_genomeReader.Contigs[contig2].GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End).ToArray()));
         }
     }
 }

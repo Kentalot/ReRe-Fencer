@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
@@ -20,7 +21,7 @@ namespace rere_fencer.Input
         private class TwoBitGenomeContig : IGenomeContig, IDisposable
         {
             public string Name { get; private set; }
-            public uint Length { get; private set; }
+            public uint? Length { get; private set; }
             public uint Reserved { get; private set; }
             public bool ContainsNs { get { return NRegions.Any(); } }
             public bool ContainsMaskedSequences { get { return MaskedRegions.Any(); } }
@@ -262,10 +263,10 @@ namespace rere_fencer.Input
                         else
                         {
                             var nBlockKey = currentNIndex == _nBlockStarts.Length
-                                ? Length - 1
+                                ? (uint) Length - 1
                                 : _nBlockStarts[currentNIndex];
                             var maskBlockKey = currentMaskIndex == _maskBlockStarts.Length
-                                ? Length - 1
+                                ? (uint)Length - 1
                                 : _maskBlockStarts[currentMaskIndex];
                             if (currentSequencePosition < nBlockKey && currentSequencePosition < maskBlockKey)
                             {
@@ -279,7 +280,7 @@ namespace rere_fencer.Input
                     var lastOne = _normalRegions.LastOrDefault();
                     if (lastOne == null || lastOne.End != Length - 1)
                         // means that there's one more normal block left to make
-                        _normalRegions.Add(new ContigRegion(currentSequencePosition, Length - 1));
+                        _normalRegions.Add(new ContigRegion(currentSequencePosition, (uint)Length - 1));
                 }
                 return _normalRegions;
             }
@@ -295,8 +296,12 @@ namespace rere_fencer.Input
         public bool SupportsNs { get { return true; } }
         public bool SupportsIupacAmbiguityCodes { get { return false; } }
 
-        private readonly IGenomeContig[] _contigs;
-        public IReadOnlyList<IGenomeContig> Contigs { get { return Array.AsReadOnly(_contigs); } }
+        private readonly IDictionary<IContig, IGenomeContig> _contigs;
+
+        public IReadOnlyDictionary<IContig, IGenomeContig> Contigs
+        {
+            get { return new ReadOnlyDictionary<IContig, IGenomeContig>(_contigs); }
+        }
 
         private static MemoryMappedFile _genomeFile;
         private readonly string _twoBitFile;
@@ -333,7 +338,7 @@ namespace rere_fencer.Input
                 bytePosition += 4;
                 unchecked { numSequences = (int)ReadUint(br, bytePosition); }
                 bytePosition += 4;
-                _contigs = new IGenomeContig[numSequences];
+                _contigs = new Dictionary<IContig, IGenomeContig>();
                 _reserved = ReadUint(br, bytePosition);
                 bytePosition += 4;
                 if (_reserved != 0)
@@ -344,12 +349,11 @@ namespace rere_fencer.Input
             }
             Parallel.For(0, numSequences, i =>
             {
-                _contigs[i] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2,
+                _contigs[new Contig(contigInfos[i].Item1)] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2,
                     i == numSequences - 1
                         ? 0 // means end of file.
                         : (uint)Math.Abs((long)contigInfos[i + 1].Item2 - (contigInfos[i].Item2)));
             });
-            Array.Reverse(_contigs); // turns out the order is always reverse.
         }
 
         private bool ReadSignature(MemoryMappedViewAccessor mmva)
@@ -420,7 +424,7 @@ namespace rere_fencer.Input
 
         public void Dispose()
         {
-            foreach (var contig in _contigs)
+            foreach (var contig in _contigs.Values)
                 ((TwoBitGenomeContig)contig).Dispose();
             _genomeFile.Dispose();
         }
