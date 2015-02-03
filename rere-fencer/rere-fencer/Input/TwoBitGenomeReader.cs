@@ -17,110 +17,6 @@ namespace rere_fencer.Input
 
     public class TwoBitGenomeReader : IGenomeReader, IDisposable
     {
-        private interface ITwoBitGenomeSubcontig
-        {
-            string Name { get; }
-            IContigRegion RegionInfo { get; }
-
-            IEnumerable<char> GetSequence(uint start, uint end, bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
-        }
-
-        private abstract class TwoBitGenomeSubcontig : ITwoBitGenomeSubcontig
-        {
-            public string Name { get; private set; }
-            public IContigRegion RegionInfo { get; private set; }
-
-            public TwoBitGenomeSubcontig(string name, IContigRegion region)
-            { 
-                Name = name; RegionInfo = region;
-            }
-
-            protected abstract IEnumerable<char> GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false);
-
-            public IEnumerable<char> GetSequence(uint start, uint end,
-                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
-            {
-                if (start < RegionInfo.Start || end > RegionInfo.End) throw new OutOfContigRangeException(Name, start, end, 
-                    string.Format("Inside {0}'s GetSequence method.", GetType().Name));
-                if (end < start) throw new ArgumentException("Sequence end was less than start, what's up with that?");
-                var length = end - start + 1;
-                return GetSubSequence(start, end, length, ignoreMasks, skipMasks, skipNs);
-            }
-        }
-
-        private class NormalSubcontig : TwoBitGenomeSubcontig
-        {
-            private readonly ushort _leftNucsToTrim; // these are partial bytes on the left that are trimmed before returning
-            private readonly MemoryMappedViewAccessor _sequenceAccessor;
-
-            public NormalSubcontig(string name, IContigRegion region, ushort leftNucsToTrim, 
-                MemoryMappedViewAccessor sequenceAccessor) 
-                : base (name, region)
-            {
-                _leftNucsToTrim = leftNucsToTrim;
-                _sequenceAccessor = sequenceAccessor;
-            }
-            
-            protected override IEnumerable<char> GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)//uint length, bool fromLeft)
-            {
-                var intLength = (int) length;
-                var returnChars = new char[intLength];
-                var bytePosition = start / NucsPerByte; // calculate the starting position to read from.
-                var leftSubStringIndex = (int)(start % NucsPerByte); // calculate the leftovers
-                //var lastByte = bytePosition + (uint) Math.Ceiling(paddedLength/(double)NucsPerByte);
-                var lastByte = (int) Math.Ceiling((end + (double)_leftNucsToTrim)/ NucsPerByte);
-
-                var charPosition = 0;
-                Console.WriteLine("Reading from {0} to {1} starting from BytePostion {2} and lastByte is {3}", start,
-                    end, bytePosition, lastByte);
-                var tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition++));
-                for (var i = leftSubStringIndex; i < NucsPerByte && charPosition < returnChars.Length; i++)
-                {
-                    yield return tetNuc[i];
-                    charPosition++;
-                }
-
-                for (; bytePosition <= lastByte; bytePosition++)
-                {
-                    tetNuc = ByteToTetraNucleotide(_sequenceAccessor.ReadByte(bytePosition));
-                    for (var i = 0; i < NucsPerByte && charPosition < returnChars.Length; i++)
-                        // charPos < returnChars.Length short circuits
-                    {
-                        yield return tetNuc[i];
-                        charPosition++;
-                    }
-                }
-            }
-        }
-
-        private class MaskedSubcontig : NormalSubcontig
-        {
-            public MaskedSubcontig(string name, IContigRegion region, ushort leftNucsToTrim, //ushort rightNucsToTrim, 
-                MemoryMappedViewAccessor sequenceAccessor)
-                : base(name, region, leftNucsToTrim, sequenceAccessor) { }
-
-            protected override IEnumerable<char> GetSubSequence(uint start, uint end, uint length, 
-                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
-            {
-                if (skipMasks) return String.Empty;
-                var tempstr = base.GetSubSequence(start, end, length, ignoreMasks, skipMasks, skipNs);
- 	            return ignoreMasks ? tempstr : tempstr.Select(c => char.ToLower(c, CultureInfo.CurrentCulture));
-            }
-        }
-
-        private class NSubcontig : TwoBitGenomeSubcontig
-        {
-            public NSubcontig(string name, IContigRegion region) : base(name, region) { }
-
-            protected override IEnumerable<char> GetSubSequence(uint start, uint end, uint length,
-                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
-            {
-                return skipNs ? "" : new string('N', (int)length);
-            }
-        }
-
         private class TwoBitGenomeContig : IGenomeContig
         {
             public string Name { get; private set; }
@@ -129,30 +25,43 @@ namespace rere_fencer.Input
             public bool ContainsNs { get { return NRegions.Any(); } }
             public bool ContainsMaskedSequences { get { return MaskedRegions.Any(); } }
             public IEnumerable<IContigRegion> NRegions 
-                { get { return _subcontigs.Where(s => s.GetType() == typeof(NSubcontig)).Select(s => s.RegionInfo); } }
+                { get { return _nBlockStarts.Zip(_nBlockEnds, (x, y) => new ContigRegion(x, y)); } }
             public IEnumerable<IContigRegion> MaskedRegions
-                { get { return _subcontigs.Where(s => s.GetType() == typeof(MaskedSubcontig)).Select(s => s.RegionInfo); } }
+            { get { return _maskBlockStarts.Zip(_maskBlockEnds, (x, y) => new ContigRegion(x, y)); } }
             public IEnumerable<IContigRegion> NormalRegions
             { 
-                get
-                {
-                    return _subcontigs.Where(s =>
-                    {
-                        var type = s.GetType();
-                        return type != typeof (NSubcontig) && type != typeof (MaskedSubcontig);
-                    }).Select(s => s.RegionInfo);
-                } 
+                get { return null; } 
             }
 
-            private readonly uint _offset;
-            private readonly uint _nextOffset; // offset of next contig.  Required to make MemoryMappedViewAccessor.
-            private readonly List<ITwoBitGenomeSubcontig> _subcontigs;
-
-            public TwoBitGenomeContig(string name, uint offset, uint nextContigOffset)//uint length, List<ITwoBitGenomeSubcontig> subcontigs)
+            //private readonly List<ITwoBitGenomeSubcontig> _subcontigs;
+            private readonly MemoryMappedViewAccessor _contigAccessor;
+            private readonly uint[] _nBlockStarts;
+            private readonly uint[] _nBlockEnds;
+            private readonly uint[] _maskBlockStarts;
+            private readonly uint[] _maskBlockEnds;
+            
+            public TwoBitGenomeContig(string name, uint offset, uint size)//uint length, List<ITwoBitGenomeSubcontig> subcontigs)
             {
                 Name = name;
-                _offset = offset;
-                _nextOffset = nextContigOffset;
+                var bytePosition = 4U;
+                using (var tempViewer = _genomeFile.CreateViewAccessor(offset, size, MemoryMappedFileAccess.Read))
+                {
+                    Length = ReadUint(tempViewer); // read first 4 bytes.
+                    var numBlocks = ReadUint(tempViewer, bytePosition); // read 4 bytes in.
+                    bytePosition += 4;
+                    _nBlockStarts = new uint[numBlocks];
+                    _nBlockEnds = new uint[numBlocks];
+                    bytePosition = GetBlockStartsAndEnds(tempViewer, bytePosition, _nBlockStarts, _nBlockEnds);
+                    numBlocks = ReadUint(tempViewer, bytePosition);
+                    bytePosition += 4;
+                    _maskBlockStarts = new uint[numBlocks];
+                    _maskBlockEnds = new uint[numBlocks];
+                    bytePosition = GetBlockStartsAndEnds(tempViewer, bytePosition, _maskBlockStarts, _maskBlockEnds);
+                    Reserved = ReadUint(tempViewer, bytePosition);
+                    bytePosition += 4;
+                }
+                _contigAccessor = _genomeFile.CreateViewAccessor(bytePosition + offset, size == 0 ? 0 : size - bytePosition,
+                    MemoryMappedFileAccess.Read);
                 //Length = length;
                 //_subcontigs = subcontigs;
             }
@@ -164,75 +73,135 @@ namespace rere_fencer.Input
                     string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 if (end < start) throw new ArgumentException("Sequence end was less than start, what's up with that?");
                 var length = end - start + 1;
-                var charPosition = 0;
-                int position, endingIndex;
-
-                if (Length - end > start - 1) // end is closer to the middle, so do the first search using end
+                uint charPosition = 0, bytePosition = start/NucsPerByte;
+                var leftStartIndex = start % NucsPerByte;
+                var numBytes = (int) Math.Ceiling((length + leftStartIndex)/(decimal)NucsPerByte);
+                var overlappingNBlocks = skipNs ? new List<int>() : GetAllOverlappingBlocks(start, end, true);
+                var overlappingMaskBlocks = ignoreMasks ? new List<int>() : GetAllOverlappingBlocks(start, end, false);
+                if (!overlappingNBlocks.Any()) skipNs = true;
+                if (!overlappingMaskBlocks.Any()) ignoreMasks = true;
+                int nIndex = 0, maskIndex = 0;
+                var position = start;
+                var inNBlock = !skipNs &&
+                               IsOverlapping(position, overlappingNBlocks, _nBlockStarts, _nBlockEnds, nIndex);
+                var inMaskBlock = !ignoreMasks &&
+                                  IsOverlapping(position, overlappingMaskBlocks, _maskBlockStarts, _maskBlockEnds, maskIndex);
+                for (var j = 0; j < numBytes; j++)
                 {
-                    endingIndex = BinarySearchForIndex(end, 0, _subcontigs.Count - 1);
-                    if (start >= _subcontigs[endingIndex].RegionInfo.Start) // all contained in one subSequence;
+                    var tetNuc = ByteToTetraNucleotide(_contigAccessor.ReadByte(bytePosition));
+                    for (var i = j == 0 ? (int) leftStartIndex : 0; i < NucsPerByte; i++)
                     {
-                        foreach (var returnChar in _subcontigs[endingIndex].GetSequence(start, end, ignoreMasks, skipMasks, skipNs))
+                        if (inNBlock)
                         {
-                            yield return returnChar;
+                            yield return 'N';
                             charPosition++;
-                            if (charPosition > length) yield break;
+                            position++;
+                            if (charPosition == length) yield break;
+                            inNBlock = IsOverlapping(position, overlappingNBlocks, _nBlockStarts, _nBlockEnds, nIndex);
+                            if (inNBlock) continue;
+                            if (++nIndex == overlappingNBlocks.Count)
+                                skipNs = true; // already at the end of the nBlocks.
+                            else
+                                inNBlock = IsOverlapping(position, overlappingNBlocks, _nBlockStarts, _nBlockEnds, nIndex);
+                        }
+                        else if (inMaskBlock)
+                        {
+                            yield return char.ToLower(tetNuc[i], CultureInfo.CurrentCulture);
+                            charPosition++;
+                            position++;
+                            if (charPosition == length) yield break;
+                            inMaskBlock = IsOverlapping(position, overlappingMaskBlocks, _maskBlockStarts, _maskBlockEnds, maskIndex);
+                            if (inMaskBlock) continue;
+                            if (++maskIndex == overlappingMaskBlocks.Count) ignoreMasks = true;
+                            else
+                                inMaskBlock =
+                                  IsOverlapping(position, overlappingMaskBlocks, _maskBlockStarts, _maskBlockEnds, maskIndex);
+                        }
+                        else
+                        {
+                            yield return tetNuc[i];
+                            charPosition++;
+                            position++;
+                            if (charPosition == length) yield break;
+                            if (!ignoreMasks)
+                                inMaskBlock =
+                                  IsOverlapping(position, overlappingMaskBlocks, _maskBlockStarts, _maskBlockEnds, maskIndex);
+                            if (!skipNs && !inMaskBlock)
+                                inNBlock = IsOverlapping(position, overlappingNBlocks, _nBlockStarts, _nBlockEnds, nIndex);
                         }
                     }
-                    position = BinarySearchForIndex(start, 0, endingIndex - 1);
-                }
-                else
-                {
-                    position = BinarySearchForIndex(start, 0, _subcontigs.Count - 1);
-                    if (end <= _subcontigs[position].RegionInfo.End) // all contained in one subSequence;
-                    {
-                        foreach (var returnChar in _subcontigs[position].GetSequence(start, end, ignoreMasks, skipMasks, skipNs))
-                        {
-                            yield return returnChar;
-                            charPosition++;
-                            if (charPosition > length) yield break;
-                        }
-                    }
-                    endingIndex = BinarySearchForIndex(end, position + 1, _subcontigs.Count - 1);
-                }
-
-                foreach (var returnChar in _subcontigs[position].GetSequence(start, _subcontigs[position].RegionInfo.End, ignoreMasks,skipMasks, skipNs))
-                {
-                    yield return returnChar;
-                    charPosition++;
-                    if (charPosition > length) yield break;
-                }
-                position++;
-
-                for (; position < endingIndex; position++)
-                {
-                    foreach (var returnChar in _subcontigs[position].GetSequence(_subcontigs[position].RegionInfo.Start,
-                        _subcontigs[position].RegionInfo.End, ignoreMasks, skipMasks, skipNs))
-                    {
-                        yield return returnChar;
-                        charPosition++;
-                        if (charPosition > length) yield break;
-                    }
-                    
-                }
-
-                foreach (var returnChar in _subcontigs[position].GetSequence(_subcontigs[position].RegionInfo.Start, end, ignoreMasks, skipMasks, skipNs))
-                {
-                    yield return returnChar;
-                    charPosition++;
-                    if (charPosition > length) yield break;
+                    bytePosition++;
                 }
             }
 
-            private int BinarySearchForIndex(uint position, int begin, int end)
+            private bool IsOverlapping(uint position, IList<int> overlappingBlocks, uint[] blockStarts, uint[] blockEnds, int index)
             {
-                if (begin == end) return begin; // already found it.
-                var middle = (begin + end) / 2;
-                if (position < _subcontigs[middle].RegionInfo.Start) // before middle
-                    return BinarySearchForIndex(position, begin, middle - 1);
-                if (position > _subcontigs[middle].RegionInfo.End) // after middle
-                    return BinarySearchForIndex(position, middle + 1, end);
-                return middle;
+                return position >= blockStarts[overlappingBlocks[index]] && position <= blockEnds[overlappingBlocks[index]];
+            }
+
+            private IList<int> GetAllOverlappingBlocks(uint start, uint end, bool searchNs)
+            {
+                var starts = searchNs ? _nBlockStarts : _maskBlockStarts;
+                var ends = searchNs ? _nBlockEnds : _maskBlockEnds;
+                var tempList = new List<int>();
+                if (!starts.Any()) return tempList;
+                var firstPossibleOverlap = BinarySearchForFirstOverlappingBlock(starts, ends, start, 0, starts.Length);
+                if (firstPossibleOverlap < 0 || end < ends[firstPossibleOverlap]) // no overlaps possible.
+                    return tempList;
+                var lastPossibleOverlap = BinarySearchForLastOverlappingBlock(starts, ends, end, firstPossibleOverlap, starts.Length);
+                if (lastPossibleOverlap < 0) return new List<int>{firstPossibleOverlap};
+                for (var i = firstPossibleOverlap; i <= lastPossibleOverlap; i++)
+                    tempList.Add(i);
+                return tempList;
+            }
+
+            private int BinarySearchForLastOverlappingBlock(uint[] starts, uint[] ends, uint position, int begin, int end)
+            {
+                while (true)
+                {
+                    if (begin == end) return begin;
+                    var middle = (begin + end)/2;
+                    if (position < starts[middle]) // position is before the middle start
+                    {
+                        if (middle == 0) return -1;
+                        end = middle - 1;
+                        continue;
+                    }
+                    if (position > ends[middle])
+                    {
+                        if (middle == starts.Length - 1 // last one must be the last possible overlap.
+                            || position < starts[middle + 1]) // this one must be the last possible overlap.
+                            return middle;
+                        begin = middle + 1;
+                        continue;
+                    }
+                    return middle;
+                    break;
+                }
+            }
+
+            private int BinarySearchForFirstOverlappingBlock(uint[] starts, uint[] ends, uint position, int begin, int end)
+            {
+                while (true)
+                {
+                    var middle = (begin + end)/2;
+                    if (position > ends[middle]) // position is after the middle end
+                    {
+                        if (middle + 1 == starts.Length) return -1; // cannot have any overlap.
+                        begin = middle + 1;
+                        continue;
+                    }
+                    if (position < starts[middle]) // position is before the middle start
+                    {
+                        if (middle == 0 // first one must be the first possible overlap.
+                            || position > ends[middle - 1]) // this one must be the first possible overlap
+                            return middle;
+                        end = middle - 1;
+                        continue;
+                    }
+                    return middle;
+                    break;
+                }
             }
 
             public char GetNucleotideAt(uint position)
@@ -245,93 +214,22 @@ namespace rere_fencer.Input
                 return GetSequence(start, end, ignoreMasks, skipMasks, skipNs);
             }
 
-            private IGenomeContig GetSequenceContent(string contigName, uint memoryOffset, uint nextContigOffset, int contigIndex)
-            {
-                var start = 4U;
-                SortedList<uint, uint> nBlocks, maskBlocks;
-                uint dnaSize;
-                using (var tempViewer = _genomeFile.CreateViewAccessor(memoryOffset, nextContigOffset, MemoryMappedFileAccess.Read))
-                {
-                    dnaSize = ReadUint(tempViewer);
-                    start = GetBlockCountFromSequenceIndex(tempViewer, start, out nBlocks);
-                    start = GetBlockCountFromSequenceIndex(tempViewer, start, out maskBlocks);
-                    Reserved = ReadUint(tempViewer, start);
-                    start += 4;
-                }
-
-                var subcontigs = new List<ITwoBitGenomeSubcontig>(2 * (nBlocks.Count + maskBlocks.Count + 1));
-                var byteOffset = start + memoryOffset;
-                _genomeAccessors[contigIndex] = _genomeFile.CreateViewAccessor(byteOffset, nextContigOffset, MemoryMappedFileAccess.Read);
-                ushort firstIndex = 0;
-                uint nextBlock = 0, currentSequencePosition = 0;
-                for (int currentNIndex = 0, currentMaskIndex = 0; currentNIndex < nBlocks.Count || currentMaskIndex < maskBlocks.Count; )
-                {
-                    if (currentNIndex < nBlocks.Count && currentSequencePosition == nBlocks.Keys[currentNIndex])
-                    {
-                        nextBlock = currentSequencePosition + nBlocks.Values[currentNIndex++];
-                        subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1));
-                    }
-                    else if (currentMaskIndex < maskBlocks.Count && currentSequencePosition == maskBlocks.Keys[currentMaskIndex])
-                    {
-                        nextBlock = currentSequencePosition + maskBlocks.Values[currentMaskIndex++];
-                        subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1,
-                            _genomeAccessors[contigIndex], firstIndex, true));
-                    }
-                    else
-                    {
-                        var nBlockKey = currentNIndex == nBlocks.Count ? dnaSize - 1 : nBlocks.Keys[currentNIndex];
-                        var maskBlockKey = currentMaskIndex == maskBlocks.Count ? dnaSize - 1 : maskBlocks.Keys[currentMaskIndex];
-                        if (currentSequencePosition < nBlockKey && currentSequencePosition < maskBlockKey)
-                        {
-                            nextBlock = maskBlockKey < nBlockKey ? maskBlockKey : nBlockKey;
-                            subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition, nextBlock - 1,
-                                _genomeAccessors[contigIndex], firstIndex));
-                        }
-                    }
-                    currentSequencePosition = nextBlock;
-                    firstIndex = (ushort)(nextBlock % NucsPerByte);
-                    //currentBytePosition = nextBlock / NucsPerByte;
-                }
-
-                var lastOne = subcontigs.LastOrDefault();
-                if (lastOne == null || lastOne.RegionInfo.End != dnaSize) // means that there's one more normal block left to make
-                    subcontigs.Add(GenerateNewSubcontig(contigName, currentSequencePosition + 1, dnaSize,
-                        _genomeAccessors[contigIndex], firstIndex));
-
-                return new TwoBitGenomeContig(contigName, dnaSize, subcontigs);
-            }
-
-            private uint GetBlockCountFromSequenceIndex(MemoryMappedViewAccessor tempViewer, uint start, out SortedList<uint, uint> blocks)
+            private uint GetBlockStartsAndEnds(MemoryMappedViewAccessor tempViewer, uint start, uint[] blockStarts, uint[] blockEnds)
             {
                 const uint uintByteCount = 4;
-                var blockCount = ReadUint(tempViewer, start);
-                var position = uintByteCount + start;
-                var capacity = blockCount > (uint)Int32.MaxValue ? Int32.MaxValue : (int)blockCount;
-                var blockStarts = new List<uint>(capacity); // not sure if this will break if uint > Int32.MaxValue
+                var blockCount = blockStarts.Length;
+                 // not sure if this will break if uint > Int32.MaxValue
                 for (var i = 0; i < blockCount; i++)
                 {
-                    blockStarts.Add(ReadUint(tempViewer, position));
-                    position += uintByteCount;
+                    blockStarts[i] = ReadUint(tempViewer, start);
+                    start += uintByteCount;
                 }
-                blocks = new SortedList<uint, uint>(capacity);
                 for (var i = 0; i < blockCount; i++)
                 {
-                    blocks.Add(blockStarts[i], ReadUint(tempViewer, position));
-                    position += uintByteCount;
+                    blockEnds[i] = blockStarts[i] + ReadUint(tempViewer, start) - 1;
+                    start += uintByteCount;
                 }
-                return position;
-            }
-
-            private ITwoBitGenomeSubcontig GenerateNewSubcontig(string name, uint start, uint end,
-                MemoryMappedViewAccessor mmva = null, ushort nucsToLeft = 0, bool isMaskedContig = false)
-            {
-                var region = new ContigRegion(start, end);
-                var newName = string.Format("{0}:{1}-{2}", name, start, end);
-                if (mmva == null) return new NSubcontig(newName, region);
-                //var numBytes = (uint)Math.Ceiling(end / (decimal)NucsPerByte) - currentBytePosition;
-                return isMaskedContig
-                    ? new MaskedSubcontig(newName, region, nucsToLeft, mmva)
-                    : new NormalSubcontig(newName, region, nucsToLeft, mmva);
+                return start;
             }
         }
 
@@ -414,9 +312,12 @@ namespace rere_fencer.Input
             }
             _genomeFile = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
             for (var i = 0; i < numSequences; i++)
-                _contigs[i] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2, i == numSequences - 1 ? 0 : contigInfos[i + 1].Item2);
+                _contigs[i] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2,
+                    i == numSequences - 1 
+                        ? 0 // means end of file.
+                        : (uint) Math.Abs((long) contigInfos[i + 1].Item2 - (contigInfos[i].Item2)));
                     //GetSequenceContent(contigInfos[i].Item1, contigInfos[i].Item2, i == numSequences - 1 ? 0 : contigInfos[i + 1].Item2, i);
-            Array.Reverse(_contigs);
+            Array.Reverse(_contigs); // turns out the order is always reverse.
         }
 
         private bool ReadSignature(BinaryReader br)
@@ -503,7 +404,7 @@ namespace rere_fencer.Input
         public void Dispose()
         {
             foreach (var mmva in _genomeAccessors)
-                mmva.Dispose();
+                if (mmva != null) mmva.Dispose();
             _genomeFile.Dispose();
         }
 
