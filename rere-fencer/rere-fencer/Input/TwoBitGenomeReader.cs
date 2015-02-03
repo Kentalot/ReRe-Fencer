@@ -68,12 +68,31 @@ namespace rere_fencer.Input
                 //_subcontigs = subcontigs;
             }
 
-            public IEnumerable<char> GetSequence(uint start, uint end,
-                bool ignoreMasks = false, bool skipMasks = false, bool skipNs = false)
+            public IEnumerable<char> GetSequence(uint start, uint end, ReadMode readMode = ReadMode.Normal)
             {
-                if (end >= Length) throw new OutOfContigRangeException(Name, start, end,
-                    string.Format("Inside {0}'s GetSequence method.", GetType().Name));
+                if (end >= Length)
+                    throw new OutOfContigRangeException(Name, start, end,
+                        string.Format("Inside {0}'s GetSequence method.", GetType().Name));
                 if (end < start) throw new ArgumentException("Sequence end was less than start, what's up with that?");
+                switch (readMode)
+                {
+                    case ReadMode.SkipMasks:
+                        return GetSequenceWithOptions(start, end, skipMasks: true);
+                    case ReadMode.IgnoreMasks:
+                        return GetSequenceWithOptions(start, end, true);
+                    case ReadMode.SkipNs:
+                        return GetSequenceWithOptions(start, end, skipNs: true);
+                    case ReadMode.SkipMasksSkipNs:
+                        return GetSequenceWithOptions(start, end, false, true, true);
+                    case ReadMode.IgnoreMasksSkipNs:
+                        return GetSequenceWithOptions(start, end, true, true);
+                    default:
+                        return GetSequenceWithOptions(start, end);
+                }
+            }
+
+            private IEnumerable<char> GetSequenceWithOptions(uint start, uint end, bool ignoreMasks = false, bool skipNs = false, bool skipMasks = false)
+            {
                 var length = end - start + 1;
                 uint charPosition = 0, bytePosition = start/NucsPerByte;
                 var leftStartIndex = start % NucsPerByte;
@@ -323,12 +342,18 @@ namespace rere_fencer.Input
                 }
             }
             _genomeFile = MemoryMappedFile.CreateFromFile(file, FileMode.Open);
-            for (var i = 0; i < numSequences; i++)
+            /*for (var i = 0; i < numSequences; i++)
                 _contigs[i] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2,
                     i == numSequences - 1 
                         ? 0 // means end of file.
+                        : (uint) Math.Abs((long) contigInfos[i + 1].Item2 - (contigInfos[i].Item2)));*/
+            Parallel.For(0, numSequences, i =>
+            {
+                _contigs[i] = new TwoBitGenomeContig(contigInfos[i].Item1, contigInfos[i].Item2,
+                    i == numSequences - 1
+                        ? 0 // means end of file.
                         : (uint) Math.Abs((long) contigInfos[i + 1].Item2 - (contigInfos[i].Item2)));
-                    //GetSequenceContent(contigInfos[i].Item1, contigInfos[i].Item2, i == numSequences - 1 ? 0 : contigInfos[i + 1].Item2, i);
+            });
             Array.Reverse(_contigs); // turns out the order is always reverse.
         }
 
