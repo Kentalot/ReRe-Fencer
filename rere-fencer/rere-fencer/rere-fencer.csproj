@@ -68,28 +68,41 @@
     <Compile Include="Exceptions\OverlappingSpecialBlocksException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitContigFormatException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitFileException.cs" />
-    <Compile Include="Input\IGenomeReader.cs" />
-    <Compile Include="Input\IVCFReader.cs" />
-    <Compile Include="Input\TwoBitGenomeReader.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Input\VCFReader.cs" />
     <Compile Include="Processors\GenomeWriter.cs" />
     <Compile Include="Processors\IGenomeWriter.cs" />
     <Compile Include="Processors\IRRFProcessor.cs" />
     <Compile Include="Processors\IRRFResolver.cs" />
+    <Compile Include="Tools.cs" />
     <Compile Include="Processors\RRFProcessor.cs" />
     <Compile Include="Processors\RRFResolver.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rere-fencerLauncher.cs" />
+    <Compile Include="ReRe-fencerLauncher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Infrastructure\fa2bit.jar" />
+    <Content Include="Tools\bcftools.exe" />
+    <Content Include="Tools\bgzip.exe" />
+    <Content Include="Tools\fa2bit.jar" />
+    <Content Include="Tools\razip.exe" />
+    <Content Include="Tools\samtools.exe" />
+    <Content Include="Tools\tabix.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AppUtils\AppUtils\AppUtils.csproj">
+      <Project>{477391b0-1deb-4981-969f-af382ac30bb4}</Project>
+      <Name>AppUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\AppUtils\BioinformaticUtils\BioinformaticUtils.csproj">
+      <Project>{98096870-a22f-465c-b69f-10ae2c796689}</Project>
+      <Name>BioinformaticUtils</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Input\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BioinformaticUtils.DataStructures.Contigs;
+using BioinformaticUtils.GenomeTools;
+using BioinformaticUtils.Vcf;
 using NDesk.Options;
-using rere_fencer.Input;
 using rere_fencer.Processors;
 
 namespace rere_fencer
@@ -17,7 +19,7 @@ namespace rere_fencer
         internal static FileInfo GenomeFilePath { get; private set; }
         internal static FileInfo VcfFilePath { get; private set; }
         internal static FileInfo SvVcfFilePath { get; private set; }
-        internal static IContigRegion GenomeRange { get; private set; }
+        internal static IContigInterval GenomeRange { get; private set; }
 
         static void Main(string[] args)
         {
@@ -32,7 +34,7 @@ namespace rere_fencer
                 Console.WriteLine(sw.Elapsed);
                 sw.Reset();
                 sw.Start();
-                new Rere_fencerLauncher(genomeReader, new VCFReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter()).Launch();
+                new ReRe_fencerLauncher(genomeReader, new VcfReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter()).Launch();
                 sw.Stop();
                 Console.WriteLine(sw.Elapsed);
             }
@@ -62,7 +64,7 @@ namespace rere_fencer
                 s =>
                 {
                     var split = s.Split('-').Take(2).Select(uint.Parse).ToArray();
-                    GenomeRange = new ContigRegion(split[0], split[1]);
+                    GenomeRange = new ContigInterval(split[0], split[1]);
                     Console.WriteLine("Range = {0}-{1}", GenomeRange.Start, GenomeRange.End);
                 });
         }
