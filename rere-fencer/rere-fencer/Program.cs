@@ -34,7 +34,7 @@ namespace rere_fencer
                 Console.WriteLine(sw.Elapsed);
                 sw.Reset();
                 sw.Start();
-                new ReRe_fencerLauncher(genomeReader, new VcfReader(), new RRFProcessor(), new RRFResolver(), new GenomeWriter()).Launch();
+                new ReRe_fencerLauncher(genomeReader, new TabixVcfReader(VcfFilePath), new RRFProcessor(), new RRFResolver(), new GenomeWriter()).Launch();
                 sw.Stop();
                 Console.WriteLine(sw.Elapsed);
             }
