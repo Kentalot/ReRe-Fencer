@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AppUtils;
+using AppUtils.Misc;
 
 namespace rere_fencer.Processors
 {
@@ -15,7 +16,8 @@ namespace rere_fencer.Processors
         public static string WrapDoubleQuotes(this string theStringToWrap)
         { return string.Format("{0}{1}{0}", '"', theStringToWrap); }
 
-        private static string GetLinuxToolPath(string folderpath, string toolname, string linuxextension = null, string windowsextension = null)
+        private static string GetLinuxToolPath(string folderpath, string toolname, 
+            string linuxextension = null, string windowsextension = null)
         {
             string appname;
             if (MiscUtils.RunningMono)
