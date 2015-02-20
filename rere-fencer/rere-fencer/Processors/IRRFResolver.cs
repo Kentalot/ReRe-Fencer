@@ -8,5 +8,6 @@ namespace rere_fencer.Processors
 {
     public interface IRRFResolver
     {
+        void Resolve(IRRFProcessor rrfProcessor, IGenomeWriter genomeWriter);
     }
 }

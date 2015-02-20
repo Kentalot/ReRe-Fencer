@@ -8,5 +8,10 @@ namespace rere_fencer.Processors
 {
     public class RRFResolver :IRRFResolver
     {
+
+        public void Resolve(IRRFProcessor rrfProcessor, IGenomeWriter genomeWriter)
+        {
+            
+        }
     }
 }
