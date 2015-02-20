@@ -32,7 +32,7 @@ namespace rere_fencer
 
         public void Launch()
         {
-            foreach (var contig in _genomeReader.Contigs.Values)
+            /*foreach (var contig in _genomeReader.Contigs.Values)
                 try
                 {
                     Console.WriteLine("Chr " + contig.Name + " from " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
@@ -41,7 +41,14 @@ namespace rere_fencer
             catch (Exception E){ Console.Error.WriteLine(E.Message + "\n" + E.StackTrace);}
             var contig2 = new Contig("chr17");
             Console.WriteLine("Chr " + contig2.Name + " from " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
-                                      new NucleotideString(_genomeReader.Contigs[contig2].GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End)));
+                                      new NucleotideString(_genomeReader.Contigs[contig2].GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End)));*/
+            var position = _genomeReader.IsZeroBasedCoordinates ? 0U : 1U;
+            foreach (var variantInfo in _vcfReader.ReadVcfVariants().Select(v => v.CreateVariantInfo())
+                .Where(v => v.SampleInfo.IsHom() || v.SampleInfo.IsHemi()))
+            {
+                var end = variantInfo.Variant.Position;
+            }
+            
         }
     }
 }

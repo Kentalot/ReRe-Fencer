@@ -28,15 +28,19 @@ namespace rere_fencer
             ValidateOptions();
             var sw = new Stopwatch();
             sw.Start();
-            using (var genomeReader = new TwoBitGenomeReader(GenomeFilePath.FullName))
+            using (var genomeReader = GenomeFilePath == null ? (TwoBitGenomeReader) TwoBitGenomeReader.Hg19TwoBitReader : new TwoBitGenomeReader(GenomeFilePath.FullName))
             {
-                sw.Stop();
-                Console.WriteLine(sw.Elapsed);
-                sw.Reset();
-                sw.Start();
-                new ReRe_fencerLauncher(genomeReader, new TabixVcfReader(VcfFilePath), new RRFProcessor(), new RRFResolver(), new GenomeWriter()).Launch();
-                sw.Stop();
-                Console.WriteLine(sw.Elapsed);
+                using (var vcfReader = new TabixVcfReader(VcfFilePath))
+                {
+                    sw.Stop();
+                    Console.WriteLine(sw.Elapsed);
+                    sw.Reset();
+                    sw.Start();
+                    new ReRe_fencerLauncher(genomeReader, vcfReader, new RRFProcessor(), new RRFResolver(),
+                        new GenomeWriter()).Launch();
+                    sw.Stop();
+                    Console.WriteLine(sw.Elapsed);
+                }
             }
         }
 
