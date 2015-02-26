@@ -47,8 +47,6 @@ namespace rere_fencer.Processors
 
             foreach (var nuc in genomeContig.GetSequence(contigPosition[0], (uint)genomeContig.Length + posOffset - 1))
                 yield return nuc;
-            }
-
         }
     }
 }
