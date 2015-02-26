@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BioinformaticUtils.DataStructures.Contigs;
+using BioinformaticUtils.DataStructures.Nucleotides;
 using BioinformaticUtils.GenomeTools;
 using BioinformaticUtils.Vcf;
 using NDesk.Options;
@@ -20,7 +21,7 @@ namespace rere_fencer
         internal static FileInfo VcfFilePath { get; private set; }
         internal static FileInfo SvVcfFilePath { get; private set; }
         internal static FileInfo OutputFilePath { get; private set; }
-        //internal static IContigInterval GenomeRange { get; private set; }
+        internal static IContigInterval GenomeRange { get; private set; }
 
         static void Main(string[] args)
         {
@@ -29,20 +30,55 @@ namespace rere_fencer
             ValidateOptions();
             var sw = new Stopwatch();
             sw.Start();
-            using (var genomeReader = GenomeFilePath == null ? (TwoBitGenomeReader) TwoBitGenomeReader.Hg19TwoBitReader : new TwoBitGenomeReader(GenomeFilePath.FullName))
+            if (GenomeRange == null)
             {
-                using (var vcfReader = new TabixVcfReader(VcfFilePath))
+                using (var genomeReader = GenomeFilePath == null 
+                    ? (TwoBitGenomeReader) TwoBitGenomeReader.Hg19TwoBitReader : new TwoBitGenomeReader(GenomeFilePath.FullName))
+                {
+                    using (var vcfReader = new TabixVcfReader(VcfFilePath))
+                    {
+                        sw.Stop();
+                        Console.WriteLine(sw.Elapsed);
+                        sw.Reset();
+                        sw.Start();
+                        new ReRe_fencerLauncher(genomeReader, vcfReader, new SmallVariantsRRFProcessor(),
+                            new RRFResolver(),
+                            OutputFilePath).Launch();
+                    }
+                    sw.Stop();
+                    Console.WriteLine(sw.Elapsed);
+                }
+            }
+            else
+            {
+                using (var genomeReader = new TwoBitGenomeReader(GenomeFilePath.FullName))
                 {
                     sw.Stop();
                     Console.WriteLine(sw.Elapsed);
                     sw.Reset();
                     sw.Start();
-                    new ReRe_fencerLauncher(genomeReader, vcfReader, new SmallVariantsRRFProcessor(), new RRFResolver(),
-                        OutputFilePath).Launch();
-                    sw.Stop();
-                    Console.WriteLine(sw.Elapsed);
+                    foreach (var contig in genomeReader.Contigs.Values)
+                        try
+                        {
+                            Console.WriteLine("Chr " + contig.Name + " from " + GenomeRange.Start + " to " +
+                                              GenomeRange.End + "=" +
+                                              new NucleotideString(contig.GetSequence(GenomeRange.Start,
+                                                  GenomeRange.End)));
+                        }
+                        catch (Exception E)
+                        {
+                            Console.Error.WriteLine(E.Message + "\n" + E.StackTrace);
+                        }
+                    var contig2 = "chr17";
+                    Console.WriteLine("Chr " + contig2 + " from " + GenomeRange.Start + " to " +
+                                        GenomeRange.End + "=" +
+                                        new NucleotideString(genomeReader.Contigs[contig2].GetSequence(GenomeRange.Start,
+                                                GenomeRange.End)));
                 }
+                sw.Stop();
+                Console.WriteLine(sw.Elapsed);
             }
+        
         }
 
         private static void ValidateOptions()
@@ -70,14 +106,14 @@ namespace rere_fencer
                 s => SvVcfFilePath = UpdateFileInfo(s));
             OptionSet.Add("o|outputFilePath=", "Path to the output file you want. Only outputs in fasta format for now. e.g. genome.fa (Required!)",
                 s => OutputFilePath = UpdateFileInfo(s, false));
-            //_optionSet.Add("q|query=",
-            //    "range in 1-based of coordinates you want to print out. Separate with a dash aka -, like this: 28-724",
-            //    s =>
-            //    {
-            //        var split = s.Split('-').Take(2).Select(uint.Parse).ToArray();
-            //        GenomeRange = new ContigInterval(split[0], split[1]);
-            //        Console.WriteLine("Range = {0}-{1}", GenomeRange.Start, GenomeRange.End);
-            //    });
+            OptionSet.Add("q|query=",
+                "range in 1-based of coordinates you want to print out. Separate with a dash aka -, like this: 28-724",
+                s =>
+                {
+                    var split = s.Split('-').Take(2).Select(uint.Parse).ToArray();
+                    GenomeRange = new ContigInterval(split[0], split[1]);
+                    Console.WriteLine("Range = {0}-{1}", GenomeRange.Start, GenomeRange.End);
+                });
         }
 
         private static FileInfo UpdateFileInfo(string filePath, bool testForExistence = true)

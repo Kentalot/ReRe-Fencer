@@ -33,24 +33,13 @@ namespace rere_fencer
 
         public void Launch()
         {
-            /*foreach (var contig in _genomeReader.Contigs.Values)
-                try
-                {
-                    Console.WriteLine("Chr " + contig.Name + " from " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
-                                      new NucleotideString(contig.GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End)));
-                }
-            catch (Exception E){ Console.Error.WriteLine(E.Message + "\n" + E.StackTrace);}
-            var contig2 = new Contig("chr17");
-            Console.WriteLine("Chr " + contig2.Name + " from " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
-                                      new NucleotideString(_genomeReader.Contigs[contig2].GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End)));*/
-            
             new FastaWriter(GenerateReReFencedContigs(), _outputFile).WriteAllContigs();
         }
 
         private IEnumerable<IGenomeContig> GenerateReReFencedContigs()
         {
-            return _genomeReader.Contigs.Select(s => s.Value).Select(genomeContig =>
-                    new GenomeContig(genomeContig, _rrfProcessor.Process(genomeContig, _vcfReader.GetVariantsForChromosome(genomeContig))));
+            return _vcfReader.Chromosomes.Select(contig => 
+                new GenomeContig(contig, _rrfProcessor.Process(_genomeReader.Contigs[contig.Name], _vcfReader.GetVariantsForChromosome(contig))));
         }
     }
 }

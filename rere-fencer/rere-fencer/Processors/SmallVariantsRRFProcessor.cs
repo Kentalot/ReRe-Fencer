@@ -33,10 +33,8 @@ namespace rere_fencer.Processors
 
                 var end = variant.Position + posOffset - 2;// take sequence up to base before first ref base
                 foreach (var nuc in genomeContig.GetSequence(contigPosition, end))
-                {
                     yield return nuc;
-                    //contigPosition[0]++;
-                }
+
                 contigPosition = end + 1 + (uint)variant.Ref.Length; // no need for posOffset since that was accounted for in end.
 
                 var altIndex = int.Parse(variant.Samples[hemiOrHom][VcfVariant.GenotypeKey][0].ToString(CultureInfo.CurrentCulture)) - 1;
