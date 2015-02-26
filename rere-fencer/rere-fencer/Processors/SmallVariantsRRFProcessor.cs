@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using BioinformaticUtils.DataStructures.Contigs;
 using BioinformaticUtils.DataStructures.Nucleotides;
-using BioinformaticUtils.GenomeTools;
 using BioinformaticUtils.Vcf;
 using BioinformaticUtils.Vcf.VariantInfoClasses;
 
