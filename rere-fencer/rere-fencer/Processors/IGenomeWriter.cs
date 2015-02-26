@@ -11,6 +11,6 @@ namespace rere_fencer.Processors
 {
     public interface IGenomeWriter
     {
-        void TryWriteContigToStream(IGenomeContig genomeContig);
+        void WriteAllContigs();
     }
 }

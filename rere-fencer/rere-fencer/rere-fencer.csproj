@@ -68,12 +68,11 @@
     <Compile Include="Exceptions\OverlappingSpecialBlocksException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitContigFormatException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitFileException.cs" />
-    <Compile Include="Processors\GenomeWriter.cs" />
+    <Compile Include="Processors\FastaWriter.cs" />
     <Compile Include="Processors\IGenomeWriter.cs" />
     <Compile Include="Processors\IRRFProcessor.cs" />
     <Compile Include="Processors\IRRFResolver.cs" />
-    <Compile Include="Tools.cs" />
-    <Compile Include="Processors\RRFProcessor.cs" />
+    <Compile Include="Processors\SmallVariantsRRFProcessor.cs" />
     <Compile Include="Processors\RRFResolver.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

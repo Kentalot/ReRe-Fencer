@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,19 +16,19 @@ namespace rere_fencer
     public class ReRe_fencerLauncher
     {
         private IGenomeReader _genomeReader;
-        private IVcfReader _vcfReader;
+        private TabixVcfReader _vcfReader;
         private IRRFProcessor _rrfProcessor;
         private IRRFResolver _rrfResolver;
-        private IGenomeWriter _genomeWriter;
+        private readonly FileInfo _outputFile;
 
-        public ReRe_fencerLauncher(IGenomeReader genomeReader, IVcfReader vcfReader, IRRFProcessor rrfProcessor,
-            IRRFResolver rrfResolver, IGenomeWriter genomeWriter)
+        public ReRe_fencerLauncher(IGenomeReader genomeReader, TabixVcfReader vcfReader, IRRFProcessor rrfProcessor,
+            IRRFResolver rrfResolver, FileInfo outputFile)
         {
             _genomeReader = genomeReader;
             _vcfReader = vcfReader;
             _rrfProcessor = rrfProcessor;
             _rrfResolver = rrfResolver;
-            _genomeWriter = genomeWriter;
+            _outputFile = outputFile;
         }
 
         public void Launch()
@@ -43,7 +44,13 @@ namespace rere_fencer
             Console.WriteLine("Chr " + contig2.Name + " from " + Program.GenomeRange.Start + " to " + Program.GenomeRange.End + "=" +
                                       new NucleotideString(_genomeReader.Contigs[contig2].GetSequence(Program.GenomeRange.Start, Program.GenomeRange.End)));*/
             
-            
+            new FastaWriter(GenerateReReFencedContigs(), _outputFile).WriteAllContigs();
+        }
+
+        private IEnumerable<IGenomeContig> GenerateReReFencedContigs()
+        {
+            return _genomeReader.Contigs.Select(s => s.Value).Select(genomeContig =>
+                    new GenomeContig(genomeContig, _rrfProcessor.Process(genomeContig, _vcfReader.GetVariantsForChromosome(genomeContig))));
         }
     }
 }

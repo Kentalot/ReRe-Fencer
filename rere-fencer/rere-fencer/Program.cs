@@ -15,16 +15,17 @@ namespace rere_fencer
 {
     class Program
     {
-        private static readonly OptionSet _optionSet = new OptionSet();
+        private static readonly OptionSet OptionSet = new OptionSet();
         internal static FileInfo GenomeFilePath { get; private set; }
         internal static FileInfo VcfFilePath { get; private set; }
         internal static FileInfo SvVcfFilePath { get; private set; }
-        internal static IContigInterval GenomeRange { get; private set; }
+        internal static FileInfo OutputFilePath { get; private set; }
+        //internal static IContigInterval GenomeRange { get; private set; }
 
         static void Main(string[] args)
         {
             InitializeOptionSet();
-            _optionSet.Parse(args);
+            OptionSet.Parse(args);
             ValidateOptions();
             var sw = new Stopwatch();
             sw.Start();
@@ -36,8 +37,8 @@ namespace rere_fencer
                     Console.WriteLine(sw.Elapsed);
                     sw.Reset();
                     sw.Start();
-                    new ReRe_fencerLauncher(genomeReader, vcfReader, new RRFProcessor(), new RRFResolver(),
-                        new GenomeWriter()).Launch();
+                    new ReRe_fencerLauncher(genomeReader, vcfReader, new SmallVariantsRRFProcessor(), new RRFResolver(),
+                        OutputFilePath).Launch();
                     sw.Stop();
                     Console.WriteLine(sw.Elapsed);
                 }
@@ -46,37 +47,40 @@ namespace rere_fencer
 
         private static void ValidateOptions()
         {
-            if (GenomeFilePath == null) ShowHelp();
+            if (GenomeFilePath == null || OutputFilePath == null) ShowHelp();
         }
 
         private static void ShowHelp()
         {
-            _optionSet.WriteOptionDescriptions(Console.Out);
+            OptionSet.WriteOptionDescriptions(Console.Out);
         }
 
         private static void InitializeOptionSet()
         {
-            _optionSet.Add("g|genomePath=", "Path to the Genome input file. Must be in one fasta file or 2bit file",
+            OptionSet.Add("g|genomePath=", "Path to the Genome input file. Must be in 2bit file format for now. (Required!)",
                 s => GenomeFilePath = UpdateFileInfo(s));
-            _optionSet.Add("v|vcfPath=", "Path to the VCF file that contains the variants for the genome specified.",
+            OptionSet.Add("v|vcfPath=", "Path to the VCF file that contains the variants for the genome specified.",
                 s => VcfFilePath = UpdateFileInfo(s));
-            _optionSet.Add("s|svVCFPath=",
+            OptionSet.Add("s|svVCFPath=",
                 "Path to the SV.VCF file that contains the Structural Variants (and possibly Copy Number Variants) for the genome specified.",
                 s => SvVcfFilePath = UpdateFileInfo(s));
-            _optionSet.Add("q|query=",
-                "range in 1-based of coordinates you want to print out. Separate with a dash aka -, like this: 28-724",
-                s =>
-                {
-                    var split = s.Split('-').Take(2).Select(uint.Parse).ToArray();
-                    GenomeRange = new ContigInterval(split[0], split[1]);
-                    Console.WriteLine("Range = {0}-{1}", GenomeRange.Start, GenomeRange.End);
-                });
+            OptionSet.Add("o|outputFilePath=", "Path to the output file you want. Only outputs in fasta format for now. e.g. genome.fa (Required!)",
+                s => OutputFilePath = UpdateFileInfo(s, false));
+            //_optionSet.Add("q|query=",
+            //    "range in 1-based of coordinates you want to print out. Separate with a dash aka -, like this: 28-724",
+            //    s =>
+            //    {
+            //        var split = s.Split('-').Take(2).Select(uint.Parse).ToArray();
+            //        GenomeRange = new ContigInterval(split[0], split[1]);
+            //        Console.WriteLine("Range = {0}-{1}", GenomeRange.Start, GenomeRange.End);
+            //    });
         }
 
-        private static FileInfo UpdateFileInfo(string filePath)
+        private static FileInfo UpdateFileInfo(string filePath, bool testForExistence = true)
         {
             if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentException("Invalid Blank filePath input!");
             var file = new FileInfo(filePath);
+            if (!testForExistence) return file;
             var invalid = !file.Exists || file.Length < 100;
             if (invalid) throw new ArgumentException("File not found or file too small to be input!");
             return file;
