@@ -17,35 +17,34 @@ namespace rere_fencer.Processors
         public IEnumerable<DnaNucleotide> Process(IGenomeContig genomeContig, IEnumerable<IVcfVariant> vcfVariants)
         {
             var posOffset = genomeContig.IsZeroBasedCoordinates ? 0U : 1U;
-            uint[] contigPosition = {0U};
+            uint contigPosition = 0U;
 
             foreach (var variantInfo in vcfVariants.Select(v => v.CreateVariantInfo()))
             {
-                if (contigPosition[0] + posOffset > variantInfo.Variant.Position) continue; // overlapping variants are ignored, take the first one only.
+                var variant = variantInfo.Variant;
+                if (contigPosition + posOffset > variant.Position) continue; // overlapping variants are ignored, take the first one only.
 
                 //check for any hemi or hom.
                 var hemiOrHom = 0;
-                for (; hemiOrHom < variantInfo.Variant.Samples.Count; hemiOrHom++)
+                for (; hemiOrHom < variant.Samples.Count; hemiOrHom++)
                     if (variantInfo.SampleInfo.IsHemi(hemiOrHom) || variantInfo.SampleInfo.IsHom(hemiOrHom))
                         break;
-                if (hemiOrHom == variantInfo.Variant.Samples.Count) continue; // if none, then go to next variant.
+                if (hemiOrHom == variant.Samples.Count) continue; // if none, then go to next variant.
 
-                var end = variantInfo.Variant.Position + (uint)variantInfo.Variant.Ref.Length - 1U;
-                var seq = genomeContig.GetSequence(contigPosition[0], end);
-                var info = variantInfo;
-                foreach (var nuc in seq) // assume that the vcf ref sequence matches with the genome ref sequence.
+                var end = variant.Position + posOffset - 2;// take sequence up to base before first ref base
+                foreach (var nuc in genomeContig.GetSequence(contigPosition, end))
                 {
                     yield return nuc;
-                    contigPosition[0]++;
+                    //contigPosition[0]++;
                 }
-                contigPosition[0] = end + 1;
+                contigPosition = end + 1 + (uint)variant.Ref.Length; // no need for posOffset since that was accounted for in end.
 
-                var altIndex = int.Parse(variantInfo.Variant.Samples[hemiOrHom][VcfVariant.GenotypeKey][0].ToString(CultureInfo.CurrentCulture));
-                foreach (var nuc in info.Variant.Alt[altIndex])
+                var altIndex = int.Parse(variant.Samples[hemiOrHom][VcfVariant.GenotypeKey][0].ToString(CultureInfo.CurrentCulture)) - 1;
+                foreach (var nuc in variant.Alt[altIndex])
                     yield return nuc;  
             }
 
-            foreach (var nuc in genomeContig.GetSequence(contigPosition[0], (uint)genomeContig.Length + posOffset - 1))
+            foreach (var nuc in genomeContig.GetSequence(contigPosition, (uint)genomeContig.Length + posOffset - 1))
                 yield return nuc;
         }
     }

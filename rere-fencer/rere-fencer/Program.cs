@@ -47,7 +47,11 @@ namespace rere_fencer
 
         private static void ValidateOptions()
         {
-            if (GenomeFilePath == null || OutputFilePath == null) ShowHelp();
+            if (GenomeFilePath == null || OutputFilePath == null)
+            {
+                ShowHelp();
+                Environment.Exit(0);
+            }
         }
 
         private static void ShowHelp()
