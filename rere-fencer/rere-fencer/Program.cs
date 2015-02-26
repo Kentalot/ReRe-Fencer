@@ -83,7 +83,9 @@ namespace rere_fencer
 
         private static void ValidateOptions()
         {
-            if (GenomeFilePath == null || OutputFilePath == null)
+            var valid = GenomeFilePath == null;
+            if (valid && GenomeRange == null) return;
+            if (!valid || OutputFilePath == null || VcfFilePath == null)
             {
                 ShowHelp();
                 Environment.Exit(0);
