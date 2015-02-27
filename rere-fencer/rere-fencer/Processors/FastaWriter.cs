@@ -28,7 +28,7 @@ namespace rere_fencer.Processors
             {
                 foreach (var contig in _genomeContigs)
                 {
-                    writer.WriteLine("> " + contig.Name);
+                    writer.WriteLine(">" + contig.Name);
                     var i = 0;
                     foreach (var nuc in contig.GetWholeSequence())
                     {
