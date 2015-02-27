@@ -38,7 +38,9 @@ namespace rere_fencer
 
         private IEnumerable<IGenomeContig> GenerateReReFencedContigs()
         {
-            return _vcfReader.Chromosomes.Select(contig => 
+            var chromosomeOrder = _vcfReader.Chromosomes.ToList();
+            chromosomeOrder.AddRange(chromosomeOrder.Except(_genomeReader.Contigs.Select(v => (IContig) v.Value)));
+            return chromosomeOrder.Select(contig => 
                 new GenomeContig(contig, _rrfProcessor.Process(_genomeReader.Contigs[contig.Name], _vcfReader.GetVariantsForChromosome(contig))));
         }
     }
