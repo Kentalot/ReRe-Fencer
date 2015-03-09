@@ -68,6 +68,7 @@
     <Compile Include="Exceptions\OverlappingSpecialBlocksException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitContigFormatException.cs" />
     <Compile Include="Exceptions\InvalidTwoBitFileException.cs" />
+    <Compile Include="Processors\ParallelFastaWriter.cs" />
     <Compile Include="Processors\FastaWriter.cs" />
     <Compile Include="Processors\IGenomeWriter.cs" />
     <Compile Include="Processors\IRRFProcessor.cs" />
@@ -98,6 +99,10 @@
     <ProjectReference Include="..\..\..\AppUtils\BioinformaticUtils\BioinformaticUtils.csproj">
       <Project>{98096870-a22f-465c-b69f-10ae2c796689}</Project>
       <Name>BioinformaticUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\AppUtils\System.Collections.Immutable\System.Collections.Immutable.csproj">
+      <Project>{775a8864-c049-4ba3-9722-058bba22d819}</Project>
+      <Name>System.Collections.Immutable</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

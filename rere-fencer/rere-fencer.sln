@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BioinformaticUtils", "..\..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BgZip", "..\..\AppUtils\BgZip\BgZip.csproj", "{AD8657AE-912B-40D1-979D-B8B5A6E1C7BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Collections.Immutable", "..\..\AppUtils\System.Collections.Immutable\System.Collections.Immutable.csproj", "{775A8864-C049-4BA3-9722-058BBA22D819}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,18 @@ Global
 		{AD8657AE-912B-40D1-979D-B8B5A6E1C7BD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AD8657AE-912B-40D1-979D-B8B5A6E1C7BD}.Release|x64.ActiveCfg = Release|x64
 		{AD8657AE-912B-40D1-979D-B8B5A6E1C7BD}.Release|x64.Build.0 = Release|x64
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Debug|x64.ActiveCfg = Debug|x64
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Debug|x64.Build.0 = Debug|x64
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Release|Any CPU.Build.0 = Release|Any CPU
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Release|x64.ActiveCfg = Release|x64
+		{775A8864-C049-4BA3-9722-058BBA22D819}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,5 +89,6 @@ Global
 		{477391B0-1DEB-4981-969F-AF382AC30BB4} = {603213DB-337B-44F6-8C27-A1EB81BFFCFB}
 		{98096870-A22F-465C-B69F-10AE2C796689} = {603213DB-337B-44F6-8C27-A1EB81BFFCFB}
 		{AD8657AE-912B-40D1-979D-B8B5A6E1C7BD} = {603213DB-337B-44F6-8C27-A1EB81BFFCFB}
+		{775A8864-C049-4BA3-9722-058BBA22D819} = {603213DB-337B-44F6-8C27-A1EB81BFFCFB}
 	EndGlobalSection
 EndGlobal

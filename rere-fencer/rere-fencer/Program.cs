@@ -22,6 +22,7 @@ namespace rere_fencer
         internal static FileInfo SvVcfFilePath { get; private set; }
         internal static FileInfo OutputFilePath { get; private set; }
         internal static IContigInterval GenomeRange { get; private set; }
+        internal static string QueryContig { get; private set; }
 
         static void Main(string[] args)
         {
@@ -57,7 +58,7 @@ namespace rere_fencer
                     Console.WriteLine(sw.Elapsed);
                     sw.Reset();
                     sw.Start();
-                    foreach (var contig in genomeReader.Contigs.Values)
+                    foreach (var contig in QueryContig == null ? genomeReader.Contigs.Values : new [] {genomeReader.Contigs[QueryContig]})
                         try
                         {
                             Console.WriteLine("Chr " + contig.Name + " from " + GenomeRange.Start + " to " +
@@ -69,11 +70,15 @@ namespace rere_fencer
                         {
                             Console.Error.WriteLine(E.Message + "\n" + E.StackTrace);
                         }
-                    var contig2 = "chr17";
-                    Console.WriteLine("Chr " + contig2 + " from " + GenomeRange.Start + " to " +
-                                        GenomeRange.End + "=" +
-                                        new NucleotideString(genomeReader.Contigs[contig2].GetSequence(GenomeRange.Start,
-                                                GenomeRange.End)));
+                    if (QueryContig != null)
+                    {
+                        var contig2 = "chr17";
+                        Console.WriteLine("Chr " + contig2 + " from " + GenomeRange.Start + " to " +
+                                          GenomeRange.End + "=" +
+                                          new NucleotideString(
+                                              genomeReader.Contigs[contig2].GetSequence(GenomeRange.Start,
+                                                  GenomeRange.End)));
+                    }
                 }
                 sw.Stop();
                 Console.WriteLine(sw.Elapsed);
@@ -108,11 +113,16 @@ namespace rere_fencer
             OptionSet.Add("o|outputFilePath=", "Path to the output file you want. Only outputs in fasta format for now. e.g. genome.fa (Required!)",
                 s => OutputFilePath = UpdateFileInfo(s, false));
             OptionSet.Add("q|query=",
-                "range in 1-based of coordinates you want to print out. Separate with a dash aka -, like this: 28-724",
+                "range you want to print out. Separate with a dash aka -. Optional would be to include the contig name separated by colon aka :, like this: chr1:28-724",
                 s =>
                 {
-                    var split = s.Split('-').Take(2).Select(uint.Parse).ToArray();
-                    GenomeRange = new ContigInterval(split[0], split[1]);
+                    var split = s.Split(':').Take(2).ToArray();
+                    if (split.Length > 1)
+                    {
+                        QueryContig = split[0];
+                        split = split[1].Split('-').Take(2).ToArray();
+                    }
+                    GenomeRange = new ContigInterval(uint.Parse(split[0]), uint.Parse(split[1]));
                     Console.WriteLine("Range = {0}-{1}", GenomeRange.Start, GenomeRange.End);
                 });
         }
