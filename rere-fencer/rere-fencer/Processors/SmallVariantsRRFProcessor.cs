@@ -26,11 +26,17 @@ namespace rere_fencer.Processors
 
                 //check for any hemi or hom.
                 var hemiOrHom = 0;
-                for (; hemiOrHom < variant.Samples.Count; hemiOrHom++)
-                    if (variantInfo.SampleInfo.IsHemi(hemiOrHom) || variantInfo.SampleInfo.IsHom(hemiOrHom))
-                        break;
-                if (hemiOrHom == variant.Samples.Count) continue; // if none, then go to next variant.
-                var altIndex = int.Parse(variant.Samples[hemiOrHom][VcfVariant.GenotypeKey][0].ToString(CultureInfo.CurrentCulture)) - 1;
+                var foundRef = false;
+                string genotype;
+                int altIndex;
+                if (variantInfo.SampleInfo.IsHemi() || variantInfo.SampleInfo.IsHom() // taking hemis or homs
+                    || (variant.Samples.TryGetSampleGenotypeValue(0, VcfVariant.GenotypeKey, out genotype) &&
+                        !genotype.Contains("0"))) // for now also taking any triallelics and taking the first allele in this case.
+                                                  // in the future, I might want to change this to depend on phasing groups and/or 
+                                                  // number of reads that support the genotype.
+                    altIndex = int.Parse(variant.Samples[0][VcfVariant.GenotypeKey].Substring(0, 1)) - 1;
+                else
+                    continue;    
                 if (variant.Alts[altIndex].Any(c => !VcfVariant.ValidAltNucleotides.Contains<DnaNucleotide>(c)))
                 {
                     Console.WriteLine("Skipping variant with unrecognized Alt: " + variant);
