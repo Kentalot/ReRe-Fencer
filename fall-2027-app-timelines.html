@@ -7,242 +7,66 @@
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <style>
     :root {
-      --bg: #0f1117;
-      --card: #1a1d27;
-      --text: #e4e4e7;
-      --muted: #a1a1aa;
-      --accent: #599ce7;
-      --warn: #f59e0b;
-      --today: #ef4444;
-      --border: #2e3340;
-      --past: #52525b;
+      --bg: #0f1117; --card: #1a1d27; --text: #e4e4e7; --muted: #a1a1aa;
+      --accent: #599ce7; --warn: #f59e0b; --today: #ef4444; --border: #2e3340; --past: #52525b;
     }
     * { box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 24px 24px 64px;
-      line-height: 1.5;
-      min-width: 320px;
-    }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 24px 24px 64px; line-height: 1.5; min-width: 320px; }
     h1 { font-size: 1.5rem; margin: 0 0 8px; }
     h2 { font-size: 1.1rem; margin: 36px 0 8px; color: var(--accent); }
     p { color: var(--muted); max-width: 960px; }
     a { color: var(--accent); }
-    .today-banner {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px 20px;
-      background: #2a1515;
-      border: 1px solid var(--today);
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin: 16px 0 16px;
-      max-width: 960px;
-    }
+    .today-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; background: #2a1515; border: 1px solid var(--today); border-radius: 8px; padding: 12px 16px; margin: 16px 0 16px; max-width: 960px; }
     .today-banner strong { color: #fca5a5; }
-    .today-line-sample {
-      display: inline-block;
-      width: 3px;
-      height: 18px;
-      background: var(--today);
-      border-radius: 1px;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
+    .today-line-sample { display: inline-block; width: 3px; height: 18px; background: var(--today); border-radius: 1px; vertical-align: middle; margin-right: 6px; }
     #today-label { color: var(--text); font-size: 0.95rem; }
     #today-updated { color: var(--muted); font-size: 0.8rem; }
-    .banner {
-      background: #3b2f1a;
-      border: 1px solid var(--warn);
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin: 0 0 24px;
-      color: #fcd34d;
-      max-width: 960px;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px 16px;
-      margin-bottom: 8px;
-    }
-    .chart-scroll {
-      overflow-x: auto;
-      overflow-y: visible;
-      padding: 8px 4px 24px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .chart-inner {
-      min-width: 1600px;
-      width: max(100%, 1600px);
-    }
-    .chart-inner svg {
-      display: block;
-      max-width: none !important;
-    }
-    .chart-inner svg .today {
-      stroke: var(--today) !important;
-      stroke-width: 3px !important;
-      opacity: 1 !important;
-    }
+    .banner { background: #3b2f1a; border: 1px solid var(--warn); border-radius: 8px; padding: 12px 16px; margin: 0 0 24px; color: #fcd34d; max-width: 960px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px 16px; margin-bottom: 8px; }
+    .chart-scroll { overflow-x: auto; padding: 8px 4px 24px; }
+    .chart-inner { min-width: 1600px; width: max(100%, 1600px); }
+    .chart-inner svg { display: block; max-width: none !important; }
+    .chart-inner svg .today { stroke: var(--today) !important; stroke-width: 3px !important; opacity: 1 !important; }
     .hint { font-size: 0.8rem; color: var(--muted); margin: 0 0 16px; }
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px 24px;
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-top: 12px;
-    }
+    .legend { display: flex; flex-wrap: wrap; gap: 16px 24px; font-size: 0.85rem; color: var(--muted); margin-top: 12px; }
     .legend span { display: flex; align-items: center; gap: 8px; }
-    .swatch {
-      width: 28px;
-      height: 12px;
-      border-radius: 3px;
-      display: inline-block;
-    }
+    .swatch { width: 28px; height: 12px; border-radius: 3px; display: inline-block; }
     .swatch.crit { background: #b91c1c; }
     .swatch.active { background: #2563eb; }
     .swatch.done { background: #3f6212; }
     .swatch.milestone { background: #ca8a04; width: 4px; height: 16px; }
-
-    .checklist-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .checklist-toolbar button {
-      background: var(--border);
-      color: var(--text);
-      border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-    .checklist-toolbar button:hover { background: #3d4454; }
-    #checklist-progress { color: var(--muted); font-size: 0.85rem; }
-
-    .school-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 16px;
-      padding: 12px 14px;
-      margin-bottom: 16px;
-      background: #12141c;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      font-size: 0.8rem;
-    }
-    .school-legend-title {
-      width: 100%;
-      color: var(--muted);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 2px;
-    }
-    .school-legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text);
-    }
-    .school-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .checklist {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-    .checklist li {
-      display: grid;
-      grid-template-columns: 28px 1fr;
-      gap: 4px 12px;
-      padding: 12px 12px 12px 16px;
-      border-bottom: 1px solid var(--border);
-      align-items: start;
-      border-left: 4px solid transparent;
-      background: transparent;
-      transition: background 0.15s;
-    }
+    .checklist-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
+    .checklist-toolbar button { background: var(--border); color: var(--text); border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; }
+    .school-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; padding: 12px 14px; margin-bottom: 16px; background: #12141c; border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; }
+    .school-legend-title { width: 100%; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .school-legend-item { display: flex; align-items: center; gap: 8px; }
+    .school-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .checklist { list-style: none; margin: 0; padding: 0; }
+    .checklist li { display: grid; grid-template-columns: 28px 1fr; gap: 4px 12px; padding: 12px 12px 12px 16px; border-bottom: 1px solid var(--border); border-left: 4px solid transparent; align-items: start; }
     .checklist li.past { opacity: 0.5; }
     .checklist li.done-item .item-title { text-decoration: line-through; color: var(--past); }
-    .checklist li:hover { filter: brightness(1.08); }
-
-    .checklist li.school-uc {
-      border-left-color: #3b82f6;
-      background: rgba(59, 130, 246, 0.07);
-    }
-    .checklist li.school-hku {
-      border-left-color: #10b981;
-      background: rgba(16, 185, 129, 0.07);
-    }
-    .checklist li.school-cuhk {
-      border-left-color: #a855f7;
-      background: rgba(168, 85, 247, 0.07);
-    }
-    .checklist li.school-thu {
-      border-left-color: #ef4444;
-      background: rgba(239, 68, 68, 0.07);
-    }
-    .checklist li.school-nus {
-      border-left-color: #f59e0b;
-      background: rgba(245, 158, 11, 0.07);
-    }
-    .checklist li.school-ntu {
-      border-left-color: #06b6d4;
-      background: rgba(6, 182, 212, 0.07);
-    }
-    .checklist li.school-um {
-      border-left-color: #eab308;
-      background: rgba(234, 179, 8, 0.07);
-    }
-
-    .checklist input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      margin-top: 2px;
-      cursor: pointer;
-      accent-color: var(--accent);
-    }
+    .checklist li.school-uc { border-left-color: #3b82f6; background: rgba(59,130,246,0.07); }
+    .checklist li.school-hku { border-left-color: #10b981; background: rgba(16,185,129,0.07); }
+    .checklist li.school-cuhk { border-left-color: #a855f7; background: rgba(168,85,247,0.07); }
+    .checklist li.school-thu { border-left-color: #ef4444; background: rgba(239,68,68,0.07); }
+    .checklist li.school-nus { border-left-color: #f59e0b; background: rgba(245,158,11,0.07); }
+    .checklist li.school-ntu { border-left-color: #06b6d4; background: rgba(6,182,212,0.07); }
+    .checklist li.school-um { border-left-color: #eab308; background: rgba(234,179,8,0.07); }
+    .checklist input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; accent-color: var(--accent); }
     .item-title { color: var(--text); font-weight: 500; }
     .item-meta { grid-column: 2; font-size: 0.82rem; color: var(--muted); }
     .tag-row { margin-bottom: 4px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
-    .tag {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      padding: 2px 7px;
-      border-radius: 4px;
-      vertical-align: middle;
-    }
+    .tag { display: inline-block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; padding: 2px 7px; border-radius: 4px; }
     .tag.info { background: #1e3a5f; color: #93c5fd; }
     .tag.register { background: #422006; color: #fcd34d; }
     .tag.open { background: #14532d; color: #86efac; }
     .tag.deadline { background: #450a0a; color: #fca5a5; }
     .tag.rolling { background: #4c0519; color: #fda4af; }
     .tag.prep { background: #312e81; color: #c4b5fd; }
-    .tag.est { border: 1px dashed var(--muted); background: transparent; color: var(--muted); }
-    .tag.school {
-      text-transform: none;
-      letter-spacing: 0;
-      font-weight: 700;
-    }
+    .tag.counselor { background: #1e3a3a; color: #5eead4; }
+    .tag.scores { background: #3b0764; color: #e9d5ff; }
+    .tag.est { border: 1px dashed var(--muted); background: transparent; color: var(--muted); text-transform: uppercase; }
+    .tag.school { text-transform: none; letter-spacing: 0; font-weight: 700; }
     .tag.school-uc { background: #1e3a8a; color: #93c5fd; }
     .tag.school-hku { background: #064e3b; color: #6ee7b7; }
     .tag.school-cuhk { background: #581c87; color: #d8b4fe; }
@@ -254,8 +78,7 @@
 </head>
 <body>
   <h1>Fall 2027 Application Timelines</h1>
-  <p>US citizen · CA resident · AP curriculum · international track at non-US schools.<br>
-     Dates marked <span class="tag est">est.</span> are projected from AY 2026/27 cycles — verify on official sites.</p>
+  <p>US citizen · CA resident · AP curriculum · international track at non-US schools.</p>
 
   <div class="today-banner">
     <span><span class="today-line-sample"></span><strong>Red vertical line</strong> = today</span>
@@ -264,12 +87,11 @@
   </div>
 
   <div class="banner">
-    <strong>Rolling admission — apply ASAP:</strong> HKU (after first-round ~late Nov 2026) and
-    Universiti Malaya (Feb–Aug 2027) fill seats continuously. Earlier is better.
+    <strong>Rolling admission — apply ASAP:</strong> HKU (after first-round ~late Nov 2026) and UM (Feb–Aug 2027).
   </div>
 
   <h2>Master timeline — all schools</h2>
-  <p class="hint">Scroll horizontally. Red bars = rolling windows. Diamonds = key deadlines.</p>
+  <p class="hint">Scroll horizontally. Red bars = rolling. Diamonds = deadlines.</p>
   <div class="card">
     <div class="chart-scroll">
       <div class="chart-inner">
@@ -318,18 +140,18 @@ gantt
       </div>
     </div>
     <div class="legend">
-      <span><i class="swatch crit"></i> Rolling — apply early</span>
-      <span><i class="swatch active"></i> Fixed filing window</span>
-      <span><i class="swatch done"></i> Prep / draft period</span>
-      <span><i class="swatch milestone"></i> Deadline milestone</span>
-      <span><span class="today-line-sample"></span> Today (live)</span>
+      <span><i class="swatch crit"></i> Rolling</span>
+      <span><i class="swatch active"></i> Fixed window</span>
+      <span><i class="swatch done"></i> Prep period</span>
+      <span><i class="swatch milestone"></i> Deadline</span>
+      <span><span class="today-line-sample"></span> Today</span>
     </div>
   </div>
 
   <h2>Checklist — chronological</h2>
   <p class="hint">
-    All items sorted by date. Register-by rows are ~4 weeks before info sessions.
-    Checkboxes save in your browser.
+    Sorted by date. <span class="tag counselor">Counselor</span> = ask/follow up with school counselor or referees.
+    <span class="tag scores">Scores</span> = SAT/AP/TOEFL submission. Register-by = ~4 weeks before info sessions.
   </p>
   <div class="card">
     <div class="checklist-toolbar">
@@ -341,79 +163,171 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v3";
+    const STORAGE_KEY = "fall2027-checklist-v4";
 
     const SCHOOL_COLORS = {
-      uc: "#3b82f6",
-      hku: "#10b981",
-      cuhk: "#a855f7",
-      thu: "#ef4444",
-      nus: "#f59e0b",
-      ntu: "#06b6d4",
-      um: "#eab308",
+      uc: "#3b82f6", hku: "#10b981", cuhk: "#a855f7", thu: "#ef4444",
+      nus: "#f59e0b", ntu: "#06b6d4", um: "#eab308",
     };
 
     const SCHOOLS = {
-      uc:  { name: "UC",       short: "UC",       link: "https://admission.universityofcalifornia.edu/" },
-      hku: { name: "HKU",      short: "HKU",      link: "https://admissions.hku.hk/apply/international-qualifications" },
-      cuhk:{ name: "CUHK",     short: "CUHK",     link: "https://admission.cuhk.edu.hk/application/overseas-other-qualifications-non-local-international-team/" },
+      uc:  { name: "UC", short: "UC", link: "https://admission.universityofcalifornia.edu/" },
+      hku: { name: "HKU", short: "HKU", link: "https://admissions.hku.hk/apply/international-qualifications" },
+      cuhk:{ name: "CUHK", short: "CUHK", link: "https://admission.cuhk.edu.hk/application/overseas-other-qualifications-non-local-international-team/" },
       thu: { name: "Tsinghua", short: "Tsinghua", link: "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm" },
-      nus: { name: "NUS",      short: "NUS",      link: "https://www.nus.edu.sg/oam/admissions/international-qualifications-for-foreigners" },
-      ntu: { name: "NTU",      short: "NTU",      link: "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications" },
-      um:  { name: "UM",       short: "UM",       link: "https://study.um.edu.my/how-to-apply" },
+      nus: { name: "NUS", short: "NUS", link: "https://www.nus.edu.sg/oam/admissions/international-qualifications-for-foreigners" },
+      ntu: { name: "NTU", short: "NTU", link: "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications" },
+      um:  { name: "UM", short: "UM", link: "https://study.um.edu.my/how-to-apply" },
     };
 
     const CHECKLIST_ITEMS = [
-      { school: "uc",   id: "uc-info-reg",    type: "register", date: "2026-07-18", title: "Register for UC campus virtual info sessions", note: "Sessions typically run Aug–Nov. Register ~4 weeks before your target session.", est: true },
-      { school: "uc",   id: "uc-open",        type: "open",     date: "2026-08-01", title: "UC application portal opens (draft)", note: "apply.universityofcalifornia.edu", est: false },
-      { school: "uc",   id: "uc-info",        type: "info",     date: "2026-08-15", title: "Attend UC campus virtual info sessions (ongoing est. Aug–Nov 2026)", note: "Check each campus admissions site.", est: true },
-      { school: "hku",  id: "hku-talent-reg", type: "register", date: "2026-09-10", title: "HKU Talent Search Scheme self-nomination opens", note: "Parallel to main app; programme-specific.", est: true },
-      { school: "thu",  id: "thu-info-reg",   type: "register", date: "2026-09-02", title: "Register for Tsinghua int'l undergrad info session", note: "Sessions usually coincide with application open (~Sep 30). Register ~4 weeks ahead.", est: true },
-      { school: "hku",  id: "hku-info-reg",   type: "register", date: "2026-09-03", title: "Register for HKU International Admissions Talk", note: "Online talks when int'l apps open (~Oct 1). Register ~4 weeks ahead.", est: true },
-      { school: "cuhk", id: "cuhk-info-reg",  type: "register", date: "2026-09-13", title: "Register for CUHK Information Day", note: "2025 was Oct 11. Register ~4 weeks ahead.", est: true },
-      { school: "thu",  id: "thu-info",       type: "info",     date: "2026-09-30", title: "Tsinghua international info session (est. late Sep 2026)", note: "international.join-tsinghua.edu.cn", est: true },
-      { school: "thu",  id: "thu-open",       type: "open",     date: "2026-09-30", title: "Tsinghua English programs application opens (8 AM Beijing)", note: "Global Leaders + URD. apply.join-tsinghua.edu.cn/international", est: true },
-      { school: "uc",   id: "uc-file-start",  type: "prep",     date: "2026-10-01", title: "UC filing period opens", note: "Submit all campuses in one application.", est: false },
-      { school: "hku",  id: "hku-info",       type: "info",     date: "2026-10-01", title: "HKU Online International Admissions Talk (est. ~5–6 PM HKT)", note: "admissions.hku.hk/events", est: true },
-      { school: "hku",  id: "hku-open",       type: "open",     date: "2026-10-01", title: "HKU international application portal opens", note: "Typically Sep/Oct each year.", est: true },
-      { school: "cuhk", id: "cuhk-open",      type: "open",     date: "2026-10-02", title: "CUHK international application opens", note: "One application for all rounds.", est: true },
-      { school: "cuhk", id: "cuhk-info",      type: "info",     date: "2026-10-11", title: "CUHK Information Day (est. ~9 AM–6 PM HKT)", note: "infoday.cuhk.edu.hk — Hong Kong campus.", est: true },
-      { school: "hku",  id: "hku-apply-early",type: "rolling",  date: "2026-10-15", title: "Submit HKU application — target early Oct", note: "Rolling after first round; earlier strongly recommended.", est: true },
-      { school: "ntu",  id: "ntu-open",       type: "open",     date: "2026-10-15", title: "NTU international application opens", note: "US HS + AP track.", est: true },
-      { school: "thu",  id: "thu-portfolio",  type: "prep",     date: "2026-10-15", title: "Prepare Tsinghua URD portfolio + application materials", note: "URD requires portfolio; integrative test after review.", est: true },
-      { school: "cuhk", id: "cuhk-advance",   type: "deadline", date: "2026-11-13", title: "CUHK Advance Offer Round deadline (11:59 PM HKT)", note: "Optional early consideration; not binding.", est: true },
-      { school: "uc",   id: "uc-deadline",    type: "deadline", date: "2026-11-30", title: "UC filing deadline — 11:59 PM Pacific", note: "Hard deadline. No ED/EA.", est: false },
-      { school: "thu",  id: "thu-r1",         type: "deadline", date: "2026-11-28", title: "Tsinghua Round 1 ends (5 PM Beijing est.)", note: "Optional earlier round.", est: true },
-      { school: "hku",  id: "hku-r1",         type: "deadline", date: "2026-11-26", title: "HKU first-round evaluation deadline (noon HKT)", note: "After this: rolling until close.", est: true },
-      { school: "hku",  id: "hku-talent",     type: "deadline", date: "2026-12-01", title: "HKU Talent Search Scheme nomination deadline", note: "admissions.hku.hk — programme-specific.", est: true },
-      { school: "nus",  id: "nus-open",       type: "open",     date: "2026-12-03", title: "NUS international application opens", note: "Single annual window only.", est: true },
-      { school: "cuhk", id: "cuhk-regular",   type: "deadline", date: "2027-01-08", title: "CUHK Regular Round deadline (11:59 PM HKT)", note: "", est: true },
-      { school: "um",   id: "um-info-reg",    type: "register", date: "2027-01-12", title: "Register for UM education fair / info event", note: "UM announces fairs ad hoc (~Feb 9). Register ~4 weeks ahead.", est: true },
-      { school: "nus",  id: "nus-close",      type: "deadline", date: "2027-02-23", title: "NUS international application closes", note: "Outcomes mostly by July.", est: true },
-      { school: "ntu",  id: "ntu-info-reg",   type: "register", date: "2027-01-24", title: "Register for NTU int'l student webinar", note: "2026 int'l webinar was Feb 21. Register ~4 weeks ahead.", est: true },
-      { school: "nus",  id: "nus-info-reg",   type: "register", date: "2027-01-31", title: "Register for NUS Undergraduate Open House", note: "2026 OH was Feb 28 + Mar 7 campus. Register ~4 weeks ahead.", est: true },
-      { school: "um",   id: "um-info",        type: "info",     date: "2027-02-09", title: "UM international info / fair (est. early Feb 2027)", note: "Verify on MAYA portal news.", est: true },
-      { school: "um",   id: "um-open",        type: "open",     date: "2027-02-09", title: "UM international undergraduate application opens", note: "Oct 2027 intake. maya.um.edu.my", est: true },
-      { school: "ntu",  id: "ntu-info",       type: "info",     date: "2027-02-21", title: "NTU webinar for international students (est. ~2 PM SGT)", note: "ntu.edu.sg/OpenHouse", est: true },
-      { school: "thu",  id: "thu-close",      type: "deadline", date: "2027-02-28", title: "Tsinghua English programs application closes (5 PM Beijing)", note: "apply.join-tsinghua.edu.cn/international", est: true },
-      { school: "nus",  id: "nus-info",       type: "info",     date: "2027-02-28", title: "NUS Undergraduate Admissions Open House online", note: "nus.edu.sg/oam", est: true },
-      { school: "ntu",  id: "ntu-oh",         type: "info",     date: "2027-02-28", title: "NTU Open House on campus (est. ~9:30 AM–6:30 PM SGT)", note: "Feb 28 pattern from 2026.", est: true },
-      { school: "um",   id: "um-apply-early", type: "rolling",  date: "2027-03-01", title: "Submit UM application — target early in window", note: "Rolling review; ~5 working days to hear back.", est: true },
-      { school: "nus",  id: "nus-campus",     type: "info",     date: "2027-03-07", title: "NUS Open House on-campus day", note: "Kent Ridge campus, Singapore.", est: true },
-      { school: "uc",   id: "uc-decisions",   type: "prep",     date: "2027-03-15", title: "UC admission decisions (est. late Feb–March 2027)", note: "Varies by campus.", est: true },
-      { school: "ntu",  id: "ntu-close",      type: "deadline", date: "2027-03-19", title: "NTU application closes — US HS / AP track", note: "Submit docs within 3 days after close.", est: true },
-      { school: "cuhk", id: "cuhk-extended",  type: "deadline", date: "2027-05-29", title: "CUHK Extended deadline (11:59 PM HKT)", note: "Medicine not eligible for Advance/Extended.", est: true },
-      { school: "hku",  id: "hku-close",      type: "deadline", date: "2027-08-21", title: "HKU international applications close (noon HKT est.)", note: "", est: true },
-      { school: "um",   id: "um-close",       type: "deadline", date: "2027-08-30", title: "UM international application closes", note: "Bachelor's international channel.", est: true },
+      /* ── Jul–Aug 2026 ── */
+      { school: "uc",   id: "uc-info-reg",       type: "register",  date: "2026-07-18", est: true,  title: "Register for UC campus virtual info sessions",
+        note: "Sessions typically Aug–Nov. Register ~4 weeks before your target session." },
+      { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU / Tsinghua)",
+        note: "NUS & NTU require SAT or ACT for US HS + AP. Allow 3–4 weeks for scores to reach schools via College Board." },
+      { school: "uc",   id: "uc-open",           type: "open",      date: "2026-08-01", est: false, title: "UC application portal opens (draft)",
+        note: "apply.universityofcalifornia.edu — no counselor letters required." },
+      { school: "uc",   id: "uc-counselor-ask",  type: "counselor", date: "2026-08-15", est: true,  title: "Ask counselor: UC needs self-reported grades only (no recommendation letters)",
+        note: "You will self-report A–G courses and AP plans on the application. Official transcript only if admitted." },
+      { school: "uc",   id: "uc-info",           type: "info",      date: "2026-08-15", est: true,  title: "Attend UC campus virtual info sessions (ongoing est. Aug–Nov 2026)",
+        note: "Check each campus admissions site." },
+
+      /* ── Sep 2026 ── */
+      { school: "thu",  id: "thu-info-reg",      type: "register",  date: "2026-09-02", est: true,  title: "Register for Tsinghua int'l undergrad info session",
+        note: "Usually coincides with application open (~Sep 30). Register ~4 weeks ahead." },
+      { school: "hku",  id: "hku-info-reg",      type: "register",  date: "2026-09-03", est: true,  title: "Register for HKU International Admissions Talk",
+        note: "Online talks when int'l apps open (~Oct 1). Register ~4 weeks ahead." },
+      { school: "thu",  id: "thu-counselor-ask", type: "counselor", date: "2026-09-05", est: true,  title: "Ask counselor for official transcript + any Tsinghua supporting documents",
+        note: "Tsinghua int'l app requires transcripts, SAT/ACT/AP reports, personal statement. No separate counselor portal — you upload." },
+      { school: "hku",  id: "hku-counselor-ask", type: "counselor", date: "2026-09-10", est: true,  title: "Ask counselor to be your HKU counsellor/referee — must agree BEFORE you submit",
+        note: "Nominate in app; counsellor enters predicted grades + reference in HKU Counsellors' Portal. Referee contacts cannot be edited after submission." },
+      { school: "hku",  id: "hku-talent-reg",    type: "register",  date: "2026-09-10", est: true,  title: "HKU Talent Search Scheme self-nomination opens (optional)",
+        note: "Parallel to main app; programme-specific. Nomination ~Sep–Dec." },
+      { school: "cuhk", id: "cuhk-counselor-ask",type: "counselor", date: "2026-09-12", est: true,  title: "Ask 1–3 academic referees for CUHK (counselor + teachers)",
+        note: "Referees get email AFTER you submit app + pay fee. Each has 21 days to complete CUHK Recommendation System." },
+      { school: "cuhk", id: "cuhk-info-reg",     type: "register",  date: "2026-09-13", est: true,  title: "Register for CUHK Information Day",
+        note: "2025 was Oct 11. Register ~4 weeks ahead." },
+      { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: "2026-09-15", est: true,  title: "Ask counselor for official transcript + school documents for NTU upload",
+        note: "Prepare PDFs before NTU portal opens (~Oct 15). NTU may require counselor-certified docs per checklist." },
+
+      /* ── Oct 2026 ── */
+      { school: "thu",  id: "thu-info",          type: "info",      date: "2026-09-30", est: true,  title: "Tsinghua international info session (est. late Sep 2026)",
+        note: "international.join-tsinghua.edu.cn" },
+      { school: "thu",  id: "thu-open",          type: "open",      date: "2026-09-30", est: true,  title: "Tsinghua English programs application opens (8 AM Beijing)",
+        note: "Global Leaders + URD. apply.join-tsinghua.edu.cn/international" },
+      { school: "scores", id: "scores-sat-send-early", type: "scores", date: "2026-09-30", est: true, title: "Send official SAT/ACT to Tsinghua via College Board (if using SAT/ACT)",
+        note: "Upload score reports in Tsinghua portal too. Check programme guide for minimum scores." },
+      { school: "uc",   id: "uc-file-start",     type: "prep",      date: "2026-10-01", est: false, title: "UC filing period opens",
+        note: "Submit all campuses in one application." },
+      { school: "hku",  id: "hku-info",          type: "info",      date: "2026-10-01", est: true,  title: "HKU Online International Admissions Talk (est. ~5–6 PM HKT)",
+        note: "admissions.hku.hk/events" },
+      { school: "hku",  id: "hku-open",          type: "open",      date: "2026-10-01", est: true,  title: "HKU international application portal opens",
+        note: "Nominate counsellor in app before submitting." },
+      { school: "cuhk", id: "cuhk-open",         type: "open",      date: "2026-10-02", est: true,  title: "CUHK international application opens",
+        note: "One application for all rounds. Enter referee emails before submit." },
+      { school: "uc",   id: "uc-ap-selfreport",  type: "scores",    date: "2026-10-10", est: true,  title: "Self-report all AP courses + planned May 2027 exams on UC application",
+        note: "UC does not want letters of recommendation. Self-report all grades accurately from transcript." },
+      { school: "thu",  id: "thu-scores-upload", type: "scores",    date: "2026-10-10", est: true,  title: "Upload SAT/ACT/AP score reports to Tsinghua application",
+        note: "Include best available scores; update if you retest." },
+      { school: "thu",  id: "thu-portfolio",     type: "prep",      date: "2026-10-15", est: true,  title: "Prepare Tsinghua URD portfolio + Global Leaders materials",
+        note: "URD requires portfolio; integrative test after document review." },
+      { school: "ntu",  id: "ntu-open",          type: "open",      date: "2026-10-15", est: true,  title: "NTU international application opens",
+        note: "US HS + AP track. Upload transcript + test reports per checklist." },
+      { school: "hku",  id: "hku-apply-early",   type: "rolling",   date: "2026-10-15", est: true,  title: "Submit HKU application — target mid-Oct (triggers counsellor portal email)",
+        note: "Counsellor should input predicted grades ASAP; rolling after first round." },
+      { school: "cuhk", id: "cuhk-info",         type: "info",      date: "2026-10-11", est: true,  title: "CUHK Information Day (est. ~9 AM–6 PM HKT)",
+        note: "infoday.cuhk.edu.hk — Hong Kong campus." },
+      { school: "cuhk", id: "cuhk-submit-early", type: "prep",      date: "2026-10-18", est: true,  title: "Submit CUHK application (target mid-Oct for Advance Offer round)",
+        note: "Referees have 21 days from invite. Submit supporting docs within 14 days of application." },
+      { school: "cuhk", id: "cuhk-docs-14d",     type: "deadline",  date: "2026-11-01", est: true,  title: "CUHK supporting documents due (~14 days after application est.)",
+        note: "Transcripts, passport copy, personal statement. Referees should complete within 21 days of invite." },
+
+      /* ── Nov 2026 ── */
+      { school: "all",  id: "ap-exam-register",  type: "scores",    date: "2026-11-01", est: true,  title: "Register for May 2027 AP exams via school (College Board deadline ~Nov)",
+        note: "Required for score reporting to NUS, NTU, UC (if admitted), and other schools." },
+      { school: "nus",  id: "nus-counselor-ask", type: "counselor", date: "2026-11-15", est: true,  title: "Ask counselor for certified transcript + grading system explanation for NUS",
+        note: "NUS requires transcript, grading explanation, and standardized tests in Applicant Portal." },
+      { school: "cuhk", id: "cuhk-advance",      type: "deadline",  date: "2026-11-13", est: true,  title: "CUHK Advance Offer Round deadline (11:59 PM HKT)",
+        note: "Ensure all referees have submitted by this date for advance consideration." },
+      { school: "hku",  id: "hku-r1",            type: "deadline",  date: "2026-11-26", est: true,  title: "HKU first-round evaluation deadline (noon HKT)",
+        note: "Counsellor predicted grades + reference should be in HKU portal by this date." },
+      { school: "hku",  id: "hku-counselor-r1",  type: "counselor", date: "2026-11-26", est: true,  title: "HKU counsellor: predicted grades + reference due (first round)",
+        note: "Portal stays open after, but first-round applicants need counsellor input by noon HKT. counsellors@hku.hk if issues." },
+      { school: "thu",  id: "thu-r1",            type: "deadline",  date: "2026-11-28", est: true,  title: "Tsinghua Round 1 ends (5 PM Beijing est.)",
+        note: "Optional earlier round for general int'l apps." },
+      { school: "uc",   id: "uc-deadline",       type: "deadline",  date: "2026-11-30", est: false, title: "UC filing deadline — 11:59 PM Pacific",
+        note: "Hard deadline. No ED/EA. Self-reported grades only at this stage." },
+      { school: "hku",  id: "hku-talent",        type: "deadline",  date: "2026-12-01", est: true,  title: "HKU Talent Search Scheme nomination deadline (est.)",
+        note: "Programme-specific; optional." },
+
+      /* ── Dec 2026 – Jan 2027 ── */
+      { school: "nus",  id: "nus-open",          type: "open",      date: "2026-12-03", est: true,  title: "NUS international application opens",
+        note: "Single annual window. SAT/ACT must reach NUS by application close." },
+      { school: "nus",  id: "scores-sat-nus",    type: "scores",    date: "2026-12-15", est: true,  title: "Send official SAT/ACT to NUS via College Board (code 3720)",
+        note: "Mandatory for US HS applicants. Also upload copy to NUS Applicant Portal. Allow 2–3 weeks processing." },
+      { school: "cuhk", id: "cuhk-regular",      type: "deadline",  date: "2027-01-08", est: true,  title: "CUHK Regular Round deadline (11:59 PM HKT)",
+        note: "All referees should be complete by this date." },
+      { school: "um",   id: "um-info-reg",       type: "register",  date: "2027-01-12", est: true,  title: "Register for UM education fair / info event",
+        note: "UM announces fairs ad hoc (~Feb 9). Register ~4 weeks ahead." },
+      { school: "um",   id: "um-counselor-ask",  type: "counselor", date: "2027-01-15", est: true,  title: "Ask counselor for official transcript + documents for UM MAYA application",
+        note: "UM international channel. IELTS/TOEFL required unless exempt." },
+      { school: "ntu",  id: "ntu-info-reg",      type: "register",  date: "2027-01-24", est: true,  title: "Register for NTU int'l student webinar",
+        note: "2026 webinar was Feb 21. Register ~4 weeks ahead." },
+      { school: "nus",  id: "nus-info-reg",      type: "register",  date: "2027-01-31", est: true,  title: "Register for NUS Undergraduate Open House",
+        note: "2026 OH was Feb 28 + Mar 7 campus. Register ~4 weeks ahead." },
+
+      /* ── Feb–Mar 2027 ── */
+      { school: "um",   id: "um-info",           type: "info",      date: "2027-02-09", est: true,  title: "UM international info / fair (est. early Feb 2027)",
+        note: "Verify on MAYA portal news." },
+      { school: "um",   id: "um-open",           type: "open",      date: "2027-02-09", est: true,  title: "UM international undergraduate application opens",
+        note: "Oct 2027 intake. maya.um.edu.my" },
+      { school: "um",   id: "um-toefl",          type: "scores",    date: "2027-02-09", est: true,  title: "Submit IELTS/TOEFL with UM application (if required)",
+        note: "Typical minimum IELTS 6.0 / TOEFL 79. Send official scores or upload per MAYA instructions." },
+      { school: "nus",  id: "nus-close",         type: "deadline",  date: "2027-02-23", est: true,  title: "NUS international application closes",
+        note: "SAT/ACT must be received by this date. Outcomes mostly by July." },
+      { school: "ntu",  id: "ntu-info",          type: "info",      date: "2027-02-21", est: true,  title: "NTU webinar for international students (est. ~2 PM SGT)",
+        note: "ntu.edu.sg/OpenHouse" },
+      { school: "thu",  id: "thu-close",         type: "deadline",  date: "2027-02-28", est: true,  title: "Tsinghua English programs application closes (5 PM Beijing)",
+        note: "apply.join-tsinghua.edu.cn/international" },
+      { school: "nus",  id: "nus-info",          type: "info",      date: "2027-02-28", est: true,  title: "NUS Undergraduate Admissions Open House online",
+        note: "nus.edu.sg/oam" },
+      { school: "ntu",  id: "ntu-oh",            type: "info",      date: "2027-02-28", est: true,  title: "NTU Open House on campus (est. ~9:30 AM–6:30 PM SGT)",
+        note: "Feb 28 pattern from 2026 cycle." },
+      { school: "um",   id: "um-apply-early",    type: "rolling",   date: "2027-03-01", est: true,  title: "Submit UM application — target early in window",
+        note: "Rolling review; ~5 working days to hear back." },
+      { school: "ntu",  id: "scores-sat-ntu",    type: "scores",    date: "2027-03-05", est: true,  title: "Official SAT/ACT must reach NTU before application close",
+        note: "Send via College Board to NTU. Upload copies per NTU checklist." },
+      { school: "nus",  id: "nus-campus",        type: "info",      date: "2027-03-07", est: true,  title: "NUS Open House on-campus day",
+        note: "Kent Ridge campus, Singapore." },
+      { school: "uc",   id: "uc-decisions",      type: "prep",      date: "2027-03-15", est: true,  title: "UC admission decisions (est. late Feb–March 2027)",
+        note: "Varies by campus." },
+      { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: true,  title: "NTU application closes — US HS / AP track",
+        note: "Submit docs within 3 days after close." },
+
+      /* ── May–Aug 2027 ── */
+      { school: "cuhk", id: "cuhk-extended",     type: "deadline",  date: "2027-05-29", est: true,  title: "CUHK Extended deadline (11:59 PM HKT)",
+        note: "Medicine not eligible for Advance/Extended." },
+      { school: "uc",   id: "uc-sir",            type: "deadline",  date: "2027-05-01", est: true,  title: "UC Statement of Intent to Register (if admitted, est. May 1)",
+        note: "Deadline varies by campus; check your offer letter." },
+      { school: "nus",  id: "scores-ap-nus",     type: "scores",    date: "2027-07-09", est: true,  title: "May 2027 AP scores: send to NUS (College Board code 3720) + upload within 3 days",
+        note: "NUS deadline ~Jul 9 for May 2027 AP session. Upload to Applicant Portal same week scores release." },
+      { school: "uc",   id: "uc-transcript",     type: "scores",    date: "2027-07-01", est: true,  title: "If UC-admitted: official high school transcript to enrolling campus",
+        note: "Only after accepting offer (SIR). Postmarked by Jul 1. Do not send before admission." },
+      { school: "ntu",  id: "scores-ap-ntu",     type: "scores",    date: "2027-07-15", est: true,  title: "May 2027 AP scores due to NTU (est. Jul 15)",
+        note: "Per 2026 cycle pattern. Send via College Board + upload to NTU portal." },
+      { school: "uc",   id: "uc-ap-official",    type: "scores",    date: "2027-07-15", est: true,  title: "If UC-admitted: official AP scores to enrolling campus via College Board",
+        note: "Only after accepting offer. Deadline Jul 15 for fall enrollees." },
+      { school: "hku",  id: "hku-close",         type: "deadline",  date: "2027-08-21", est: true,  title: "HKU international applications close (noon HKT est.)",
+        note: "" },
+      { school: "um",   id: "um-close",          type: "deadline",  date: "2027-08-30", est: true,  title: "UM international application closes",
+        note: "Bachelor's international channel." },
     ];
 
     const TAG_LABELS = {
-      info: "Info session",
-      register: "Register by",
-      open: "Opens",
-      deadline: "Deadline",
-      rolling: "Rolling — early",
-      prep: "Prep"
+      info: "Info session", register: "Register by", open: "Opens",
+      deadline: "Deadline", rolling: "Rolling — early", prep: "Prep",
+      counselor: "Counselor", scores: "Scores",
     };
 
     function parseDate(str) {
@@ -423,10 +337,7 @@ gantt
 
     function formatDate(str) {
       return parseDate(str).toLocaleDateString(undefined, {
-        weekday: "short",
-        year: "numeric",
-        month: "short",
-        day: "numeric"
+        weekday: "short", year: "numeric", month: "short", day: "numeric",
       });
     }
 
@@ -435,13 +346,10 @@ gantt
       catch { return {}; }
     }
 
-    function saveState(state) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
+    function saveState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
     function isPast(dateStr) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
       return parseDate(dateStr) < today;
     }
 
@@ -451,9 +359,7 @@ gantt
       Object.entries(SCHOOLS).forEach(([key, s]) => {
         const item = document.createElement("span");
         item.className = "school-legend-item";
-        item.innerHTML =
-          `<span class="school-dot" style="background:${SCHOOL_COLORS[key]}"></span>` +
-          `<a href="${s.link}" target="_blank" rel="noopener">${s.name}</a>`;
+        item.innerHTML = `<span class="school-dot" style="background:${SCHOOL_COLORS[key]}"></span><a href="${s.link}" target="_blank" rel="noopener">${s.name}</a>`;
         el.appendChild(item);
       });
     }
@@ -461,97 +367,69 @@ gantt
     function buildChecklist() {
       const ul = document.getElementById("checklist");
       const state = loadState();
-      let total = 0;
-      let done = 0;
-
+      let total = 0, done = 0;
       const sorted = [...CHECKLIST_ITEMS].sort((a, b) => {
         const d = a.date.localeCompare(b.date);
-        if (d !== 0) return d;
-        return a.title.localeCompare(b.title);
+        return d !== 0 ? d : a.title.localeCompare(b.title);
       });
 
       ul.innerHTML = "";
-
       sorted.forEach((item) => {
         total++;
         const checked = !!state[item.id];
         if (checked) done++;
 
-        const school = SCHOOLS[item.school];
+        const schoolKey = item.school === "all" || item.school === "scores" ? "uc" : item.school;
+        const school = SCHOOLS[schoolKey] || { short: item.school === "all" ? "All" : "Scores", link: "#" };
+        const rowClass = item.school === "all" || item.school === "scores" ? "" : `school-${item.school}`;
+
         const li = document.createElement("li");
-        li.className = `school-${item.school}`;
+        li.className = rowClass;
         if (isPast(item.date)) li.classList.add("past");
         if (checked) li.classList.add("done-item");
 
-        const estTag = item.est ? '<span class="tag est">est.</span>' : "";
-        const typeTag = `<span class="tag ${item.type}">${TAG_LABELS[item.type]}</span>`;
-        const schoolTag = `<span class="tag school school-${item.school}">${school.short}</span>`;
+        const schoolTag = item.school === "all"
+          ? '<span class="tag school" style="background:#374151;color:#d1d5db">All schools</span>'
+          : item.school === "scores"
+          ? '<span class="tag school" style="background:#3b0764;color:#e9d5ff">Scores</span>'
+          : `<span class="tag school school-${item.school}">${school.short}</span>`;
 
         li.innerHTML = `
           <input type="checkbox" id="${item.id}" ${checked ? "checked" : ""} aria-label="${item.title}" />
           <div>
-            <div class="tag-row">${schoolTag}${typeTag}${estTag}</div>
+            <div class="tag-row">${schoolTag}<span class="tag ${item.type}">${TAG_LABELS[item.type]}</span>${item.est ? '<span class="tag est">est.</span>' : ""}</div>
             <div class="item-title">${item.title}</div>
             <div class="item-meta"><strong>${formatDate(item.date)}</strong>${item.note ? " · " + item.note : ""}</div>
-          </div>
-        `;
+          </div>`;
 
         li.querySelector("input").addEventListener("change", (e) => {
           const s = loadState();
-          if (e.target.checked) s[item.id] = true;
-          else delete s[item.id];
+          if (e.target.checked) s[item.id] = true; else delete s[item.id];
           saveState(s);
           buildChecklist();
         });
-
         ul.appendChild(li);
       });
-
-      document.getElementById("checklist-progress").textContent =
-        `${done} of ${total} completed`;
+      document.getElementById("checklist-progress").textContent = `${done} of ${total} completed`;
     }
 
     document.getElementById("btn-clear-done").addEventListener("click", () => {
-      if (confirm("Clear all checked items?")) {
-        localStorage.removeItem(STORAGE_KEY);
-        buildChecklist();
-      }
+      if (confirm("Clear all checked items?")) { localStorage.removeItem(STORAGE_KEY); buildChecklist(); }
     });
 
     mermaid.initialize({
-      startOnLoad: false,
-      theme: "dark",
-      securityLevel: "loose",
+      startOnLoad: false, theme: "dark", securityLevel: "loose",
       gantt: {
-        useMaxWidth: false,
-        titleTopMargin: 28,
-        barHeight: 26,
-        barGap: 8,
-        topPadding: 90,
-        leftPadding: 280,
-        gridLineStartPadding: 280,
-        fontSize: 12,
-        sectionFontSize: 12,
-        axisFormat: "%b %Y",
-        tickInterval: "1month",
-        todayMarker: { stroke: "#ef4444", "stroke-width": 3, opacity: 1 }
-      }
+        useMaxWidth: false, titleTopMargin: 28, barHeight: 26, barGap: 8,
+        topPadding: 90, leftPadding: 280, gridLineStartPadding: 280,
+        fontSize: 12, sectionFontSize: 12, axisFormat: "%b %Y", tickInterval: "1month",
+        todayMarker: { stroke: "#ef4444", "stroke-width": 3, opacity: 1 },
+      },
     });
 
-    function formatToday() {
-      return new Date().toLocaleDateString(undefined, {
-        weekday: "long", year: "numeric", month: "long", day: "numeric"
-      });
-    }
-
-    function formatTime() {
-      return new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-    }
-
     function updateTodayLabel() {
-      document.getElementById("today-label").textContent = "Today: " + formatToday();
-      document.getElementById("today-updated").textContent =
-        "Chart rendered at " + formatTime() + " · auto-refresh at midnight";
+      document.getElementById("today-label").textContent = "Today: " + new Date().toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+      document.getElementById("today-updated").textContent = "Chart rendered at " + new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) + " · auto-refresh at midnight";
     }
 
     async function renderChart() {
@@ -570,19 +448,13 @@ gantt
     }
 
     function scheduleMidnightRefresh() {
-      setTimeout(async () => {
-        await renderChart();
-        scheduleMidnightRefresh();
-      }, msUntilMidnight());
+      setTimeout(async () => { await renderChart(); scheduleMidnightRefresh(); }, msUntilMidnight());
     }
 
     renderSchoolLegend();
     buildChecklist();
     renderChart().then(scheduleMidnightRefresh);
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") renderChart();
-    });
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") renderChart(); });
   </script>
 </body>
 </html>
