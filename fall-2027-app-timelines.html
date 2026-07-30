@@ -51,6 +51,7 @@
     .checklist li.school-thu { border-left-color: #ef4444; background: rgba(239,68,68,0.07); }
     .checklist li.school-nus { border-left-color: #f59e0b; background: rgba(245,158,11,0.07); }
     .checklist li.school-ntu { border-left-color: #06b6d4; background: rgba(6,182,212,0.07); }
+    .checklist li.school-ntutw { border-left-color: #ec4899; background: rgba(236,72,153,0.07); }
     .checklist li.school-um { border-left-color: #eab308; background: rgba(234,179,8,0.07); }
     .checklist input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; accent-color: var(--accent); }
     .item-title { color: var(--text); font-weight: 500; }
@@ -73,6 +74,7 @@
     .tag.school-thu { background: #7f1d1d; color: #fca5a5; }
     .tag.school-nus { background: #78350f; color: #fcd34d; }
     .tag.school-ntu { background: #164e63; color: #67e8f9; }
+    .tag.school-ntutw { background: #831843; color: #f9a8d4; }
     .tag.school-um { background: #713f12; color: #fde047; }
   </style>
 </head>
@@ -124,11 +126,17 @@ gantt
     Round 1 ends                       :milestone, m_thu_r1, 2026-11-28, 1d
     Application closes                 :milestone, m_thu_end, 2027-02-28, 1d
 
+    section NTU Taiwan International
+    Round 1 application window         :ntutw_r1, 2026-09-29, 2026-11-05
+    Round 1 deadline                   :milestone, m_ntutw_r1, 2026-11-05, 1d
+    Round 2 application window         :ntutw_r2, 2026-12-01, 2027-01-19
+    Round 2 deadline                   :milestone, m_ntutw_r2, 2027-01-19, 1d
+
     section NUS International
     Application window                 :nus_win, 2026-12-03, 2027-02-23
     Application closes                 :milestone, m_nus_end, 2027-02-23, 1d
 
-    section NTU US high school AP
+    section NTU SG US high school AP
     Application window                 :ntu_win, 2026-10-15, 2027-03-19
     Application closes AP track        :milestone, m_ntu_end, 2027-03-19, 1d
 
@@ -163,11 +171,11 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v4";
+    const STORAGE_KEY = "fall2027-checklist-v5";
 
     const SCHOOL_COLORS = {
       uc: "#3b82f6", hku: "#10b981", cuhk: "#a855f7", thu: "#ef4444",
-      nus: "#f59e0b", ntu: "#06b6d4", um: "#eab308",
+      nus: "#f59e0b", ntu: "#06b6d4", ntutw: "#ec4899", um: "#eab308",
     };
 
     const SCHOOLS = {
@@ -176,7 +184,8 @@ gantt
       cuhk:{ name: "CUHK", short: "CUHK", link: "https://admission.cuhk.edu.hk/application/overseas-other-qualifications-non-local-international-team/" },
       thu: { name: "Tsinghua", short: "Tsinghua", link: "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm" },
       nus: { name: "NUS", short: "NUS", link: "https://www.nus.edu.sg/oam/admissions/international-qualifications-for-foreigners" },
-      ntu: { name: "NTU", short: "NTU", link: "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications" },
+      ntu: { name: "NTU (SG)", short: "NTU (SG)", link: "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications" },
+      ntutw: { name: "NTU Taiwan", short: "NTU Taiwan", link: "https://admissions.ntu.edu.tw/apply/degree-students/international-students/" },
       um:  { name: "UM", short: "UM", link: "https://study.um.edu.my/how-to-apply" },
     };
 
@@ -184,8 +193,8 @@ gantt
       /* ── Jul–Aug 2026 ── */
       { school: "uc",   id: "uc-info-reg",       type: "register",  date: "2026-07-18", est: true,  title: "Register for UC campus virtual info sessions",
         note: "Sessions typically Aug–Nov. Register ~4 weeks before your target session." },
-      { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU / Tsinghua)",
-        note: "NUS & NTU require SAT or ACT for US HS + AP. Allow 3–4 weeks for scores to reach schools via College Board." },
+      { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU (SG) / Tsinghua)",
+        note: "NUS & NTU (SG) require SAT or ACT for US HS + AP. Allow 3–4 weeks for scores to reach schools via College Board." },
       { school: "uc",   id: "uc-open",           type: "open",      date: "2026-08-01", est: false, title: "UC application portal opens (draft)",
         note: "apply.universityofcalifornia.edu — no counselor letters required." },
       { school: "uc",   id: "uc-counselor-ask",  type: "counselor", date: "2026-08-15", est: true,  title: "Ask counselor: UC needs self-reported grades only (no recommendation letters)",
@@ -208,14 +217,20 @@ gantt
         note: "Referees get email AFTER you submit app + pay fee. Each has 21 days to complete CUHK Recommendation System." },
       { school: "cuhk", id: "cuhk-info-reg",     type: "register",  date: "2026-09-13", est: true,  title: "Register for CUHK Information Day",
         note: "2025 was Oct 11. Register ~4 weeks ahead." },
-      { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: "2026-09-15", est: true,  title: "Ask counselor for official transcript + school documents for NTU upload",
-        note: "Prepare PDFs before NTU portal opens (~Oct 15). NTU may require counselor-certified docs per checklist." },
+      { school: "ntutw",id: "ntutw-info-reg",    type: "register",  date: "2026-09-16", est: true,  title: "Register for NTU Taiwan international admissions info session",
+        note: "Est. session Oct 14 2026 (2025 pattern). Register ~4 weeks ahead. admissions.ntu.edu.tw" },
+      { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: "2026-09-15", est: true,  title: "Ask counselor for official transcript + school documents for NTU (SG) upload",
+        note: "Prepare PDFs before NTU (SG) portal opens (~Oct 15). NTU may require counselor-certified docs per checklist." },
+      { school: "ntutw",id: "ntutw-counselor-ask",type: "counselor",date: "2026-09-22", est: true,  title: "Ask 1–2 recommenders per department for NTU Taiwan — before applying",
+        note: "International degree students ONLY (not overseas Chinese/HK/Macau). Portal: oiasystem.ntu.edu.tw/globaladmission/foreign/" },
 
       /* ── Oct 2026 ── */
       { school: "thu",  id: "thu-info",          type: "info",      date: "2026-09-30", est: true,  title: "Tsinghua international info session (est. late Sep 2026)",
         note: "international.join-tsinghua.edu.cn" },
       { school: "thu",  id: "thu-open",          type: "open",      date: "2026-09-30", est: true,  title: "Tsinghua English programs application opens (8 AM Beijing)",
         note: "Global Leaders + URD. apply.join-tsinghua.edu.cn/international" },
+      { school: "ntutw",id: "ntutw-r1-open",     type: "open",      date: "2026-09-29", est: false, title: "NTU Taiwan Round 1 opens — September entry (international degree students)",
+        note: "English-taught undergrad programs. Official 2027 dates from admissions.ntu.edu.tw" },
       { school: "scores", id: "scores-sat-send-early", type: "scores", date: "2026-09-30", est: true, title: "Send official SAT/ACT to Tsinghua via College Board (if using SAT/ACT)",
         note: "Upload score reports in Tsinghua portal too. Check programme guide for minimum scores." },
       { school: "uc",   id: "uc-file-start",     type: "prep",      date: "2026-10-01", est: false, title: "UC filing period opens",
@@ -226,13 +241,21 @@ gantt
         note: "Nominate counsellor in app before submitting." },
       { school: "cuhk", id: "cuhk-open",         type: "open",      date: "2026-10-02", est: true,  title: "CUHK international application opens",
         note: "One application for all rounds. Enter referee emails before submit." },
+      { school: "ntutw",id: "ntutw-r1-submit",   type: "prep",      date: "2026-10-05", est: true,  title: "Submit NTU Taiwan application — target early in Round 1 (English-taught programs)",
+        note: "oiasystem.ntu.edu.tw/globaladmission/foreign/ — international degree students channel." },
+      { school: "ntutw",id: "ntutw-toefl",       type: "scores",    date: "2026-10-10", est: true,  title: "Submit TOEFL/IELTS with NTU Taiwan application (CEFR B2 minimum)",
+        note: "English proficiency required with application. Check programme-specific thresholds." },
+      { school: "ntutw",id: "ntutw-sat-optional",type: "scores",   date: "2026-10-10", est: true,  title: "Optional: upload SAT/AP as supporting documents for NTU Taiwan",
+        note: "Not always required for English-taught int'l programs; strengthens application if available." },
       { school: "uc",   id: "uc-ap-selfreport",  type: "scores",    date: "2026-10-10", est: true,  title: "Self-report all AP courses + planned May 2027 exams on UC application",
         note: "UC does not want letters of recommendation. Self-report all grades accurately from transcript." },
       { school: "thu",  id: "thu-scores-upload", type: "scores",    date: "2026-10-10", est: true,  title: "Upload SAT/ACT/AP score reports to Tsinghua application",
         note: "Include best available scores; update if you retest." },
+      { school: "ntutw",id: "ntutw-info",        type: "info",      date: "2026-10-14", est: true,  title: "NTU Taiwan international admissions info session (est. Oct 14 2026)",
+        note: "Based on 2025 pattern. Verify on admissions.ntu.edu.tw" },
       { school: "thu",  id: "thu-portfolio",     type: "prep",      date: "2026-10-15", est: true,  title: "Prepare Tsinghua URD portfolio + Global Leaders materials",
         note: "URD requires portfolio; integrative test after document review." },
-      { school: "ntu",  id: "ntu-open",          type: "open",      date: "2026-10-15", est: true,  title: "NTU international application opens",
+      { school: "ntu",  id: "ntu-open",          type: "open",      date: "2026-10-15", est: true,  title: "NTU (SG) international application opens",
         note: "US HS + AP track. Upload transcript + test reports per checklist." },
       { school: "hku",  id: "hku-apply-early",   type: "rolling",   date: "2026-10-15", est: true,  title: "Submit HKU application — target mid-Oct (triggers counsellor portal email)",
         note: "Counsellor should input predicted grades ASAP; rolling after first round." },
@@ -245,11 +268,13 @@ gantt
 
       /* ── Nov 2026 ── */
       { school: "all",  id: "ap-exam-register",  type: "scores",    date: "2026-11-01", est: true,  title: "Register for May 2027 AP exams via school (College Board deadline ~Nov)",
-        note: "Required for score reporting to NUS, NTU, UC (if admitted), and other schools." },
+        note: "Required for score reporting to NUS, NTU (SG), UC (if admitted), and other schools." },
       { school: "nus",  id: "nus-counselor-ask", type: "counselor", date: "2026-11-15", est: true,  title: "Ask counselor for certified transcript + grading system explanation for NUS",
         note: "NUS requires transcript, grading explanation, and standardized tests in Applicant Portal." },
       { school: "cuhk", id: "cuhk-advance",      type: "deadline",  date: "2026-11-13", est: true,  title: "CUHK Advance Offer Round deadline (11:59 PM HKT)",
         note: "Ensure all referees have submitted by this date for advance consideration." },
+      { school: "ntutw",id: "ntutw-r1-close",    type: "deadline",  date: "2026-11-05", est: true,  title: "NTU Taiwan Round 1 closes (4 PM GMT+8 est.)",
+        note: "September entry — international degree students. Round 2 opens Dec 1 if needed." },
       { school: "hku",  id: "hku-r1",            type: "deadline",  date: "2026-11-26", est: true,  title: "HKU first-round evaluation deadline (noon HKT)",
         note: "Counsellor predicted grades + reference should be in HKU portal by this date." },
       { school: "hku",  id: "hku-counselor-r1",  type: "counselor", date: "2026-11-26", est: true,  title: "HKU counsellor: predicted grades + reference due (first round)",
@@ -262,6 +287,8 @@ gantt
         note: "Programme-specific; optional." },
 
       /* ── Dec 2026 – Jan 2027 ── */
+      { school: "ntutw",id: "ntutw-r2-open",     type: "open",      date: "2026-12-01", est: false, title: "NTU Taiwan Round 2 opens — September entry",
+        note: "International degree students channel. oiasystem.ntu.edu.tw/globaladmission/foreign/" },
       { school: "nus",  id: "nus-open",          type: "open",      date: "2026-12-03", est: true,  title: "NUS international application opens",
         note: "Single annual window. SAT/ACT must reach NUS by application close." },
       { school: "nus",  id: "scores-sat-nus",    type: "scores",    date: "2026-12-15", est: true,  title: "Send official SAT/ACT to NUS via College Board (code 3720)",
@@ -272,7 +299,9 @@ gantt
         note: "UM announces fairs ad hoc (~Feb 9). Register ~4 weeks ahead." },
       { school: "um",   id: "um-counselor-ask",  type: "counselor", date: "2027-01-15", est: true,  title: "Ask counselor for official transcript + documents for UM MAYA application",
         note: "UM international channel. IELTS/TOEFL required unless exempt." },
-      { school: "ntu",  id: "ntu-info-reg",      type: "register",  date: "2027-01-24", est: true,  title: "Register for NTU int'l student webinar",
+      { school: "ntutw",id: "ntutw-r2-close",    type: "deadline",  date: "2027-01-19", est: false, title: "NTU Taiwan Round 2 closes",
+        note: "Final round for Sep 2027 entry — international degree students. admissions.ntu.edu.tw" },
+      { school: "ntu",  id: "ntu-info-reg",      type: "register",  date: "2027-01-24", est: true,  title: "Register for NTU (SG) int'l student webinar",
         note: "2026 webinar was Feb 21. Register ~4 weeks ahead." },
       { school: "nus",  id: "nus-info-reg",      type: "register",  date: "2027-01-31", est: true,  title: "Register for NUS Undergraduate Open House",
         note: "2026 OH was Feb 28 + Mar 7 campus. Register ~4 weeks ahead." },
@@ -286,23 +315,23 @@ gantt
         note: "Typical minimum IELTS 6.0 / TOEFL 79. Send official scores or upload per MAYA instructions." },
       { school: "nus",  id: "nus-close",         type: "deadline",  date: "2027-02-23", est: true,  title: "NUS international application closes",
         note: "SAT/ACT must be received by this date. Outcomes mostly by July." },
-      { school: "ntu",  id: "ntu-info",          type: "info",      date: "2027-02-21", est: true,  title: "NTU webinar for international students (est. ~2 PM SGT)",
+      { school: "ntu",  id: "ntu-info",          type: "info",      date: "2027-02-21", est: true,  title: "NTU (SG) webinar for international students (est. ~2 PM SGT)",
         note: "ntu.edu.sg/OpenHouse" },
       { school: "thu",  id: "thu-close",         type: "deadline",  date: "2027-02-28", est: true,  title: "Tsinghua English programs application closes (5 PM Beijing)",
         note: "apply.join-tsinghua.edu.cn/international" },
       { school: "nus",  id: "nus-info",          type: "info",      date: "2027-02-28", est: true,  title: "NUS Undergraduate Admissions Open House online",
         note: "nus.edu.sg/oam" },
-      { school: "ntu",  id: "ntu-oh",            type: "info",      date: "2027-02-28", est: true,  title: "NTU Open House on campus (est. ~9:30 AM–6:30 PM SGT)",
+      { school: "ntu",  id: "ntu-oh",            type: "info",      date: "2027-02-28", est: true,  title: "NTU (SG) Open House on campus (est. ~9:30 AM–6:30 PM SGT)",
         note: "Feb 28 pattern from 2026 cycle." },
       { school: "um",   id: "um-apply-early",    type: "rolling",   date: "2027-03-01", est: true,  title: "Submit UM application — target early in window",
         note: "Rolling review; ~5 working days to hear back." },
-      { school: "ntu",  id: "scores-sat-ntu",    type: "scores",    date: "2027-03-05", est: true,  title: "Official SAT/ACT must reach NTU before application close",
-        note: "Send via College Board to NTU. Upload copies per NTU checklist." },
+      { school: "ntu",  id: "scores-sat-ntu",    type: "scores",    date: "2027-03-05", est: true,  title: "Official SAT/ACT must reach NTU (SG) before application close",
+        note: "Send via College Board to NTU (SG). Upload copies per NTU checklist." },
       { school: "nus",  id: "nus-campus",        type: "info",      date: "2027-03-07", est: true,  title: "NUS Open House on-campus day",
         note: "Kent Ridge campus, Singapore." },
       { school: "uc",   id: "uc-decisions",      type: "prep",      date: "2027-03-15", est: true,  title: "UC admission decisions (est. late Feb–March 2027)",
         note: "Varies by campus." },
-      { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: true,  title: "NTU application closes — US HS / AP track",
+      { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: true,  title: "NTU (SG) application closes — US HS / AP track",
         note: "Submit docs within 3 days after close." },
 
       /* ── May–Aug 2027 ── */
@@ -314,7 +343,7 @@ gantt
         note: "NUS deadline ~Jul 9 for May 2027 AP session. Upload to Applicant Portal same week scores release." },
       { school: "uc",   id: "uc-transcript",     type: "scores",    date: "2027-07-01", est: true,  title: "If UC-admitted: official high school transcript to enrolling campus",
         note: "Only after accepting offer (SIR). Postmarked by Jul 1. Do not send before admission." },
-      { school: "ntu",  id: "scores-ap-ntu",     type: "scores",    date: "2027-07-15", est: true,  title: "May 2027 AP scores due to NTU (est. Jul 15)",
+      { school: "ntu",  id: "scores-ap-ntu",     type: "scores",    date: "2027-07-15", est: true,  title: "May 2027 AP scores due to NTU (SG) (est. Jul 15)",
         note: "Per 2026 cycle pattern. Send via College Board + upload to NTU portal." },
       { school: "uc",   id: "uc-ap-official",    type: "scores",    date: "2027-07-15", est: true,  title: "If UC-admitted: official AP scores to enrolling campus via College Board",
         note: "Only after accepting offer. Deadline Jul 15 for fall enrollees." },
@@ -440,15 +469,9 @@ gantt
       updateTodayLabel();
     }
 
-    function msUntilMidnight() {
-      const now = new Date();
-      const midnight = new Date(now);
-      midnight.setHours(24, 0, 0, 0);
-      return midnight - now;
-    }
-
     function scheduleMidnightRefresh() {
-      setTimeout(async () => { await renderChart(); scheduleMidnightRefresh(); }, msUntilMidnight());
+      const ms = new Date(); ms.setHours(24, 0, 0, 0); ms.setTime(ms - Date.now());
+      setTimeout(async () => { await renderChart(); scheduleMidnightRefresh(); }, ms);
     }
 
     renderSchoolLegend();
