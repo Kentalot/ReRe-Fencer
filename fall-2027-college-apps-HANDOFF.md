@@ -48,12 +48,11 @@ Per [NTHU IBP FAQ](https://ibp.nthu.edu.tw/faq-2.html): 僑生 may use committee
 - Committee **個人申請** historically listed only niche NTU programs (e.g. 114 cycle: Japanese, Vet Med) — not the main 僑生 pathway for NTU.
 - **Tracked instead:** NTU TW intl foreign portal (`ntutw`) if applying as international.
 
-## i僑卡 (i Compatriot Card) — not iTaiwan
+## i僑卡 (i Compatriot Card)
 
 | System | Purpose | Required for apps? |
 |--------|---------|-------------------|
 | **i僑卡** | OCAC digital member card — discounts, OCAC activity auto-fill | **No** for UECFOCS/NTHU/NTU application login. **Recommended** for OCAC scholarships, work-study, activities after enrollment. [icard.taiwan-world.net](https://icard.taiwan-world.net/) — review ~3–7 business days. **Not** 僑生 identity proof. |
-| **iTaiwan** | Taiwan public Wi‑Fi | **No** — unrelated to admissions |
 
 NTHU 僑生 direct uses 華裔身分認定初審檢核表 + residency docs, not i僑卡.
 
