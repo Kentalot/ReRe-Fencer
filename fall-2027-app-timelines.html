@@ -205,7 +205,7 @@ gantt
   <h2>Checklist — chronological</h2>
   <p class="hint">
     Sorted by date. <span class="tag counselor">Counselor</span> = ask/follow up with school counselor or referees.
-    <span class="tag scores">Scores</span> = SAT/AP/TOEFL submission. Register-by = ~4 weeks before info sessions.
+    <span class="tag scores">Scores</span> = SAT/AP/TOEFL submission. Register-by = ~2 weeks before info sessions.
   </p>
   <div class="card">
     <div class="checklist-toolbar">
@@ -246,8 +246,8 @@ gantt
 
     const CHECKLIST_ITEMS = [
       /* ── Jul–Aug 2026 ── */
-      { school: "uc",   id: "uc-info-reg",       type: "register",  date: "2026-07-18", est: true,  title: "Register for UC campus virtual info sessions",
-        note: "Sessions typically Aug–Nov. Register ~4 weeks before your target session." },
+      { school: "uc",   id: "uc-info-reg",       type: "register",  date: "2026-08-01", est: true,  title: "Register for UC campus virtual info sessions",
+        note: "Sessions typically Aug–Nov. Register ~2 weeks before your target session." },
       { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU (SG) / Tsinghua (China))",
         note: "NUS & NTU (SG) require SAT or ACT for US HS + AP. Allow 3–4 weeks for scores to reach schools via College Board." },
       { school: "all",  id: "icard-apply",       type: "prep",      date: "2026-08-05", est: false, title: "Apply for OCAC i僑卡 (i Compatriot Card) — recommended before Taiwan 僑生 pathways",
@@ -260,10 +260,10 @@ gantt
         note: "Check each campus admissions site." },
 
       /* ── Sep 2026 ── */
-      { school: "thu",  id: "thu-info-reg",      type: "register",  date: "2026-09-02", est: true,  title: "Register for Tsinghua (China) int'l undergrad info session",
-        note: "Usually coincides with application open (~Sep 30). Register ~4 weeks ahead. Check https://is.tsinghua.edu.cn/NAE.htm" },
-      { school: "hku",  id: "hku-info-reg",      type: "register",  date: "2026-09-03", est: true,  title: "Register for HKU International Admissions Talk",
-        note: "Online talks when int'l apps open (~Oct 1). Register ~4 weeks ahead." },
+      { school: "thu",  id: "thu-info-reg",      type: "register",  date: "2026-09-16", est: true,  title: "Register for Tsinghua (China) int'l undergrad info session",
+        note: "Usually coincides with application open (~Sep 30). Register ~2 weeks ahead. Check https://is.tsinghua.edu.cn/NAE.htm" },
+      { school: "hku",  id: "hku-info-reg",      type: "register",  date: "2026-09-17", est: true,  title: "Register for HKU International Admissions Talk",
+        note: "Online talks when int'l apps open (~Oct 1). Register ~2 weeks ahead." },
       { school: "thu",  id: "thu-counselor-ask", type: "counselor", date: "2026-09-05", est: true,  title: "Ask counselor for official transcript + Tsinghua (China) supporting documents",
         note: "Tsinghua (China) int'l app requires transcripts, SAT/ACT/AP reports, personal statement. No separate counselor portal — you upload." },
       { school: "nthu", id: "nthuoc-guide",      type: "open",      date: "2026-07-02", est: false, title: "NTHU 僑生 direct admission guidelines published",
@@ -282,9 +282,9 @@ gantt
         note: "Parallel to main app; programme-specific. Nomination ~Sep–Dec." },
       { school: "cuhk", id: "cuhk-counselor-ask",type: "counselor", date: "2026-09-12", est: true,  title: "Ask 1–3 academic referees for CUHK (counselor + teachers)",
         note: "Referees get email AFTER you submit app + pay fee. Each has 21 days to complete CUHK Recommendation System." },
-      { school: "cuhk", id: "cuhk-info-reg",     type: "register",  date: "2026-09-13", est: true,  title: "Register for CUHK Information Day",
-        note: "2025 was Oct 11. Register ~4 weeks ahead." },
-      { school: "ntutw",id: "ntutw-info-reg",    type: "register",  date: "2026-09-16", est: true,  title: "Register for NTU Taiwan intl admissions info session",
+      { school: "cuhk", id: "cuhk-info-reg",     type: "register",  date: "2026-09-27", est: true,  title: "Register for CUHK Information Day",
+        note: "2025 was Oct 11. Register ~2 weeks ahead." },
+      { school: "ntutw",id: "ntutw-info-reg",    type: "register",  date: "2026-09-30", est: true,  title: "Register for NTU Taiwan intl admissions info session",
         note: "Foreign-national degree-student channel. 僑生 may also apply here if eligible. admissions.ntu.edu.tw" },
       { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: "2026-09-15", est: true,  title: "Ask counselor for official transcript + school documents for NTU (SG) upload",
         note: "Prepare PDFs before NTU (SG) portal opens (~Oct 15). NTU may require counselor-certified docs per checklist." },
@@ -380,18 +380,18 @@ gantt
         note: "Mandatory for US HS applicants. Also upload copy to NUS Applicant Portal. Allow 2–3 weeks processing." },
       { school: "cuhk", id: "cuhk-regular",      type: "deadline",  date: "2027-01-08", est: true,  title: "CUHK Regular Round deadline (11:59 PM HKT)",
         note: "All referees should be complete by this date." },
-      { school: "um",   id: "um-info-reg",       type: "register",  date: "2027-01-12", est: true,  title: "Register for UM education fair / info event",
-        note: "UM announces fairs ad hoc (~Feb 9). Register ~4 weeks ahead." },
+      { school: "um",   id: "um-info-reg",       type: "register",  date: "2027-01-26", est: true,  title: "Register for UM education fair / info event",
+        note: "UM announces fairs ad hoc (~Feb 9). Register ~2 weeks ahead." },
       { school: "um",   id: "um-counselor-ask",  type: "counselor", date: "2027-01-15", est: true,  title: "Ask counselor for official transcript + documents for UM MAYA application",
         note: "UM international channel. IELTS/TOEFL required unless exempt." },
       { school: "nthu", id: "nthuoc-reply",      type: "deadline",  date: "2027-01-28", est: false, title: "NTHU 僑生 direct: enrollment confirmation deadline (5 PM Taiwan)",
         note: "If admitted Jan 22 — confirm in apply.nthu.edu.tw portal by Jan 28 or offer lapses." },
       { school: "ntutw",id: "ntutw-r2-close",    type: "deadline",  date: "2027-01-19", est: false, title: "NTU Taiwan intl Round 2 closes",
         note: "Final intl round for Sep 2027 entry — foreign degree students." },
-      { school: "ntu",  id: "ntu-info-reg",      type: "register",  date: "2027-01-24", est: true,  title: "Register for NTU (SG) int'l student webinar",
-        note: "2026 webinar was Feb 21. Register ~4 weeks ahead." },
-      { school: "nus",  id: "nus-info-reg",      type: "register",  date: "2027-01-31", est: true,  title: "Register for NUS Undergraduate Open House",
-        note: "2026 OH was Feb 28 + Mar 7 campus. Register ~4 weeks ahead." },
+      { school: "ntu",  id: "ntu-info-reg",      type: "register",  date: "2027-02-07", est: true,  title: "Register for NTU (SG) int'l student webinar",
+        note: "2026 webinar was Feb 21. Register ~2 weeks ahead." },
+      { school: "nus",  id: "nus-info-reg",      type: "register",  date: "2027-02-14", est: true,  title: "Register for NUS Undergraduate Open House",
+        note: "2026 OH was Feb 28 + Mar 7 campus. Register ~2 weeks ahead." },
 
       /* ── Feb–Mar 2027 ── */
       { school: "um",   id: "um-info",           type: "info",      date: "2027-02-09", est: true,  title: "UM international info / fair (est. early Feb 2027)",
