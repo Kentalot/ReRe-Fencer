@@ -1,12 +1,12 @@
 # Fall 2027 college applications — handoff
 
-**Last updated:** 2026-08-10
+**Last updated:** 2026-09-16
 
 ## Primary artifact
 
 - `fall-2027-app-timelines.html` — single-page tracker with Mermaid Gantt chart + interactive checklist (localStorage).
 
-Open in a browser (no build step). Checklist state key: `fall2027-checklist-v10`.
+Open in a browser (no build step). Checklist state key: `fall2027-checklist-v11`.
 
 **Applicant:** US citizen · CA resident · AP · **overseas Chinese (僑生)** · Fall 2027 entry.
 
