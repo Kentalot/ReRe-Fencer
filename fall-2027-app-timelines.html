@@ -155,6 +155,8 @@ gantt
     Portal opens                       :milestone, m_hku_open, 2026-09-23, 1d
     First round target                 :milestone, m_hku_r1, 2026-11-25, 1d
     Counsellor docs first round        :milestone, m_hku_couns, 2026-12-01, 1d
+    Talent Search nomination window    :hku_talent, 2026-10-05, 2026-12-07
+    Talent Search closes               :milestone, m_hku_talent, 2026-12-07, 1d
     Rolling application window         :crit, hku_roll, 2026-09-23, 2027-08-25
     Final deadline                     :milestone, m_hku_end, 2027-08-25, 1d
     Offers begin                       :milestone, d_hku_start, 2026-12-01, 1d
@@ -162,16 +164,16 @@ gantt
 
     section CUHK International
     Application opens                  :milestone, m_cuhk_open, 2026-10-02, 1d
-    Application window                 :cuhk_win, 2026-10-02, 2027-05-29
+    Application window                 :cuhk_win, 2026-10-02, 2027-01-07
+    Information Day                    :milestone, m_cuhk_info, 2026-10-17, 1d
     Advance Offer deadline             :milestone, m_cuhk_adv, 2026-11-12, 1d
     Regular Round deadline             :milestone, m_cuhk_reg, 2027-01-07, 1d
-    Extended deadline                  :milestone, m_cuhk_ext, 2027-05-29, 1d
     Advance offer decisions est        :milestone, d_cuhk_adv, 2027-01-15, 1d
     Regular round decisions est        :milestone, d_cuhk_reg, 2027-05-15, 1d
 
     section NTU SG US high school AP
     Application window                 :ntu_win, 2026-10-15, 2027-03-19
-    Application closes AP track        :milestone, m_ntu_end, 2027-03-19, 1d
+    Application closes                 :milestone, m_ntu_end, 2027-03-19, 1d
     Outcomes est US HS AP              :milestone, d_ntu, 2027-07-01, 1d
 
     section UECFOCS US Canada est
@@ -284,7 +286,8 @@ gantt
       "uec-docs-close": "https://student.overseas.ncnu.edu.tw/",
       "uec-joint-open": "https://cmn-hant.overseas.ncnu.edu.tw/further-study-area/national-area/america-and-canada-area/",
       "uec-joint-close": "https://student.overseas.ncnu.edu.tw/",
-      "hku-talent-reg": "https://admissions.hku.hk/apply/international-qualifications",
+      "hku-talent-reg": "https://admissions.hku.hk/sndas_highschool",
+      "hku-talent": "https://admissions.hku.hk/sndas_highschool",
     };
 
     function itemActionLink(item) {
@@ -333,12 +336,12 @@ gantt
         note: "TECO San Francisco or OCAC cultural center. Bachelor's individual: NTHU IBP Group A+B. Joint dist.: NTHU Group A only. NTU TW 116學年度 僑生 undergrad = school direct (not committee individual for general majors)." },
       { school: "hku",  id: "hku-counselor-ask", type: "counselor", date: "2026-09-10", est: true,  title: "Ask school contact for HKU counsellor/referee role — must agree BEFORE you submit",
         note: "Counsellor is not strictly required — can be school counsellor OR a teacher nominated as referee. Whoever you pick should enter predicted grades + reference in HKU Counsellors' Portal. Referee contacts cannot be edited after submission." },
-      { school: "hku",  id: "hku-talent-reg",    type: "register",  date: "2026-09-10", est: true,  title: "HKU Talent Search Scheme self-nomination opens (optional)",
-        note: "Parallel to main app; programme-specific. Nomination ~Sep–Dec." },
+      { school: "hku",  id: "hku-talent-reg",    type: "open",      date: "2026-10-05", est: false, title: "HKU Talent Search Scheme self-nomination opens (optional)",
+        note: "Official: 5 Oct – 7 Dec 2026 HKT. Online form available from 5 Oct. Must also apply via main HKU undergrad portal; nominate ONE programme as first choice. admissions.hku.hk/sndas_highschool" },
       { school: "cuhk", id: "cuhk-counselor-ask",type: "counselor", date: "2026-09-12", est: true,  title: "Ask 1–3 academic referees for CUHK (teachers OK — counselor not required)",
         note: "Up to 3 referees who know your academic work (teachers, counselor, or principal). No minimum counselor count — all teachers is fine. Referees get email AFTER you submit app + pay fee; each has 21 days in CUHK Recommendation System." },
-      { school: "cuhk", id: "cuhk-info-reg",     type: "register",  date: "2026-09-27", est: true,  title: "Register for CUHK Information Day",
-        note: "2025 was Oct 11. Register ~2 weeks ahead." },
+      { school: "cuhk", id: "cuhk-info-reg",     type: "register",  date: "2026-10-03", est: true,  title: "Register for CUHK Information Day",
+        note: "Official 2027 Info Day is 17 Oct 2026. Register ~2 weeks ahead. infoday.cuhk.edu.hk" },
       { school: "ntutw",id: "ntutw-info-reg",    type: "register",  date: "2026-09-30", est: true,  title: "Register for NTU Taiwan intl admissions info session",
         note: "Foreign-national degree-student channel. 僑生 may also apply here if eligible. admissions.ntu.edu.tw" },
       { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: "2026-09-15", est: true,  title: "Ask school for transcript PDF + documents for NTU (SG) upload",
@@ -386,11 +389,11 @@ gantt
       { school: "thu",  id: "thu-portfolio",     type: "prep",      date: "2026-10-15", est: true,  title: "Prepare Tsinghua (China) URD portfolio + Global Leaders materials",
         note: "URD requires portfolio; integrative test after document review." },
       { school: "ntu",  id: "ntu-open",          type: "open",      date: "2026-10-15", est: false, title: "NTU (SG) international application opens",
-        note: "Official AY2027 open date for international qualifications (incl. IB). US HS + AP close date not yet posted — still using last year's Mar 19 pattern." },
+        note: "Official AY2027–28 window: 15 Oct 2026 – 19 Mar 2027 (NTU IB admissions stages table). US HS / AP track uses the same close date." },
       { school: "hku",  id: "hku-apply-early",   type: "rolling",   date: "2026-10-15", est: true,  title: "Submit HKU application — target mid-Oct (triggers counsellor portal email)",
         note: "Counsellor should input predicted grades ASAP; rolling after first round." },
-      { school: "cuhk", id: "cuhk-info",         type: "info",      date: "2026-10-11", est: true,  title: "CUHK Information Day (est. ~9 AM–6 PM HKT)",
-        note: "infoday.cuhk.edu.hk — Hong Kong campus." },
+      { school: "cuhk", id: "cuhk-info",         type: "info",      date: "2026-10-17", est: false, title: "CUHK Information Day for Undergraduate Admissions",
+        note: "Official 2027 Important Dates. infoday.cuhk.edu.hk — Hong Kong campus." },
       { school: "cuhk", id: "cuhk-submit-early", type: "prep",      date: "2026-10-18", est: true,  title: "Submit CUHK application (target mid-Oct for Advance Offer round)",
         note: "Referees have 21 days from invite. Submit supporting docs within 14 days of application." },
       { school: "cuhk", id: "cuhk-docs-14d",     type: "deadline",  date: "2026-11-01", est: true,  title: "CUHK supporting documents due (~14 days after application est.)",
@@ -421,8 +424,8 @@ gantt
         note: "2027 dates not yet posted; last cycle Round 1 was Nov 28. English programs window continues to Feb." },
       { school: "uc",   id: "uc-deadline",       type: "deadline",  date: "2026-11-30", est: false, title: "UC filing deadline — 11:59 PM Pacific",
         note: "Hard deadline. No ED/EA. Self-reported grades only at this stage." },
-      { school: "hku",  id: "hku-talent",        type: "deadline",  date: "2026-12-01", est: true,  title: "HKU Talent Search Scheme nomination deadline (est.)",
-        note: "Programme-specific; optional." },
+      { school: "hku",  id: "hku-talent",        type: "deadline",  date: "2026-12-07", est: false, title: "HKU Talent Search Scheme nomination deadline",
+        note: "Official close 7 Dec 2026 HKT. Interviews Jan–Feb; firm offers rolling through end of Aug. Need reference letter + academic evidence + programme extras." },
       { school: "uec",  id: "uec-docs-close",    type: "deadline",  date: "2027-01-06", est: true,  title: "UECFOCS supporting documents upload deadline (5 PM Taiwan est.)",
         note: "After paper submission to sponsor. Individual application track." },
 
@@ -475,16 +478,16 @@ gantt
         note: "Send via College Board to NTU (SG). Upload copies per NTU checklist." },
       { school: "nus",  id: "nus-campus",        type: "info",      date: "2027-03-07", est: true,  title: "NUS Open House on-campus day",
         note: "Kent Ridge campus, Singapore." },
-      { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: true,  title: "NTU (SG) application closes — US HS / AP track",
-        note: "AY2027 close not yet posted; last cycle was Mar 19. Submit docs within 3 days after close." },
+      { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: false, title: "NTU (SG) application closes — US HS / AP track",
+        note: "Official AY2027–28 close 19 Mar 2027. Submit docs within 3 days after close (by 22 Mar)." },
       { school: "nthui",id: "nthui-r2-close",    type: "deadline",  date: "2027-03-03", est: false, title: "NTHU IBP intl Round 2 application period ends (noon Taiwan)",
         note: "Official Fall 2027 IBP guidelines. Round 3 through Apr 22." },
       { school: "nthui",id: "nthui-close",       type: "deadline",  date: "2027-04-22", est: false, title: "NTHU IBP intl final deadline (noon Taiwan)",
         note: "Official Fall 2027 IBP guidelines." },
 
       /* ── May–Aug 2027 ── */
-      { school: "cuhk", id: "cuhk-extended",     type: "deadline",  date: "2027-05-29", est: true,  title: "CUHK Extended deadline (11:59 PM HKT)",
-        note: "Medicine not eligible for Advance/Extended." },
+      { school: "cuhk", id: "cuhk-extended",     type: "deadline",  date: "2027-05-29", est: true,  title: "CUHK Extended deadline — not listed for 2027 (prior-cycle pattern)",
+        note: "2027 Important Dates list only Advance (12 Nov) + Regular (7 Jan). Extended date not published; prior cycle was 29 May. Medicine: apply by Regular; later apps only if places remain." },
       { school: "uc",   id: "uc-sir",            type: "deadline",  date: "2027-05-01", est: false, title: "UC Statement of Intent to Register (if admitted)",
         note: "Official first-year SIR deadline for fall 2027. Check your offer letter for campus portal details." },
       { school: "nus",  id: "scores-ap-nus",     type: "scores",    date: "2027-07-09", est: true,  title: "May 2027 AP scores: send to NUS (College Board code 3720) + upload within 3 days",
@@ -492,7 +495,7 @@ gantt
       { school: "uc",   id: "uc-transcript",     type: "scores",    date: "2027-07-01", est: false, title: "If UC-admitted: official high school transcript to enrolling campus",
         note: "Official fall 2027 deadline. Only after accepting offer (SIR). Postmarked or submitted electronically by Jul 1. Do not send before admission." },
       { school: "ntu",  id: "scores-ap-ntu",     type: "scores",    date: "2027-07-15", est: true,  title: "May 2027 AP scores due to NTU (SG) (est. Jul 15)",
-        note: "Per 2026 cycle pattern. Send via College Board + upload to NTU portal." },
+        note: "Prior cycle: AP must reach NTU by 15 Jul of application year. Confirm AY2027 date on American HS / AP qualification page when updated." },
       { school: "uc",   id: "uc-ap-official",    type: "scores",    date: "2027-07-15", est: false, title: "If UC-admitted: official AP scores to enrolling campus via College Board",
         note: "Official fall 2027 deadline. Only after accepting offer. Postmarked or submitted electronically by Jul 15." },
       { school: "hku",  id: "hku-close",         type: "deadline",  date: "2027-08-25", est: false, title: "HKU international applications close",
@@ -529,12 +532,12 @@ gantt
         note: "Closes ~28 Feb 2027, 5 PM Beijing. Skip if Round 1 was already submitted." },
       { school: "nthui",id: "nthui-r2-week",     type: "submit",    date: "2027-02-24", est: false, title: "Submit NTHU IBP intl Round 2 this week — 1 week before that round ends",
         note: "Round 2 ends 3 Mar 2027. Skip if already submitted. Round 3 stays open to 22 Apr." },
-      { school: "ntu",  id: "ntu-week",          type: "submit",    date: "2027-03-12", est: true,  title: "Submit NTU (SG) application this week — 1 week before close",
-        note: "US HS / AP close est. 19 Mar 2027. Docs due within 3 days after close." },
+      { school: "ntu",  id: "ntu-week",          type: "submit",    date: "2027-03-12", est: false, title: "Submit NTU (SG) application this week — 1 week before close",
+        note: "Closes 19 Mar 2027. Docs due within 3 days after close (by 22 Mar)." },
       { school: "nthui",id: "nthui-week",        type: "submit",    date: "2027-04-15", est: true,  title: "Submit NTHU IBP intl this week — 1 week before final deadline",
         note: "Final close ~22 Apr 2027. Skip if already submitted in Round 1 or 2." },
-      { school: "cuhk", id: "cuhk-ext-week",     type: "submit",    date: "2027-05-22", est: true,  title: "Submit CUHK this week for Extended round — 1 week before that deadline",
-        note: "Extended deadline 29 May 2027, 11:59 PM HKT. Skip if already submitted. Medicine not eligible." },
+      { school: "cuhk", id: "cuhk-ext-week",     type: "submit",    date: "2027-05-22", est: true,  title: "CUHK late/Extended submit reminder — only if Extended date is later posted",
+        note: "Extended not on 2027 Important Dates. Skip if already submitted by Regular Round. Medicine: Regular is the practical last deadline." },
       { school: "hku",  id: "hku-week",          type: "submit",    date: "2027-08-18", est: false, title: "Submit HKU this week — 1 week before applications close",
         note: "Closes 25 Aug 2027. Skip if already submitted (rolling). Places may be gone." },
       { school: "um",   id: "um-week",           type: "submit",    date: "2027-08-23", est: true,  title: "Submit UM this week — 1 week before applications close",
