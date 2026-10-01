@@ -1,6 +1,6 @@
 # Fall 2027 college applications — handoff
 
-**Last updated:** 2026-09-16
+**Last updated:** 2026-10-01
 
 ## Primary artifact
 

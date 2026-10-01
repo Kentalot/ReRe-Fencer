@@ -147,7 +147,9 @@ gantt
     Round 3 decisions                  :milestone, d_nthui_r3, 2027-05-31, 1d
 
     section Tsinghua China English
-    Global Leaders and URD window      :thu_win, 2026-09-30, 2027-02-28
+    Round 1 application window         :thu_r1, 2026-09-30, 2026-11-20
+    Round 1 deadline                   :milestone, m_thu_r1, 2026-11-20, 1d
+    Round 2 application window         :thu_r2, 2026-11-21, 2027-02-28
     Application closes                 :milestone, m_thu_end, 2027-02-28, 1d
     English program decisions est      :milestone, d_thu_eng, 2027-05-15, 1d
 
@@ -186,8 +188,8 @@ gantt
     Joint distribution decisions est   :milestone, d_uec_joint, 2027-05-15, 1d
 
     section NUS International
-    Application window                 :nus_win, 2026-12-16, 2027-02-23
-    Application closes est             :milestone, m_nus_end, 2027-02-23, 1d
+    Application window                 :nus_win, 2026-12-16, 2027-02-17
+    Application closes                 :milestone, m_nus_end, 2027-02-17, 1d
     Outcomes latest est                :milestone, d_nus, 2027-07-15, 1d
 
     section UM International ROLLING
@@ -352,8 +354,8 @@ gantt
       /* ── Oct 2026 ── */
       { school: "thu",  id: "thu-info",          type: "info",      date: "2026-09-30", est: true,  title: "Tsinghua (China) international info session (est. late Sep 2026)",
         note: "international.join-tsinghua.edu.cn — Beijing Tsinghua University, not NTHU Taiwan." },
-      { school: "thu",  id: "thu-open",          type: "open",      date: "2026-09-30", est: true,  title: "Tsinghua (China) English programs application opens (8 AM Beijing)",
-        note: "Global Leaders + URD. apply.join-tsinghua.edu.cn/international" },
+      { school: "thu",  id: "thu-open",          type: "open",      date: "2026-09-30", est: false, title: "Tsinghua (China) English programs application opens (8 AM Beijing)",
+        note: "Official 2027 schedule: Round 1 opens 8 AM Sep 30 Beijing. Global Leaders + URD. apply.join-tsinghua.edu.cn/international" },
       { school: "ntutw",id: "ntutw-r1-open",     type: "open",      date: "2026-09-29", est: false, title: "NTU Taiwan intl Round 1 opens — foreign degree students",
         note: "oiasystem.ntu.edu.tw/globaladmission/foreign/ — 僑生 may apply if meeting intl student criteria." },
       { school: "nthui",id: "nthui-open",        type: "open",      date: "2026-10-01", est: false, title: "NTHU IBP intl portal opens — Business Management (optional dual pathway)",
@@ -362,8 +364,8 @@ gantt
         note: "Upload score reports in Tsinghua (China) portal too. Check programme guide for minimum scores." },
       { school: "uc",   id: "uc-file-start",     type: "prep",      date: "2026-10-01", est: false, title: "UC filing period opens",
         note: "Submit all campuses in one application." },
-      { school: "hku",  id: "hku-info",          type: "info",      date: "2026-09-23", est: true,  title: "HKU Online International Admissions Talk (est. ~5–6 PM HKT)",
-        note: "admissions.hku.hk/events — talk date not yet posted; aligned to portal open." },
+      { school: "hku",  id: "hku-info",          type: "info",      date: "2026-09-23", est: true,  title: "HKU Online International Admissions Talk (est. — portal opens this day)",
+        note: "Official 2027 intake portal opens Sep 23. No Sep 2026 intl admissions talk listed on events page yet; HKU Info Day is 24 Oct 2026." },
       { school: "hku",  id: "hku-open",          type: "open",      date: "2026-09-23", est: false, title: "HKU international application portal opens",
         note: "Official 2027 intake. First-round app deadline noon 25 Nov; counsellor/referee docs by 1 Dec; rolling until 25 Aug 2027." },
       { school: "cuhk", id: "cuhk-open",         type: "open",      date: "2026-10-02", est: false, title: "CUHK international application opens",
@@ -420,8 +422,8 @@ gantt
         note: "Official 2027 intake date. Submit app by noon; counsellor/referee predicted grades + docs due by 1 Dec for first-round evaluation." },
       { school: "hku",  id: "hku-counselor-r1",  type: "counselor", date: "2026-12-01", est: false, title: "HKU counsellor/referees: predicted grades + docs due (first round)",
         note: "Official deadline 1 Dec for first-round evaluation (separate from 25 Nov app deadline). Portal stays open after. counsellors@hku.hk if issues." },
-      { school: "thu",  id: "thu-r1",            type: "deadline",  date: "2026-11-28", est: true,  title: "Tsinghua (China) Round 1 ends (5 PM Beijing est.)",
-        note: "2027 dates not yet posted; last cycle Round 1 was Nov 28. English programs window continues to Feb." },
+      { school: "thu",  id: "thu-r1",            type: "deadline",  date: "2026-11-20", est: false, title: "Tsinghua (China) Round 1 ends (5 PM Beijing)",
+        note: "Official 2027 schedule. Round 2 opens Nov 21; Arts/Design programs Round 1 only. Results by January 2027." },
       { school: "uc",   id: "uc-deadline",       type: "deadline",  date: "2026-11-30", est: false, title: "UC filing deadline — 11:59 PM Pacific",
         note: "Hard deadline. No ED/EA. Self-reported grades only at this stage." },
       { school: "hku",  id: "hku-talent",        type: "deadline",  date: "2026-12-07", est: false, title: "HKU Talent Search Scheme nomination deadline",
@@ -435,7 +437,7 @@ gantt
       { school: "nus",  id: "nus-open",          type: "open",      date: "2026-12-16", est: false, title: "NUS international application opens",
         note: "Official AY2027/2028 window for International Qualifications (except IB). SAT/ACT must reach NUS by application close." },
       { school: "nus",  id: "scores-sat-nus",    type: "scores",    date: "2026-12-20", est: true,  title: "Send official SAT/ACT to NUS via College Board (code 3720)",
-        note: "Mandatory for US HS applicants. Scores must arrive by application close (mid-Feb 2027 est.). Also upload copy to NUS Applicant Portal. Allow 2–3 weeks processing." },
+        note: "Mandatory for US HS applicants. Scores must arrive by application close (17 Feb 2027). Also upload copy to NUS Applicant Portal. Allow 2–3 weeks processing." },
       { school: "cuhk", id: "cuhk-regular",      type: "deadline",  date: "2027-01-07", est: false, title: "CUHK Regular Round deadline (11:59 PM HKT)",
         note: "Official 2027–28 brochure date (was 8 Jan in 2026 cycle). All referees should be complete by this date." },
       { school: "um",   id: "um-info-reg",       type: "register",  date: "2027-01-26", est: true,  title: "Register for UM education fair / info event",
@@ -458,15 +460,15 @@ gantt
         note: "Oct 2027 intake. maya.um.edu.my" },
       { school: "um",   id: "um-toefl",          type: "scores",    date: "2027-02-09", est: true,  title: "Submit IELTS/TOEFL with UM application (if required)",
         note: "Typical minimum IELTS 6.0 / TOEFL 79. Send official scores or upload per MAYA instructions." },
-      { school: "nus",  id: "nus-close",         type: "deadline",  date: "2027-02-23", est: true,  title: "NUS international application closes (est. mid-Feb)",
-        note: "NUS Important Dates lists mid-Dec 2026 – mid-Feb 2027; exact day not yet posted (last cycle was Feb 23). SAT/ACT must be received by close. Outcomes by July." },
+      { school: "nus",  id: "nus-close",         type: "deadline",  date: "2027-02-17", est: false, title: "NUS international application closes (17 Feb 2027)",
+        note: "Official AY2027/2028: 16 Dec 2026 – 17 Feb 2027 for International Qualifications (except IB). SAT/ACT must be received by close. Outcomes by July." },
       { school: "ntu",  id: "ntu-info",          type: "info",      date: "2027-02-21", est: true,  title: "NTU (SG) webinar for international students (est. ~2 PM SGT)",
         note: "ntu.edu.sg/OpenHouse" },
       { school: "uec",  id: "uec-joint-open",    type: "open",      date: "2027-02-01", est: true,  title: "UECFOCS joint distribution opens (est. Fall 2027)",
         note: "NTHU joint: Group A (Chinese track) only — NOT Business Management. NTU TW 僑生 English options differ; verify 系所分則." },
       { school: "uec",  id: "uec-joint-close",   type: "deadline",  date: "2027-02-28", est: true,  title: "UECFOCS joint distribution closes (est.)",
         note: "Online + paper via sponsor. cmn-hant.overseas.ncnu.edu.tw" },
-      { school: "thu",  id: "thu-close",         type: "deadline",  date: "2027-02-28", est: true,  title: "Tsinghua (China) English programs application closes (5 PM Beijing)",
+      { school: "thu",  id: "thu-close",         type: "deadline",  date: "2027-02-28", est: false, title: "Tsinghua (China) Round 2 / English programs application closes (5 PM Beijing)",
         note: "apply.join-tsinghua.edu.cn/international — Beijing Tsinghua University." },
       { school: "nus",  id: "nus-info",          type: "info",      date: "2027-02-28", est: true,  title: "NUS Undergraduate Admissions Open House online",
         note: "nus.edu.sg/oam" },
@@ -514,8 +516,8 @@ gantt
         note: "Round 1 closes 23 Nov 2026. Later rounds stay open if you miss this." },
       { school: "hku",  id: "hku-r1-week",       type: "submit",    date: "2026-11-18", est: false, title: "Submit HKU this week for first-round evaluation — 1 week before",
         note: "First round noon HKT 25 Nov 2026. Counsellor/referee docs due 1 Dec. Rolling after that." },
-      { school: "thu",  id: "thu-r1-week",       type: "submit",    date: "2026-11-21", est: true,  title: "Submit Tsinghua (China) this week for Round 1 — 1 week before",
-        note: "Round 1 ends ~28 Nov 2026, 5 PM Beijing. Window continues to Feb if you miss this." },
+      { school: "thu",  id: "thu-r1-week",       type: "submit",    date: "2026-11-13", est: false, title: "Submit Tsinghua (China) this week for Round 1 — 1 week before",
+        note: "Round 1 closes 20 Nov 2026, 5 PM Beijing. Arts/Design programs are Round 1 only. Round 2 opens Nov 21." },
       { school: "uc",   id: "uc-week",           type: "submit",    date: "2026-11-23", est: false, title: "Submit UC application this week — 1 week before filing deadline",
         note: "Hard close 30 Nov 2026, 11:59 PM Pacific. No late filing." },
       { school: "uec",  id: "uec-ind-week",      type: "submit",    date: "2026-12-08", est: true,  title: "Submit UECFOCS bachelor's individual this week — 1 week before close",
@@ -524,8 +526,8 @@ gantt
         note: "Regular Round deadline 7 Jan 2027, 11:59 PM HKT. Skip if already submitted." },
       { school: "ntutw",id: "ntutw-r2-week",     type: "submit",    date: "2027-01-12", est: false, title: "Submit NTU Taiwan intl Round 2 this week — 1 week before close",
         note: "Closes 19 Jan 2027. Skip if Round 1 was already submitted." },
-      { school: "nus",  id: "nus-week",          type: "submit",    date: "2027-02-16", est: true,  title: "Submit NUS application this week — 1 week before close",
-        note: "Closes mid-Feb 2027 est. (~Feb 23 last cycle). SAT/ACT must also arrive by this deadline." },
+      { school: "nus",  id: "nus-week",          type: "submit",    date: "2027-02-10", est: false, title: "Submit NUS application this week — 1 week before close",
+        note: "Closes 17 Feb 2027. SAT/ACT must also arrive by this deadline." },
       { school: "uec",  id: "uec-joint-week",    type: "submit",    date: "2027-02-21", est: true,  title: "Submit UECFOCS joint distribution this week — 1 week before close",
         note: "Closes ~28 Feb 2027. NTHU joint is Group A only (not Business Management)." },
       { school: "thu",  id: "thu-week",          type: "submit",    date: "2027-02-21", est: true,  title: "Submit Tsinghua (China) English programs this week — 1 week before close",
