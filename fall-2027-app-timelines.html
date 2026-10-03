@@ -99,7 +99,7 @@
   </div>
 
   <h2>Master timeline — all schools</h2>
-  <p class="hint">Scroll horizontally. Red bars = rolling. Gold diamonds = application deadlines. Teal diamonds = decision releases (est.).</p>
+  <p class="hint">Scroll horizontally. Red bars = rolling admission or priority early round (apply ASAP). Gold diamonds = application deadlines. Teal diamonds = decision releases (est.).</p>
   <div class="card">
     <div class="chart-scroll">
       <div class="chart-inner">
@@ -124,12 +124,13 @@ gantt
     Round 1 decisions                  :milestone, d_ntutw_r1, 2027-01-14, 1d
     Round 2 decisions                  :milestone, d_ntutw_r2, 2027-04-08, 1d
 
-    section Tsinghua China English
+    section Tsinghua English-taught
     Round 1 application window         :thu_r1, 2026-09-30, 2026-11-20
     Round 1 deadline                   :milestone, m_thu_r1, 2026-11-20, 1d
     Round 2 application window         :thu_r2, 2026-11-21, 2027-02-28
-    Application closes                 :milestone, m_thu_end, 2027-02-28, 1d
-    English program decisions est      :milestone, d_thu_eng, 2027-05-15, 1d
+    Round 2 deadline                   :milestone, m_thu_end, 2027-02-28, 1d
+    Round 1 results est                :milestone, d_thu_r1, 2027-01-31, 1d
+    Round 2 results est                :milestone, d_thu_r2, 2027-05-15, 1d
 
     section HKU International
     Portal opens                       :milestone, m_hku_open, 2026-09-23, 1d
@@ -145,9 +146,10 @@ gantt
 
     section CUHK International
     Application opens                  :milestone, m_cuhk_open, 2026-10-02, 1d
-    Application window                 :cuhk_win, 2026-10-02, 2027-01-07
-    Information Day                    :milestone, m_cuhk_info, 2026-10-17, 1d
+    Advance Offer application window   :crit, cuhk_adv, 2026-10-02, 2026-11-12
     Advance Offer deadline             :milestone, m_cuhk_adv, 2026-11-12, 1d
+    Information Day                    :milestone, m_cuhk_info, 2026-10-17, 1d
+    Regular Round application window   :active, cuhk_reg, 2026-11-13, 2027-01-07
     Regular Round deadline             :milestone, m_cuhk_reg, 2027-01-07, 1d
     Advance offer decisions est        :milestone, d_cuhk_adv, 2027-01-15, 1d
     Regular round decisions est        :milestone, d_cuhk_reg, 2027-05-15, 1d
@@ -179,7 +181,7 @@ gantt
       </div>
     </div>
     <div class="legend">
-      <span><i class="swatch crit"></i> Rolling</span>
+      <span><i class="swatch crit"></i> Rolling or priority early round</span>
       <span><i class="swatch active"></i> Fixed window</span>
       <span><i class="swatch done"></i> Prep period</span>
       <span><i class="swatch milestone"></i> Application deadline</span>
@@ -205,7 +207,7 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v12";
+    const STORAGE_KEY = "fall2027-checklist-v13";
 
     const SCHOOL_COLORS = {
       uc: "#3b82f6", hku: "#10b981", cuhk: "#a855f7", thu: "#ef4444",
@@ -222,7 +224,7 @@ gantt
       uc:  { name: "UC", short: "UC", link: "https://admission.universityofcalifornia.edu/", apply: "https://apply.universityofcalifornia.edu/" },
       hku: { name: "HKU", short: "HKU", link: "https://admissions.hku.hk/apply/international-qualifications", apply: "https://admissions.hku.hk/apply" },
       cuhk:{ name: "CUHK", short: "CUHK", link: "https://admission.cuhk.edu.hk/application/overseas-other-qualifications-non-local-international-team/requirements/", apply: "https://applicant.adm.cuhk.edu.hk/" },
-      thu: { name: "Tsinghua (China)", short: "Tsinghua (China)", link: "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm", apply: "https://apply.join-tsinghua.edu.cn/international" },
+      thu: { name: "Tsinghua English-taught", short: "Tsinghua EN", link: "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm", apply: "https://apply.join-tsinghua.edu.cn/international" },
       uec: { name: "UECFOCS (Taiwan committee)", short: "UECFOCS", link: "https://cmn-hant.overseas.ncnu.edu.tw/further-study-area/national-area/america-and-canada-area/", apply: "https://student.overseas.ncnu.edu.tw/" },
       nus: { name: "NUS", short: "NUS", link: "https://www.nus.edu.sg/oam/admissions/international-qualifications-for-foreigners", apply: "https://myaces.nus.edu.sg/applicantPortal/" },
       ntu: { name: "NTU (SG)", short: "NTU (SG)", link: "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications", apply: "https://www.wired.ntu.edu.sg/apply/" },
@@ -283,7 +285,7 @@ gantt
       /* ── Jul–Aug 2026 ── */
       { school: "uc",   id: "uc-info-reg",       type: "register",  date: "2026-08-01", est: true,  title: "Register for UC campus virtual info sessions",
         note: "Sessions typically Aug–Nov. Register ~2 weeks before your target session." },
-      { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU (SG) / Tsinghua (China))",
+      { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU (SG) / Tsinghua English-taught)",
         note: "NUS & NTU (SG) require SAT or ACT for US HS + AP. Allow 3–4 weeks for scores to reach schools via College Board." },
       { school: "all",  id: "icard-apply",       type: "prep",      date: "2026-08-05", est: false, title: "Apply for OCAC i僑卡 (i Compatriot Card) — recommended before Taiwan 僑生 pathways",
         note: "icard.taiwan-world.net — virtual OCAC member card. Not required to log into UECFOCS/NTU apps. Not 僑生 identity proof. Needed for OCAC scholarships, work-study, and activity sign-ups after enrollment. Review ~3–7 business days." },
@@ -295,12 +297,12 @@ gantt
         note: "Check each campus admissions site." },
 
       /* ── Sep 2026 ── */
-      { school: "thu",  id: "thu-info-reg",      type: "prep",      date: "2026-10-05", est: true,  title: "Tsinghua (China): bookmark int'l admissions page for info session videos",
-        note: "No registration — recorded YouTube sessions post on international.join-tsinghua.edu.cn. 2026 intake videos appeared ~4 months after app open (~late Jan)." },
+      { school: "thu",  id: "thu-info-reg",      type: "prep",      date: "2026-10-05", est: true,  title: "Tsinghua English-taught: bookmark admissions page for info session videos",
+        note: "Zijing + Zhishan college sessions. No registration — recorded YouTube videos on international.join-tsinghua.edu.cn (~late Jan est.)." },
       { school: "hku",  id: "hku-info-reg",      type: "register",  date: "2026-09-09", est: true,  title: "Register for HKU International Admissions Talk",
         note: "Online talks typically when int'l apps open (2027 intake opens Sep 23). Register ~2 weeks ahead." },
-      { school: "thu",  id: "thu-counselor-ask", type: "counselor", date: "2026-09-05", est: true,  title: "Ask school for transcript scans + Tsinghua (China) supporting documents",
-        note: "Upload school transcript PDFs/scans in portal at apply time — not mailed official copies. Sealed originals only if you pass integrative test. Also SAT/ACT/AP, personal statement; you upload (no counselor portal)." },
+      { school: "thu",  id: "thu-counselor-ask", type: "counselor", date: "2026-09-05", est: true,  title: "Ask school for transcript scans + Tsinghua English-taught supporting documents",
+        note: "English-taught: no HSK required. Need 2 teacher recommendation letters (portal invites), CV, personal statement, ≤3 min self-intro video, TOEFL/IELTS if not native English speaker. Transcript PDFs at apply; originals at integrative test if invited." },
       { school: "uec",  id: "uec-register",      type: "prep",      date: "2026-09-08", est: true,  title: "UECFOCS: register email account on application system (before Nov open)",
         note: "student.overseas.ncnu.edu.tw — email only. 學士班個人申請 (bachelor's) AND 碩士/博士 are separate tracks — undergrad is NOT grad-only." },
       { school: "uec",  id: "uec-counselor-ask", type: "counselor", date: "2026-09-25", est: true,  title: "UECFOCS: gather paper application packet via sponsoring unit",
@@ -318,12 +320,12 @@ gantt
       { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: "2026-09-15", est: true,  title: "Ask school for transcript PDF + documents for NTU (SG) upload",
         note: "Upload high school transcript PDF after applying — unofficial/school copy is fine at application. School may also email transcript to NTU with your app number. Prepare before portal opens (~Oct 15)." },
       /* ── Oct 2026 ── */
-      { school: "thu",  id: "thu-open",          type: "open",      date: "2026-09-30", est: false, title: "Tsinghua (China) English programs application opens (8 AM Beijing)",
-        note: "Official 2027 schedule: Round 1 opens 8 AM Sep 30 Beijing. Global Leaders + URD. apply.join-tsinghua.edu.cn/international" },
+      { school: "thu",  id: "thu-open",          type: "open",      date: "2026-09-30", est: false, title: "Tsinghua English-taught Round 1 opens (8 AM Beijing)",
+        note: "Targets: Zijing GTSE, URD, Zhishan PES. English-taught eligible in Round 1 or Round 2 (FAQ: same procedures). Exceptions: Arts/Design Round 1 only; THU–CUHK Economics dual degree Round 2 only (not our targets). apply.join-tsinghua.edu.cn/international" },
       { school: "ntutw",id: "ntutw-r1-open",     type: "open",      date: "2026-09-29", est: false, title: "NTU Taiwan intl Round 1 opens — foreign degree students",
         note: "oiasystem.ntu.edu.tw/globaladmission/foreign/ — 僑生 may apply if meeting intl student criteria." },
-      { school: "scores", id: "scores-sat-send-early", type: "scores", date: "2026-09-30", est: true, title: "Send official SAT/ACT to Tsinghua (China) via College Board (if using SAT/ACT)",
-        note: "Upload score reports in Tsinghua (China) portal too. Check programme guide for minimum scores." },
+      { school: "scores", id: "scores-sat-send-early", type: "scores", date: "2026-09-30", est: true, title: "Send official SAT/ACT to Tsinghua English-taught via College Board (if using SAT/ACT)",
+        note: "Also upload score reports in portal. English-taught: TOEFL/IELTS required if not native English speaker; SAT/ACT optional supporting evidence." },
       { school: "uc",   id: "uc-file-start",     type: "prep",      date: "2026-10-01", est: false, title: "UC filing period opens",
         note: "Submit all campuses in one application." },
       { school: "hku",  id: "hku-info",          type: "info",      date: "2026-09-23", est: true,  title: "HKU Online International Admissions Talk (est. — portal opens this day)",
@@ -331,7 +333,7 @@ gantt
       { school: "hku",  id: "hku-open",          type: "open",      date: "2026-09-23", est: false, title: "HKU international application portal opens",
         note: "Official 2027 intake. First round = batch evaluation (not rolling): app by noon 25 Nov; counsellor/referee docs by 1 Dec. Rolling review only after first round, until 25 Aug 2027." },
       { school: "cuhk", id: "cuhk-open",         type: "open",      date: "2026-10-02", est: false, title: "CUHK international application opens",
-        note: "Official 2027–28 brochure: opens 2 Oct. One application for all rounds. Enter referee emails before submit." },
+        note: "Official 2027–28 brochure: opens 2 Oct. One application for all rounds. Apply by 12 Nov for Advance Offer (Dec offers); missed advance apps auto-enter Regular Round (7 Jan). Enter referee emails before submit." },
       { school: "ntutw",id: "ntutw-r1-submit",   type: "prep",      date: "2026-10-05", est: true,  title: "Submit NTU Taiwan intl application — target early Round 1",
         note: "English-taught programs on intl foreign portal. oiasystem.ntu.edu.tw/globaladmission/foreign/" },
       { school: "ntutw",id: "ntutw-toefl",       type: "scores",    date: "2026-10-10", est: true,  title: "Submit TOEFL/IELTS with NTU Taiwan intl application (CEFR B2 minimum)",
@@ -340,10 +342,10 @@ gantt
         note: "Based on 2025 pattern. Verify on admissions.ntu.edu.tw" },
       { school: "uc",   id: "uc-ap-selfreport",  type: "scores",    date: "2026-10-10", est: true,  title: "Self-report all AP courses + planned May 2027 exams on UC application",
         note: "UC does not want letters of recommendation. Self-report all grades accurately from transcript." },
-      { school: "thu",  id: "thu-scores-upload", type: "scores",    date: "2026-10-10", est: true,  title: "Upload SAT/ACT/AP score reports to Tsinghua (China) application",
-        note: "Include best available scores; update if you retest." },
-      { school: "thu",  id: "thu-portfolio",     type: "prep",      date: "2026-10-15", est: true,  title: "Prepare Tsinghua (China) URD portfolio + Global Leaders materials",
-        note: "URD requires portfolio; integrative test after document review." },
+      { school: "thu",  id: "thu-scores-upload", type: "scores",    date: "2026-10-10", est: true,  title: "Upload TOEFL/IELTS + SAT/ACT/AP to Tsinghua English-taught application",
+        note: "English proficiency required if not native English speaker. Include best SAT/ACT/AP as supporting evidence." },
+      { school: "thu",  id: "thu-portfolio",     type: "prep",      date: "2026-10-15", est: true,  title: "Prepare Tsinghua English-taught application materials (URD portfolio, self-intro video)",
+        note: "All English-taught: ≤3 min self-intro video (.mp4). URD only: portfolio upload. GTSE + Zhishan PES: no portfolio. 2 teacher refs via portal." },
       { school: "ntu",  id: "ntu-open",          type: "open",      date: "2026-10-15", est: false, title: "NTU (SG) international application opens",
         note: "Official AY2027–28 window: 15 Oct 2026 – 19 Mar 2027 (NTU IB admissions stages table). US HS / AP track uses the same close date." },
       { school: "hku",  id: "hku-apply-early",   type: "prep",      date: "2026-10-15", est: true,  title: "Submit HKU application — target before first-round deadline (not rolling yet)",
@@ -351,7 +353,7 @@ gantt
       { school: "cuhk", id: "cuhk-info",         type: "info",      date: "2026-10-17", est: false, title: "CUHK Information Day for Undergraduate Admissions",
         note: "Official 2027 Important Dates. infoday.cuhk.edu.hk — Hong Kong campus." },
       { school: "cuhk", id: "cuhk-submit-early", type: "prep",      date: "2026-10-18", est: true,  title: "Submit CUHK application (target mid-Oct for Advance Offer round)",
-        note: "Referees have 21 days from invite. Submit supporting docs within 14 days of application." },
+        note: "Official: apply on or before 12 Nov for Advance Offer (Dec notifications). Referees have 21 days from invite. Submit supporting docs within 14 days of application." },
       { school: "cuhk", id: "cuhk-docs-14d",     type: "deadline",  date: "2026-11-01", est: true,  title: "CUHK supporting documents due (~14 days after application est.)",
         note: "Upload transcript scans, passport copy, personal statement in applicant portal — not mailed official copies unless asked. Referees should complete within 21 days of invite." },
 
@@ -361,7 +363,7 @@ gantt
       { school: "nus",  id: "nus-counselor-ask", type: "counselor", date: "2026-11-15", est: true,  title: "Ask school for transcript PDF + grading system explanation for NUS",
         note: "Upload high school results and grading explanation via NUS Applicant Portal — PDF upload at application; originals only for verification if admitted." },
       { school: "cuhk", id: "cuhk-advance",      type: "deadline",  date: "2026-11-12", est: false, title: "CUHK Advance Offer Round deadline (11:59 PM HKT)",
-        note: "Official 2027–28 brochure date (was 13 Nov in 2026 cycle). Ensure all referees have submitted by this date for advance consideration." },
+        note: "Official 2027–28: apply on or before this date for Advance Offer consideration (Dec offers). Not selected? Same app auto-competes in Regular Round (7 Jan). Medicine excluded." },
       { school: "uec",  id: "uec-ind-open",      type: "open",      date: "2026-11-01", est: true,  title: "UECFOCS bachelor's individual application opens (US/Canada, est. Fall 2027)",
         note: "116學年度 dates not yet posted; last cycle Nov 1 – Dec 15. 學士班個人申請 — up to 4 prefs." },
       { school: "ntutw",id: "ntutw-r1-close",    type: "deadline",  date: "2026-11-05", est: false, title: "NTU Taiwan intl Round 1 closes (4 PM GMT+8)",
@@ -374,8 +376,8 @@ gantt
         note: "Official deadline 1 Dec for first-round batch evaluation. Portal stays open after; rolling review for late apps starts after 25 Nov. counsellors@hku.hk if issues." },
       { school: "hku",  id: "hku-roll-start",    type: "rolling",   date: "2026-11-26", est: false, title: "HKU rolling review begins (if you missed first round)",
         note: "Official: apps after noon 25 Nov are reviewed on a rolling basis until 25 Aug 2027. First-round results release from Dec." },
-      { school: "thu",  id: "thu-r1",            type: "deadline",  date: "2026-11-20", est: false, title: "Tsinghua (China) Round 1 ends (5 PM Beijing)",
-        note: "Official 2027 schedule. Round 2 opens Nov 21; Arts/Design programs Round 1 only. Results by January 2027." },
+      { school: "thu",  id: "thu-r1",            type: "deadline",  date: "2026-11-20", est: false, title: "Tsinghua English-taught Round 1 ends (5 PM Beijing)",
+        note: "Results by January 2027. English-taught may also apply in Round 2 (opens Nov 21). Round-only exceptions: Arts/Design = Round 1 only; THU–CUHK Economics dual degree = Round 2 only." },
       { school: "uc",   id: "uc-deadline",       type: "deadline",  date: "2026-11-30", est: false, title: "UC filing deadline — 11:59 PM Pacific",
         note: "Hard deadline. No ED/EA. Self-reported grades only at this stage." },
       { school: "hku",  id: "hku-talent",        type: "deadline",  date: "2026-12-07", est: false, title: "HKU Talent Search Scheme nomination deadline",
@@ -384,6 +386,8 @@ gantt
         note: "After paper submission to sponsor. Individual application track." },
 
       /* ── Dec 2026 – Jan 2027 ── */
+      { school: "thu",  id: "thu-r2-open",       type: "open",      date: "2026-11-21", est: false, title: "Tsinghua English-taught Round 2 opens (8 AM Beijing)",
+        note: "Round 2 closes Feb 28; results by early May 2027. THU–CUHK Economics dual degree (English-taught) is Round 2 only — not a target program for us." },
       { school: "ntutw",id: "ntutw-r2-open",     type: "open",      date: "2026-12-01", est: false, title: "NTU Taiwan intl Round 2 opens",
         note: "Foreign degree-student channel. oiasystem.ntu.edu.tw/globaladmission/foreign/" },
       { school: "nus",  id: "nus-open",          type: "open",      date: "2026-12-16", est: false, title: "NUS international application opens",
@@ -398,8 +402,8 @@ gantt
         note: "Upload supporting docs in MAYA portal — school transcript PDF at application; not mailed official unless requested after offer. IELTS/TOEFL required unless exempt." },
       { school: "ntutw",id: "ntutw-r2-close",    type: "deadline",  date: "2027-01-19", est: false, title: "NTU Taiwan intl Round 2 closes",
         note: "Final intl round for Sep 2027 entry — foreign degree students." },
-      { school: "thu",  id: "thu-info",          type: "info",      date: "2027-01-30", est: true,  title: "Watch Tsinghua (China) int'l undergrad info session recordings (est. late Jan 2027)",
-        note: "2026 intake pattern: General Jan 30, Shuimu Feb 1, Zijing Feb 3, Zhishan Feb 5. Meet Us section on admissions site — 2027 videos not posted yet." },
+      { school: "thu",  id: "thu-info",          type: "info",      date: "2027-01-30", est: true,  title: "Watch Tsinghua English-taught info session recordings (est. late Jan 2027)",
+        note: "2026 intake: Zijing Feb 3, Zhishan Feb 5 (+ General Feb 1). Meet Us on international.join-tsinghua.edu.cn — 2027 videos not posted yet." },
       { school: "ntu",  id: "ntu-info-reg",      type: "register",  date: "2027-02-07", est: true,  title: "Register for NTU (SG) int'l student webinar",
         note: "2026 webinar was Feb 21. Register ~2 weeks ahead." },
       { school: "nus",  id: "nus-info-reg",      type: "register",  date: "2027-02-14", est: true,  title: "Register for NUS Undergraduate Open House",
@@ -420,8 +424,8 @@ gantt
         note: "NTU TW 僑生 English options differ; verify 系所分則." },
       { school: "uec",  id: "uec-joint-close",   type: "deadline",  date: "2027-02-28", est: true,  title: "UECFOCS joint distribution closes (est.)",
         note: "Online + paper via sponsor. cmn-hant.overseas.ncnu.edu.tw" },
-      { school: "thu",  id: "thu-close",         type: "deadline",  date: "2027-02-28", est: false, title: "Tsinghua (China) Round 2 / English programs application closes (5 PM Beijing)",
-        note: "apply.join-tsinghua.edu.cn/international — Beijing Tsinghua University." },
+      { school: "thu",  id: "thu-close",         type: "deadline",  date: "2027-02-28", est: false, title: "Tsinghua English-taught Round 2 ends (5 PM Beijing)",
+        note: "Round 2 results by early May 2027. Zijing GTSE, URD, Zhishan PES eligible in either round. THU–CUHK Economics dual degree = Round 2 only." },
       { school: "nus",  id: "nus-info",          type: "info",      date: "2027-02-28", est: true,  title: "NUS Undergraduate Admissions Open House online",
         note: "nus.edu.sg/oam" },
       { school: "ntu",  id: "ntu-oh",            type: "info",      date: "2027-02-28", est: true,  title: "NTU (SG) Open House on campus (est. ~9:30 AM–6:30 PM SGT)",
@@ -459,8 +463,8 @@ gantt
         note: "Advance Offer deadline 12 Nov 2026, 11:59 PM HKT. One application covers later rounds if you miss this." },
       { school: "hku",  id: "hku-r1-week",       type: "submit",    date: "2026-11-18", est: false, title: "Submit HKU this week for first-round evaluation — 1 week before",
         note: "First round noon HKT 25 Nov 2026 (batch evaluation, not rolling). Counsellor/referee docs due 1 Dec. Rolling review only after 25 Nov." },
-      { school: "thu",  id: "thu-r1-week",       type: "submit",    date: "2026-11-13", est: false, title: "Submit Tsinghua (China) this week for Round 1 — 1 week before",
-        note: "Round 1 closes 20 Nov 2026, 5 PM Beijing. Arts/Design programs are Round 1 only. Round 2 opens Nov 21." },
+      { school: "thu",  id: "thu-r1-week",       type: "submit",    date: "2026-11-13", est: false, title: "Submit Tsinghua English-taught this week for Round 1 — 1 week before",
+        note: "Round 1 closes 20 Nov 2026, 5 PM Beijing → results by Jan 2027. Round 2 opens Nov 21 if you need more time." },
       { school: "uc",   id: "uc-week",           type: "submit",    date: "2026-11-23", est: false, title: "Submit UC application this week — 1 week before filing deadline",
         note: "Hard close 30 Nov 2026, 11:59 PM Pacific. No late filing." },
       { school: "uec",  id: "uec-ind-week",      type: "submit",    date: "2026-12-08", est: true,  title: "Submit UECFOCS bachelor's individual this week — 1 week before close",
@@ -473,8 +477,8 @@ gantt
         note: "Closes 17 Feb 2027. SAT/ACT must also arrive by this deadline." },
       { school: "uec",  id: "uec-joint-week",    type: "submit",    date: "2027-02-21", est: true,  title: "Submit UECFOCS joint distribution this week — 1 week before close",
         note: "Closes ~28 Feb 2027." },
-      { school: "thu",  id: "thu-week",          type: "submit",    date: "2027-02-21", est: true,  title: "Submit Tsinghua (China) English programs this week — 1 week before close",
-        note: "Closes ~28 Feb 2027, 5 PM Beijing. Skip if Round 1 was already submitted." },
+      { school: "thu",  id: "thu-week",          type: "submit",    date: "2027-02-21", est: false, title: "Submit Tsinghua English-taught this week for Round 2 — 1 week before",
+        note: "Round 2 closes 28 Feb 2027, 5 PM Beijing. Skip if already submitted in Round 1." },
       { school: "ntu",  id: "ntu-week",          type: "submit",    date: "2027-03-12", est: false, title: "Submit NTU (SG) application this week — 1 week before close",
         note: "Closes 19 Mar 2027. Docs due within 3 days after close (by 22 Mar)." },
       { school: "cuhk", id: "cuhk-ext-week",     type: "submit",    date: "2027-05-22", est: true,  title: "CUHK late/Extended submit reminder — only if Extended date is later posted",
