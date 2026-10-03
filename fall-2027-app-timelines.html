@@ -35,7 +35,7 @@
     .swatch { width: 28px; height: 12px; border-radius: 3px; display: inline-block; }
     .swatch.crit { background: #b91c1c; }
     .swatch.active { background: #2563eb; }
-    .swatch.done { background: #3f6212; }
+    .swatch.optional { background: #52525b; }
     .swatch.milestone { background: #eab308; width: 12px; height: 12px; transform: rotate(45deg); border-radius: 1px; }
     .swatch.decision { background: #2dd4bf; width: 12px; height: 12px; transform: rotate(45deg); border-radius: 1px; }
     .checklist-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
@@ -111,23 +111,23 @@ gantt
     todayMarker stroke-width:3px,stroke:#ef4444,opacity:1
 
     section UC California resident
-    Portal open for drafts           :done, uc_draft, 2026-08-01, 2026-09-30
+    Portal open for drafts           :uc_draft, 2026-08-01, 2026-09-30
     Filing period ends Nov 30          :active, uc_file, 2026-10-01, 2026-11-30
     Filing deadline                    :milestone, m_uc_end, 2026-11-30, 1d
     Decisions Mar 1-31                 :milestone, d_uc, 2027-03-31, 1d
 
     section NTU Taiwan intl foreign
-    Round 1 application window         :ntutw_r1, 2026-09-29, 2026-11-05
+    Round 1 application window         :active, ntutw_r1, 2026-09-29, 2026-11-05
     Round 1 deadline                   :milestone, m_ntutw_r1, 2026-11-05, 1d
-    Round 2 application window         :ntutw_r2, 2026-12-01, 2027-01-19
+    Round 2 application window         :active, ntutw_r2, 2026-12-01, 2027-01-19
     Round 2 deadline                   :milestone, m_ntutw_r2, 2027-01-19, 1d
     Round 1 decisions                  :milestone, d_ntutw_r1, 2027-01-14, 1d
     Round 2 decisions                  :milestone, d_ntutw_r2, 2027-04-08, 1d
 
     section Tsinghua English-taught
-    Round 1 application window         :thu_r1, 2026-09-30, 2026-11-20
+    Round 1 application window         :active, thu_r1, 2026-09-30, 2026-11-20
     Round 1 deadline                   :milestone, m_thu_r1, 2026-11-20, 1d
-    Round 2 application window         :thu_r2, 2026-11-21, 2027-02-28
+    Round 2 application window         :active, thu_r2, 2026-11-21, 2027-02-28
     Round 2 deadline                   :milestone, m_thu_end, 2027-02-28, 1d
     Round 1 results est                :milestone, d_thu_r1, 2027-01-31, 1d
     Round 2 results est                :milestone, d_thu_r2, 2027-05-15, 1d
@@ -155,21 +155,21 @@ gantt
     Regular round decisions est        :milestone, d_cuhk_reg, 2027-05-15, 1d
 
     section NTU SG US high school AP
-    Application window                 :ntu_win, 2026-10-15, 2027-03-19
+    Application window                 :active, ntu_win, 2026-10-15, 2027-03-19
     Application closes                 :milestone, m_ntu_end, 2027-03-19, 1d
     Outcomes est US HS AP              :milestone, d_ntu, 2027-07-01, 1d
 
     section UECFOCS US Canada est
-    Bachelor individual app window       :uec_ind, 2026-11-01, 2026-12-15
+    Bachelor individual app window       :active, uec_ind, 2026-11-01, 2026-12-15
     Bachelor individual deadline         :milestone, m_uec_ind, 2026-12-15, 1d
     Supporting docs upload deadline    :milestone, m_uec_docs, 2027-01-06, 1d
-    Joint distribution window          :uec_joint, 2027-02-01, 2027-02-28
+    Joint distribution window          :active, uec_joint, 2027-02-01, 2027-02-28
     Joint distribution deadline        :milestone, m_uec_joint, 2027-02-28, 1d
     Individual decisions est           :milestone, d_uec_ind, 2027-03-31, 1d
     Joint distribution decisions est   :milestone, d_uec_joint, 2027-05-15, 1d
 
     section NUS International
-    Application window                 :nus_win, 2026-12-16, 2027-02-17
+    Application window                 :active, nus_win, 2026-12-16, 2027-02-17
     Application closes                 :milestone, m_nus_end, 2027-02-17, 1d
     Outcomes latest est                :milestone, d_nus, 2027-07-15, 1d
 
@@ -183,7 +183,7 @@ gantt
     <div class="legend">
       <span><i class="swatch crit"></i> Rolling or priority early round</span>
       <span><i class="swatch active"></i> Fixed window</span>
-      <span><i class="swatch done"></i> Prep period</span>
+      <span><i class="swatch optional"></i> Optional</span>
       <span><i class="swatch milestone"></i> Application deadline</span>
       <span><i class="swatch decision"></i> Decision release (est.)</span>
       <span><span class="today-line-sample"></span> Today</span>
