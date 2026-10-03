@@ -55,9 +55,7 @@
     .checklist li.school-nus { border-left-color: #f59e0b; background: rgba(245,158,11,0.07); }
     .checklist li.school-ntu { border-left-color: #06b6d4; background: rgba(6,182,212,0.07); }
     .checklist li.school-ntutw { border-left-color: #ec4899; background: rgba(236,72,153,0.07); }
-    .checklist li.school-nthui { border-left-color: #a3e635; background: rgba(163,230,53,0.07); }
     .checklist li.school-um { border-left-color: #eab308; background: rgba(234,179,8,0.07); }
-    .checklist li.school-nthu { border-left-color: #84cc16; background: rgba(132,204,22,0.07); }
     .checklist li.school-uec { border-left-color: #f43f5e; background: rgba(244,63,94,0.07); }
     .checklist input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; accent-color: var(--accent); }
     .item-title { color: var(--text); font-weight: 500; }
@@ -82,9 +80,7 @@
     .tag.school-nus { background: #78350f; color: #fcd34d; }
     .tag.school-ntu { background: #164e63; color: #67e8f9; }
     .tag.school-ntutw { background: #831843; color: #f9a8d4; }
-    .tag.school-nthui { background: #4d7c0f; color: #d9f99d; }
     .tag.school-um { background: #713f12; color: #fde047; }
-    .tag.school-nthu { background: #3f6212; color: #bef264; }
     .tag.school-uec { background: #881337; color: #fda4af; }
   </style>
 </head>
@@ -114,13 +110,6 @@ gantt
     dateFormat YYYY-MM-DD
     todayMarker stroke-width:3px,stroke:#ef4444,opacity:1
 
-    section NTHU Taiwan 僑生 direct
-    Guidelines release                 :milestone, m_nthuoc_guide, 2026-07-02, 1d
-    Application window                 :nthuoc_win, 2026-08-14, 2026-10-15
-    Application closes                 :milestone, m_nthuoc_end, 2026-10-15, 1d
-    Decisions release                  :milestone, d_nthuoc, 2027-01-22, 1d
-    Enrollment confirm ends            :milestone, m_nthuoc_reply, 2027-01-28, 1d
-
     section UC California resident
     Portal open for drafts           :done, uc_draft, 2026-08-01, 2026-09-30
     Filing period ends Nov 30          :active, uc_file, 2026-10-01, 2026-11-30
@@ -134,17 +123,6 @@ gantt
     Round 2 deadline                   :milestone, m_ntutw_r2, 2027-01-19, 1d
     Round 1 decisions                  :milestone, d_ntutw_r1, 2027-01-14, 1d
     Round 2 decisions                  :milestone, d_ntutw_r2, 2027-04-08, 1d
-
-    section NTHU IBP intl portal
-    Application window opens           :milestone, m_nthui_open, 2026-10-01, 1d
-    Round 1 application window         :nthui_r1, 2026-10-01, 2026-11-23
-    Round 1 deadline                   :milestone, m_nthui_r1, 2026-11-23, 1d
-    Round 2 application window         :nthui_r2, 2026-11-23, 2027-03-03
-    Round 3 application window         :nthui_r3, 2027-03-03, 2027-04-22
-    Final deadline                     :milestone, m_nthui_end, 2027-04-22, 1d
-    Round 1 decisions                  :milestone, d_nthui_r1, 2026-12-28, 1d
-    Round 2 decisions                  :milestone, d_nthui_r2, 2027-04-16, 1d
-    Round 3 decisions                  :milestone, d_nthui_r3, 2027-05-31, 1d
 
     section Tsinghua China English
     Round 1 application window         :thu_r1, 2026-09-30, 2026-11-20
@@ -226,12 +204,12 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v11";
+    const STORAGE_KEY = "fall2027-checklist-v12";
 
     const SCHOOL_COLORS = {
       uc: "#3b82f6", hku: "#10b981", cuhk: "#a855f7", thu: "#ef4444",
-      nus: "#f59e0b", ntu: "#06b6d4", ntutw: "#ec4899", nthui: "#a3e635",
-      um: "#eab308", nthu: "#84cc16", uec: "#f43f5e",
+      nus: "#f59e0b", ntu: "#06b6d4", ntutw: "#ec4899",
+      um: "#eab308", uec: "#f43f5e",
     };
 
     const MILESTONE_DEADLINE_FILL = "#eab308";
@@ -244,8 +222,6 @@ gantt
       hku: { name: "HKU", short: "HKU", link: "https://admissions.hku.hk/apply/international-qualifications", apply: "https://admissions.hku.hk/apply" },
       cuhk:{ name: "CUHK", short: "CUHK", link: "https://admission.cuhk.edu.hk/application/overseas-other-qualifications-non-local-international-team/requirements/", apply: "https://applicant.adm.cuhk.edu.hk/" },
       thu: { name: "Tsinghua (China)", short: "Tsinghua (China)", link: "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm", apply: "https://apply.join-tsinghua.edu.cn/international" },
-      nthu: { name: "NTHU Taiwan 僑生 direct", short: "NTHU 僑生", link: "https://apply.nthu.edu.tw/en/article/97-overseas-chinese", apply: "https://apply.nthu.edu.tw/" },
-      nthui: { name: "NTHU IBP intl portal", short: "NTHU IBP intl", link: "https://ibp.nthu.edu.tw/", apply: "https://ibp.nthu.edu.tw/room7.html" },
       uec: { name: "UECFOCS (Taiwan committee)", short: "UECFOCS", link: "https://cmn-hant.overseas.ncnu.edu.tw/further-study-area/national-area/america-and-canada-area/", apply: "https://student.overseas.ncnu.edu.tw/" },
       nus: { name: "NUS", short: "NUS", link: "https://www.nus.edu.sg/oam/admissions/international-qualifications-for-foreigners", apply: "https://myaces.nus.edu.sg/applicantPortal/" },
       ntu: { name: "NTU (SG)", short: "NTU (SG)", link: "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications", apply: "https://www.wired.ntu.edu.sg/apply/" },
@@ -265,8 +241,6 @@ gantt
       "cuhk-info": "https://infoday.cuhk.edu.hk/",
       "ntutw-info-reg": "https://admissions.ntu.edu.tw/apply/degree-students/international-students/",
       "ntutw-info": "https://admissions.ntu.edu.tw/apply/degree-students/international-students/",
-      "nthuoc-guide": "https://apply.nthu.edu.tw/en/article/97-overseas-chinese",
-      "nthui-open": "https://ibp.nthu.edu.tw/news-132.html",
       "hku-counselor-ask": "https://admissions.hku.hk/apply/international-qualifications/information-for-counsellors",
       "hku-counselor-r1": "https://admissions.hku.hk/apply/international-qualifications/information-for-counsellors",
       "cuhk-counselor-ask": "https://www.cuhk.edu.hk/adm/intl/Referees_Guide.pdf",
@@ -311,7 +285,7 @@ gantt
       { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU (SG) / Tsinghua (China))",
         note: "NUS & NTU (SG) require SAT or ACT for US HS + AP. Allow 3–4 weeks for scores to reach schools via College Board." },
       { school: "all",  id: "icard-apply",       type: "prep",      date: "2026-08-05", est: false, title: "Apply for OCAC i僑卡 (i Compatriot Card) — recommended before Taiwan 僑生 pathways",
-        note: "icard.taiwan-world.net — virtual OCAC member card. Not required to log into UECFOCS/NTHU/NTU apps. Not 僑生 identity proof. Needed for OCAC scholarships, work-study, and activity sign-ups after enrollment. Review ~3–7 business days." },
+        note: "icard.taiwan-world.net — virtual OCAC member card. Not required to log into UECFOCS/NTU apps. Not 僑生 identity proof. Needed for OCAC scholarships, work-study, and activity sign-ups after enrollment. Review ~3–7 business days." },
       { school: "uc",   id: "uc-open",           type: "open",      date: "2026-08-01", est: false, title: "UC application portal opens (draft)",
         note: "apply.universityofcalifornia.edu — no counselor letters required." },
       { school: "uc",   id: "uc-counselor-ask",  type: "counselor", date: "2026-08-15", est: true,  title: "Ask counselor: UC needs self-reported grades only (no recommendation letters)",
@@ -326,16 +300,10 @@ gantt
         note: "Online talks typically when int'l apps open (2027 intake opens Sep 23). Register ~2 weeks ahead." },
       { school: "thu",  id: "thu-counselor-ask", type: "counselor", date: "2026-09-05", est: true,  title: "Ask school for transcript scans + Tsinghua (China) supporting documents",
         note: "Upload school transcript PDFs/scans in portal at apply time — not mailed official copies. Sealed originals only if you pass integrative test. Also SAT/ACT/AP, personal statement; you upload (no counselor portal)." },
-      { school: "nthu", id: "nthuoc-guide",      type: "open",      date: "2026-07-02", est: false, title: "NTHU 僑生 direct admission guidelines published",
-        note: "apply.nthu.edu.tw — 僑生/HK/Macau direct admission. Business Management (IBP Group B) available via this path." },
-      { school: "nthu", id: "nthuoc-counselor-ask",type: "counselor", date: "2026-08-10", est: false, title: "NTHU 僑生 direct: ask recommenders + prepare residency/transcript scans",
-        note: "Upload transcript/residency docs in apply.nthu.edu.tw portal. Up to 12 departments. IELTS 6.0+ for English-taught majors incl. Business Management." },
-      { school: "nthu", id: "nthuoc-open",       type: "open",      date: "2026-08-14", est: false, title: "NTHU 僑生 direct admission opens (9 AM Taiwan)",
-        note: "Select IBP / Business Management among department choices if listed. itc@my.nthu.edu.tw" },
       { school: "uec",  id: "uec-register",      type: "prep",      date: "2026-09-08", est: true,  title: "UECFOCS: register email account on application system (before Nov open)",
-        note: "student.overseas.ncnu.edu.tw — email only. 學士班個人申請 (bachelor's) AND 碩士/博士 are separate tracks — undergrad is NOT grad-only. NTHU IBP Group B (Business Mgmt) available on bachelor's individual app." },
+        note: "student.overseas.ncnu.edu.tw — email only. 學士班個人申請 (bachelor's) AND 碩士/博士 are separate tracks — undergrad is NOT grad-only." },
       { school: "uec",  id: "uec-counselor-ask", type: "counselor", date: "2026-09-25", est: true,  title: "UECFOCS: gather paper application packet via sponsoring unit",
-        note: "TECO San Francisco or OCAC cultural center. Bachelor's individual: NTHU IBP Group A+B. Joint dist.: NTHU Group A only. NTU TW 116學年度 僑生 undergrad = school direct (not committee individual for general majors)." },
+        note: "TECO San Francisco or OCAC cultural center. NTU TW 116學年度 僑生 undergrad = school direct (not committee individual for general majors)." },
       { school: "hku",  id: "hku-counselor-ask", type: "counselor", date: "2026-09-10", est: true,  title: "Ask school contact for HKU counsellor/referee role — must agree BEFORE you submit",
         note: "Counsellor is not strictly required — can be school counsellor OR a teacher nominated as referee. Whoever you pick should enter predicted grades + reference in HKU Counsellors' Portal. Referee contacts cannot be edited after submission." },
       { school: "hku",  id: "hku-talent-reg",    type: "open",      date: "2026-10-05", est: false, title: "HKU Talent Search Scheme self-nomination opens (optional)",
@@ -348,18 +316,13 @@ gantt
         note: "Foreign-national degree-student channel. 僑生 may also apply here if eligible. admissions.ntu.edu.tw" },
       { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: "2026-09-15", est: true,  title: "Ask school for transcript PDF + documents for NTU (SG) upload",
         note: "Upload high school transcript PDF after applying — unofficial/school copy is fine at application. School may also email transcript to NTU with your app number. Prepare before portal opens (~Oct 15)." },
-      { school: "nthui",id: "nthui-counselor-ask",type: "counselor",date: "2026-09-18", est: true,  title: "NTHU IBP intl portal: transcript scans + financial forms (optional dual pathway)",
-        note: "Upload school transcript PDF in IBP portal — not mailed official at application. 僑生 eligible for BOTH 僑生 direct (nthu) AND intl IBP portal. ibp@my.nthu.edu.tw" },
-
       /* ── Oct 2026 ── */
       { school: "thu",  id: "thu-info",          type: "info",      date: "2026-09-30", est: true,  title: "Tsinghua (China) international info session (est. late Sep 2026)",
-        note: "international.join-tsinghua.edu.cn — Beijing Tsinghua University, not NTHU Taiwan." },
+        note: "international.join-tsinghua.edu.cn — Beijing Tsinghua University." },
       { school: "thu",  id: "thu-open",          type: "open",      date: "2026-09-30", est: false, title: "Tsinghua (China) English programs application opens (8 AM Beijing)",
         note: "Official 2027 schedule: Round 1 opens 8 AM Sep 30 Beijing. Global Leaders + URD. apply.join-tsinghua.edu.cn/international" },
       { school: "ntutw",id: "ntutw-r1-open",     type: "open",      date: "2026-09-29", est: false, title: "NTU Taiwan intl Round 1 opens — foreign degree students",
         note: "oiasystem.ntu.edu.tw/globaladmission/foreign/ — 僑生 may apply if meeting intl student criteria." },
-      { school: "nthui",id: "nthui-open",        type: "open",      date: "2026-10-01", est: false, title: "NTHU IBP intl portal opens — Business Management (optional dual pathway)",
-        note: "Official Fall 2027 guidelines: Oct 1 – Apr 22. Round 1 through Nov 23. ibp.nthu.edu.tw" },
       { school: "scores", id: "scores-sat-send-early", type: "scores", date: "2026-09-30", est: true, title: "Send official SAT/ACT to Tsinghua (China) via College Board (if using SAT/ACT)",
         note: "Upload score reports in Tsinghua (China) portal too. Check programme guide for minimum scores." },
       { school: "uc",   id: "uc-file-start",     type: "prep",      date: "2026-10-01", est: false, title: "UC filing period opens",
@@ -374,14 +337,6 @@ gantt
         note: "English-taught programs on intl foreign portal. oiasystem.ntu.edu.tw/globaladmission/foreign/" },
       { school: "ntutw",id: "ntutw-toefl",       type: "scores",    date: "2026-10-10", est: true,  title: "Submit TOEFL/IELTS with NTU Taiwan intl application (CEFR B2 minimum)",
         note: "English proficiency required. Check programme-specific thresholds." },
-      { school: "nthu", id: "nthuoc-ielts",      type: "scores",    date: "2026-10-10", est: false, title: "Submit IELTS 6.0+ with NTHU 僑生 direct application",
-        note: "Required for Business Management / IBP English tracks on apply.nthu.edu.tw." },
-      { school: "nthui",id: "nthui-ielts",       type: "scores",    date: "2026-10-10", est: true,  title: "Submit IELTS 6.0+ with NTHU IBP intl application (if using intl portal)",
-        note: "Required for Business Management track on IBP intl portal." },
-      { school: "nthu", id: "nthuoc-submit",     type: "prep",      date: "2026-10-12", est: true,  title: "Submit NTHU 僑生 direct application — target early",
-        note: "Include IBP / Business Management in department list. Fee NTD 1500." },
-      { school: "nthui",id: "nthui-apply-r1",    type: "prep",      date: "2026-10-15", est: true,  title: "Submit NTHU IBP intl application — target Round 1 (Business Management)",
-        note: "Optional if also applying 僑生 direct. Round 1 closes Nov 23 (official Fall 2027 guidelines)." },
       { school: "ntutw",id: "ntutw-info",        type: "info",      date: "2026-10-14", est: true,  title: "NTU Taiwan intl admissions info session (est. Oct 14 2026)",
         note: "Based on 2025 pattern. Verify on admissions.ntu.edu.tw" },
       { school: "uc",   id: "uc-ap-selfreport",  type: "scores",    date: "2026-10-10", est: true,  title: "Self-report all AP courses + planned May 2027 exams on UC application",
@@ -409,13 +364,9 @@ gantt
       { school: "cuhk", id: "cuhk-advance",      type: "deadline",  date: "2026-11-12", est: false, title: "CUHK Advance Offer Round deadline (11:59 PM HKT)",
         note: "Official 2027–28 brochure date (was 13 Nov in 2026 cycle). Ensure all referees have submitted by this date for advance consideration." },
       { school: "uec",  id: "uec-ind-open",      type: "open",      date: "2026-11-01", est: true,  title: "UECFOCS bachelor's individual application opens (US/Canada, est. Fall 2027)",
-        note: "116學年度 dates not yet posted; last cycle Nov 1 – Dec 15. 學士班個人申請 — up to 4 prefs. NTHU IBP Group B available." },
+        note: "116學年度 dates not yet posted; last cycle Nov 1 – Dec 15. 學士班個人申請 — up to 4 prefs." },
       { school: "ntutw",id: "ntutw-r1-close",    type: "deadline",  date: "2026-11-05", est: false, title: "NTU Taiwan intl Round 1 closes (4 PM GMT+8)",
         note: "Foreign degree-student channel. Round 2 opens Dec 1 if needed." },
-      { school: "nthui",id: "nthui-r1-close",    type: "deadline",  date: "2026-11-23", est: false, title: "NTHU IBP intl Round 1 closes (noon Taiwan)",
-        note: "Official Fall 2027 IBP guidelines. Round 2 continues through Mar 3." },
-      { school: "nthu", id: "nthuoc-close",      type: "deadline",  date: "2026-10-15", est: false, title: "NTHU 僑生 direct admission closes (5 PM Taiwan)",
-        note: "apply.nthu.edu.tw Overseas Compatriot portal. Official Fall 2027 dates from NTHU OGA." },
       { school: "uec",  id: "uec-ind-close",     type: "deadline",  date: "2026-12-15", est: true,  title: "UECFOCS bachelor's individual application closes — online + paper (est.)",
         note: "116學年度 dates not yet posted; last cycle Dec 15. US/Canada general-exam-free region." },
       { school: "hku",  id: "hku-r1",            type: "deadline",  date: "2026-11-25", est: false, title: "HKU first-round application deadline (noon HKT)",
@@ -444,8 +395,6 @@ gantt
         note: "UM announces fairs ad hoc (~Feb 9). Register ~2 weeks ahead." },
       { school: "um",   id: "um-counselor-ask",  type: "counselor", date: "2027-01-15", est: true,  title: "Ask school for transcript PDF + documents for UM MAYA application",
         note: "Upload supporting docs in MAYA portal — school transcript PDF at application; not mailed official unless requested after offer. IELTS/TOEFL required unless exempt." },
-      { school: "nthu", id: "nthuoc-reply",      type: "deadline",  date: "2027-01-28", est: false, title: "NTHU 僑生 direct: enrollment confirmation deadline (5 PM Taiwan)",
-        note: "If admitted Jan 22 — confirm in apply.nthu.edu.tw portal by Jan 28 or offer lapses." },
       { school: "ntutw",id: "ntutw-r2-close",    type: "deadline",  date: "2027-01-19", est: false, title: "NTU Taiwan intl Round 2 closes",
         note: "Final intl round for Sep 2027 entry — foreign degree students." },
       { school: "ntu",  id: "ntu-info-reg",      type: "register",  date: "2027-02-07", est: true,  title: "Register for NTU (SG) int'l student webinar",
@@ -465,7 +414,7 @@ gantt
       { school: "ntu",  id: "ntu-info",          type: "info",      date: "2027-02-21", est: true,  title: "NTU (SG) webinar for international students (est. ~2 PM SGT)",
         note: "ntu.edu.sg/OpenHouse" },
       { school: "uec",  id: "uec-joint-open",    type: "open",      date: "2027-02-01", est: true,  title: "UECFOCS joint distribution opens (est. Fall 2027)",
-        note: "NTHU joint: Group A (Chinese track) only — NOT Business Management. NTU TW 僑生 English options differ; verify 系所分則." },
+        note: "NTU TW 僑生 English options differ; verify 系所分則." },
       { school: "uec",  id: "uec-joint-close",   type: "deadline",  date: "2027-02-28", est: true,  title: "UECFOCS joint distribution closes (est.)",
         note: "Online + paper via sponsor. cmn-hant.overseas.ncnu.edu.tw" },
       { school: "thu",  id: "thu-close",         type: "deadline",  date: "2027-02-28", est: false, title: "Tsinghua (China) Round 2 / English programs application closes (5 PM Beijing)",
@@ -482,11 +431,6 @@ gantt
         note: "Kent Ridge campus, Singapore." },
       { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: false, title: "NTU (SG) application closes — US HS / AP track",
         note: "Official AY2027–28 close 19 Mar 2027. Submit docs within 3 days after close (by 22 Mar)." },
-      { school: "nthui",id: "nthui-r2-close",    type: "deadline",  date: "2027-03-03", est: false, title: "NTHU IBP intl Round 2 application period ends (noon Taiwan)",
-        note: "Official Fall 2027 IBP guidelines. Round 3 through Apr 22." },
-      { school: "nthui",id: "nthui-close",       type: "deadline",  date: "2027-04-22", est: false, title: "NTHU IBP intl final deadline (noon Taiwan)",
-        note: "Official Fall 2027 IBP guidelines." },
-
       /* ── May–Aug 2027 ── */
       { school: "cuhk", id: "cuhk-extended",     type: "deadline",  date: "2027-05-29", est: true,  title: "CUHK Extended deadline — not listed for 2027 (prior-cycle pattern)",
         note: "2027 Important Dates list only Advance (12 Nov) + Regular (7 Jan). Extended date not published; prior cycle was 29 May. Medicine: apply by Regular; later apps only if places remain." },
@@ -506,14 +450,10 @@ gantt
         note: "Bachelor's international channel." },
 
       /* ── Submit 1 week before each application close ── */
-      { school: "nthu", id: "nthuoc-week",       type: "submit",    date: "2026-10-08", est: false, title: "Submit NTHU 僑生 direct application this week — 1 week before close",
-        note: "Closes 15 Oct 2026, 5 PM Taiwan. Do not wait until the last day." },
       { school: "ntutw",id: "ntutw-r1-week",     type: "submit",    date: "2026-10-29", est: false, title: "Submit NTU Taiwan intl Round 1 this week — 1 week before close",
         note: "Closes 5 Nov 2026, 4 PM GMT+8. Round 2 is a fallback if needed." },
       { school: "cuhk", id: "cuhk-adv-week",     type: "submit",    date: "2026-11-05", est: false, title: "Submit CUHK this week for Advance Offer — 1 week before that round",
         note: "Advance Offer deadline 12 Nov 2026, 11:59 PM HKT. One application covers later rounds if you miss this." },
-      { school: "nthui",id: "nthui-r1-week",     type: "submit",    date: "2026-11-16", est: false, title: "Submit NTHU IBP intl Round 1 this week — 1 week before close",
-        note: "Round 1 closes 23 Nov 2026. Later rounds stay open if you miss this." },
       { school: "hku",  id: "hku-r1-week",       type: "submit",    date: "2026-11-18", est: false, title: "Submit HKU this week for first-round evaluation — 1 week before",
         note: "First round noon HKT 25 Nov 2026. Counsellor/referee docs due 1 Dec. Rolling after that." },
       { school: "thu",  id: "thu-r1-week",       type: "submit",    date: "2026-11-13", est: false, title: "Submit Tsinghua (China) this week for Round 1 — 1 week before",
@@ -529,15 +469,11 @@ gantt
       { school: "nus",  id: "nus-week",          type: "submit",    date: "2027-02-10", est: false, title: "Submit NUS application this week — 1 week before close",
         note: "Closes 17 Feb 2027. SAT/ACT must also arrive by this deadline." },
       { school: "uec",  id: "uec-joint-week",    type: "submit",    date: "2027-02-21", est: true,  title: "Submit UECFOCS joint distribution this week — 1 week before close",
-        note: "Closes ~28 Feb 2027. NTHU joint is Group A only (not Business Management)." },
+        note: "Closes ~28 Feb 2027." },
       { school: "thu",  id: "thu-week",          type: "submit",    date: "2027-02-21", est: true,  title: "Submit Tsinghua (China) English programs this week — 1 week before close",
         note: "Closes ~28 Feb 2027, 5 PM Beijing. Skip if Round 1 was already submitted." },
-      { school: "nthui",id: "nthui-r2-week",     type: "submit",    date: "2027-02-24", est: false, title: "Submit NTHU IBP intl Round 2 this week — 1 week before that round ends",
-        note: "Round 2 ends 3 Mar 2027. Skip if already submitted. Round 3 stays open to 22 Apr." },
       { school: "ntu",  id: "ntu-week",          type: "submit",    date: "2027-03-12", est: false, title: "Submit NTU (SG) application this week — 1 week before close",
         note: "Closes 19 Mar 2027. Docs due within 3 days after close (by 22 Mar)." },
-      { school: "nthui",id: "nthui-week",        type: "submit",    date: "2027-04-15", est: true,  title: "Submit NTHU IBP intl this week — 1 week before final deadline",
-        note: "Final close ~22 Apr 2027. Skip if already submitted in Round 1 or 2." },
       { school: "cuhk", id: "cuhk-ext-week",     type: "submit",    date: "2027-05-22", est: true,  title: "CUHK late/Extended submit reminder — only if Extended date is later posted",
         note: "Extended not on 2027 Important Dates. Skip if already submitted by Regular Round. Medicine: Regular is the practical last deadline." },
       { school: "hku",  id: "hku-week",          type: "submit",    date: "2027-08-18", est: false, title: "Submit HKU this week — 1 week before applications close",
