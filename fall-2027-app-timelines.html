@@ -75,6 +75,7 @@
     .tag.submit { background: #7c2d12; color: #fdba74; }
     .tag.rolling { background: #4c0519; color: #fda4af; }
     .tag.prep { background: #312e81; color: #c4b5fd; }
+    .tag.target { background: #5b21b6; color: #ddd6fe; }
     .tag.counselor { background: #1e3a3a; color: #5eead4; }
     .tag.scores { background: #3b0764; color: #e9d5ff; }
     .tag.est { border: 1px dashed var(--muted); background: transparent; color: var(--muted); text-transform: uppercase; }
@@ -212,7 +213,8 @@ gantt
   <p class="hint">
     Sorted by date. <span class="tag counselor">Counselor</span> = ask/follow up with school counselor or referees.
     <span class="tag scores">Scores</span> = SAT/AP/TOEFL submission. Register-by = ~2 weeks before info sessions.
-    <span class="tag submit">1 week left</span> = submit this week — do not wait for the close date.
+    <span class="tag submit">1 week left</span> = submit this week — do not wait for your target or official close date.
+    <span class="tag target">Target submit</span> = your planned application date for that school.
     Each row includes an <strong>Open link →</strong> where a portal or official page applies.
   </p>
   <div class="card">
@@ -225,7 +227,38 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v17";
+    const STORAGE_KEY = "fall2027-checklist-v19";
+
+    /* Target submit dates — prep/counselor/scores items are offset from these */
+    const TARGETS = {
+      wbb: "2026-10-28", cuhk: "2026-11-05", thu: "2026-11-13", hku: "2026-11-18",
+      uc: "2026-11-21", ubc: "2026-11-30", ntutw: "2027-01-10", nus: "2027-02-10",
+      ntu: "2027-03-12", um: "2027-08-23",
+    };
+
+    function parseDate(str) {
+      const [y, m, d] = str.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function formatDateISO(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function daysBefore(target, n) {
+      const d = parseDate(target);
+      d.setDate(d.getDate() - n);
+      return formatDateISO(d);
+    }
+
+    function daysAfter(target, n) {
+      const d = parseDate(target);
+      d.setDate(d.getDate() + n);
+      return formatDateISO(d);
+    }
 
     const SCHOOL_COLORS = {
       uc: "#3b82f6", hku: "#10b981", cuhk: "#a855f7", thu: "#ef4444",
@@ -266,6 +299,8 @@ gantt
       "hku-counselor-ask": "https://admissions.hku.hk/apply/international-qualifications/information-for-counsellors",
       "hku-counselor-r1": "https://admissions.hku.hk/apply/international-qualifications/information-for-counsellors",
       "cuhk-counselor-ask": "https://www.cuhk.edu.hk/adm/intl/Referees_Guide.pdf",
+      "cuhk-refs-chase": "https://www.cuhk.edu.hk/adm/ApplicationGuide/ApplicationGuide_International.pdf",
+      "thu-counselor-ask": "https://apply.join-tsinghua.edu.cn/international/res/SpecialWsbm/guide.en.html",
       "nus-info-reg": "https://www.nus.edu.sg/oam/admissions/important-dates",
       "nus-info": "https://www.nus.edu.sg/oam/admissions/important-dates",
       "nus-campus": "https://www.nus.edu.sg/oam/admissions/important-dates",
@@ -311,7 +346,7 @@ gantt
       if (sk === "all" || sk === "scores") return ITEM_LINKS[item.id] || null;
       const s = SCHOOLS[sk];
       if (!s) return null;
-      if (item.type === "open" || item.type === "prep" || item.type === "rolling" || item.type === "submit") return s.apply;
+      if (item.type === "open" || item.type === "prep" || item.type === "rolling" || item.type === "submit" || item.type === "target") return s.apply;
       if (item.type === "deadline") return s.link;
       return s.link;
     }
@@ -324,8 +359,8 @@ gantt
         note: "Sessions typically Aug–Nov. Register ~2 weeks before your target session." },
       { school: "wbb",  id: "wbb-open",          type: "open",      date: "2026-08-01", est: false, title: "USC WBB: Common Application opens — start application via CommonApp.org",
         note: "Apply to USC Marshall World Bachelor in Business through Common App. Select WBB as your program. Three partner schools: USC Marshall (LA), HKUST (Hong Kong), Bocconi (Milan)." },
-      { school: "wbb",  id: "wbb-counselor-ask", type: "counselor", date: "2026-08-15", est: true,  title: "Ask counselor + 1 teacher for Common App recommendations (USC WBB)",
-        note: "WBB evaluates counselor/teacher recommendations, coursework rigor, grades, test scores, activities, and essays. Invite recommenders in Common App early so they have time before Nov 1." },
+      { school: "wbb",  id: "wbb-counselor-ask", type: "counselor", date: daysBefore(TARGETS.wbb, 42), est: true, title: "Ask counselor + 1 teacher for Common App recommendations (USC WBB)",
+        note: "6 weeks before your 28 Oct target. Invite recommenders in Common App now — recs must be in before or with submit (official close 1 Nov)." },
       { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU (SG) / Tsinghua English-taught)",
         note: "NUS & NTU (SG) require SAT or ACT for US HS + AP. Allow 3–4 weeks for scores to reach schools via College Board." },
       { school: "all",  id: "icard-apply",       type: "prep",      date: "2026-08-05", est: false, title: "Apply for OCAC i僑卡 (i Compatriot Card) — recommended before Taiwan 僑生 pathways",
@@ -334,8 +369,8 @@ gantt
         note: "Comprehensive Marshall overview for families. Wednesdays 11 AM or 3 PM PT. Also consider USC on-campus / virtual campus tours." },
       { school: "uc",   id: "uc-open",           type: "open",      date: "2026-08-01", est: false, title: "UC application portal opens (draft)",
         note: "apply.universityofcalifornia.edu — no counselor letters required." },
-      { school: "uc",   id: "uc-counselor-ask",  type: "counselor", date: "2026-08-15", est: true,  title: "Ask counselor: UC needs self-reported grades only (no recommendation letters)",
-        note: "You will self-report A–G courses and AP plans on the application. Official transcript only if admitted." },
+      { school: "uc",   id: "uc-counselor-ask",  type: "counselor", date: daysBefore(TARGETS.uc, 70), est: true, title: "Ask counselor: UC needs self-reported grades only (no recommendation letters)",
+        note: "~10 weeks before your 21 Nov target. You will self-report A–G courses and AP plans on the application. Official transcript only if admitted." },
       { school: "uc",   id: "uc-info",           type: "info",      date: "2026-08-15", est: true,  title: "Attend UC campus virtual info sessions (ongoing est. Aug–Nov 2026)",
         note: "Check each campus admissions site." },
 
@@ -344,27 +379,27 @@ gantt
         note: "Zijing + Zhishan college sessions. No registration — recorded YouTube videos on international.join-tsinghua.edu.cn (~late Jan est.)." },
       { school: "hku",  id: "hku-info-reg",      type: "register",  date: "2026-09-09", est: true,  title: "Register for HKU International Admissions Talk",
         note: "Online talks typically when int'l apps open (2027 intake opens Sep 23). Register ~2 weeks ahead." },
-      { school: "thu",  id: "thu-counselor-ask", type: "counselor", date: "2026-09-05", est: true,  title: "Ask school for transcript scans + Tsinghua English-taught supporting documents",
-        note: "English-taught: no HSK required. Need 2 teacher recommendation letters (portal invites), CV, personal statement, ≤3 min self-intro video, TOEFL/IELTS if not native English speaker. Transcript PDFs at apply; originals at integrative test if invited." },
-      { school: "hku",  id: "hku-counselor-ask", type: "counselor", date: "2026-09-10", est: true,  title: "Ask school contact for HKU counsellor/referee role — must agree BEFORE you submit",
-        note: "Counsellor is not strictly required — can be school counsellor OR a teacher nominated as referee. Whoever you pick should enter predicted grades + reference in HKU Counsellors' Portal. Referee contacts cannot be edited after submission." },
+      { school: "thu",  id: "thu-counselor-ask", type: "counselor", date: daysBefore(TARGETS.thu, 70), est: true, title: "Ask 2 teachers for Tsinghua refs + transcript scans — must upload BEFORE you submit",
+        note: "10 weeks before your 13 Nov target. Both referrers must upload signed letters via portal invite before you can submit/pay. Also prep CV, personal statement, ≤3 min self-intro video, TOEFL/IELTS if required." },
+      { school: "hku",  id: "hku-counselor-ask", type: "counselor", date: daysBefore(TARGETS.hku, 70), est: true, title: "Ask school contact for HKU counsellor/referee role — must agree BEFORE you submit",
+        note: "10 weeks before your 18 Nov target. Counsellor or teacher enters predicted grades + reference in HKU Counsellors' Portal after you submit. Referee contacts cannot be edited after submission." },
       { school: "hku",  id: "hku-talent-reg",    type: "open",      date: "2026-10-05", est: false, title: "HKU Talent Search Scheme self-nomination opens (optional)",
         note: "Official: 5 Oct – 7 Dec 2026 HKT. Online form available from 5 Oct. Must also apply via main HKU undergrad portal; nominate ONE programme as first choice. admissions.hku.hk/sndas_highschool" },
-      { school: "cuhk", id: "cuhk-counselor-ask",type: "counselor", date: "2026-09-12", est: true,  title: "Ask 1–3 academic referees for CUHK (teachers OK — counselor not required)",
-        note: "Up to 3 referees who know your academic work (teachers, counselor, or principal). No minimum counselor count — all teachers is fine. Referees get email AFTER you submit app + pay fee; each has 21 days in CUHK Recommendation System." },
+      { school: "cuhk", id: "cuhk-counselor-ask",type: "counselor", date: daysBefore(TARGETS.cuhk, 56), est: true, title: "Ask 1–3 academic referees for CUHK (teachers OK — counselor not required)",
+        note: "8 weeks before your 5 Nov target. Enter referee emails in the application before submit; invitations go out after you submit + pay fee (21 days per referee)." },
       { school: "cuhk", id: "cuhk-info-reg",     type: "register",  date: "2026-10-03", est: true,  title: "Register for CUHK Information Day",
         note: "Official 2027 Info Day is 17 Oct 2026. Register ~2 weeks ahead. infoday.cuhk.edu.hk" },
       { school: "ntutw",id: "ntutw-info-reg",    type: "register",  date: "2026-09-30", est: true,  title: "Register for NTU Taiwan intl admissions info session",
         note: "Foreign-national degree-student channel. 僑生 may also apply here if eligible. admissions.ntu.edu.tw" },
-      { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: "2026-09-15", est: true,  title: "Ask school for transcript PDF + documents for NTU (SG) upload",
-        note: "Upload high school transcript PDF after applying — unofficial/school copy is fine at application. School may also email transcript to NTU with your app number. Prepare before portal opens (~Oct 15)." },
+      { school: "ntu",  id: "ntu-counselor-ask", type: "counselor", date: daysBefore(TARGETS.ntu, 84), est: true, title: "Ask school for transcript PDF + documents for NTU (SG) upload",
+        note: "12 weeks before your 12 Mar target. Upload high school transcript PDF when applying — unofficial/school copy is fine. School may also email transcript to NTU with your app number." },
       /* ── Oct 2026 ── */
       { school: "thu",  id: "thu-open",          type: "open",      date: "2026-09-30", est: false, title: "Tsinghua English-taught Round 1 opens (8 AM Beijing)",
         note: "Targets: Zijing GTSE, URD, Zhishan PES. English-taught eligible in Round 1 or Round 2 (FAQ: same procedures). Exceptions: Arts/Design Round 1 only; THU–CUHK Economics dual degree Round 2 only (not our targets). apply.join-tsinghua.edu.cn/international" },
       { school: "ntutw",id: "ntutw-r1-open",     type: "open",      date: "2026-09-29", est: false, title: "NTU Taiwan intl Round 1 opens — foreign degree students",
         note: "oiasystem.ntu.edu.tw/globaladmission/foreign/ — 僑生 may apply if meeting intl student criteria." },
-      { school: "scores", id: "scores-sat-send-early", type: "scores", date: "2026-09-30", est: true, title: "Send official SAT/ACT to Tsinghua English-taught via College Board (if using SAT/ACT)",
-        note: "Also upload score reports in portal. English-taught: TOEFL/IELTS required if not native English speaker; SAT/ACT optional supporting evidence." },
+      { school: "thu",  id: "scores-sat-send-early", type: "scores", date: daysBefore(TARGETS.thu, 35), est: true, title: "Send official SAT/ACT to Tsinghua via College Board + upload in portal (if using SAT/ACT)",
+        note: "5 weeks before your 13 Nov target. TOEFL/IELTS required if not native English speaker; SAT/ACT optional supporting evidence." },
       { school: "uc",   id: "uc-file-start",     type: "prep",      date: "2026-10-01", est: false, title: "UC filing period opens",
         note: "Submit all campuses in one application." },
       { school: "uc",   id: "uc-hku-dual-open",  type: "open",      date: "2026-09-01", est: false, title: "HKU–UC Berkeley Dual Degree supplemental application opens",
@@ -375,44 +410,46 @@ gantt
         note: "Official 2027 intake. First round = batch evaluation (not rolling): app by noon 25 Nov; counsellor/referee docs by 1 Dec. Rolling review only after first round, until 25 Aug 2027." },
       { school: "cuhk", id: "cuhk-open",         type: "open",      date: "2026-10-02", est: false, title: "CUHK international application opens",
         note: "Official 2027–28 brochure: opens 2 Oct. One application for all rounds. Apply by 12 Nov for Advance Offer (Dec offers); missed advance apps auto-enter Regular Round (7 Jan). Enter referee emails before submit." },
-      { school: "ntutw",id: "ntutw-r1-submit",   type: "prep",      date: "2026-10-05", est: true,  title: "Submit NTU Taiwan intl application — target early Round 1",
-        note: "English-taught programs on intl foreign portal. oiasystem.ntu.edu.tw/globaladmission/foreign/" },
-      { school: "ntutw",id: "ntutw-toefl",       type: "scores",    date: "2026-10-10", est: true,  title: "Submit TOEFL/IELTS with NTU Taiwan intl application (CEFR B2 minimum)",
-        note: "English proficiency required. Check programme-specific thresholds." },
+      { school: "ntutw",id: "ntutw-r1-submit",   type: "prep",      date: "2026-10-05", est: true,  title: "Submit NTU Taiwan intl application — optional early Round 1",
+        note: "Round 1 closes 5 Nov. Your main target is 10 Jan 2027 (Round 2). English-taught programs on intl foreign portal. oiasystem.ntu.edu.tw/globaladmission/foreign/" },
+      { school: "ntutw",id: "ntutw-toefl",       type: "scores",    date: daysBefore(TARGETS.ntutw, 21), est: true, title: "Have TOEFL/IELTS ready for NTU Taiwan intl Round 2 application (CEFR B2 minimum)",
+        note: "3 weeks before your 10 Jan target. English proficiency required. Check programme-specific thresholds." },
       { school: "ntutw",id: "ntutw-info",        type: "info",      date: "2026-10-14", est: true,  title: "NTU Taiwan intl admissions info session (est. Oct 14 2026)",
         note: "Based on 2025 pattern. Verify on admissions.ntu.edu.tw" },
-      { school: "uc",   id: "uc-ap-selfreport",  type: "scores",    date: "2026-10-10", est: true,  title: "Self-report all AP courses + planned May 2027 exams on UC application",
-        note: "UC does not want letters of recommendation. Self-report all grades accurately from transcript." },
-      { school: "thu",  id: "thu-scores-upload", type: "scores",    date: "2026-10-10", est: true,  title: "Upload TOEFL/IELTS + SAT/ACT/AP to Tsinghua English-taught application",
-        note: "English proficiency required if not native English speaker. Include best SAT/ACT/AP as supporting evidence." },
-      { school: "thu",  id: "thu-portfolio",     type: "prep",      date: "2026-10-15", est: true,  title: "Prepare Tsinghua English-taught application materials (URD portfolio, self-intro video)",
-        note: "All English-taught: ≤3 min self-intro video (.mp4). URD only: portfolio upload. GTSE + Zhishan PES: no portfolio. 2 teacher refs via portal." },
+      { school: "uc",   id: "uc-ap-selfreport",  type: "scores",    date: daysBefore(TARGETS.uc, 42), est: true, title: "Self-report all AP courses + planned May 2027 exams on UC application",
+        note: "6 weeks before your 21 Nov target. UC does not want letters of recommendation. Self-report all grades accurately from transcript." },
+      { school: "thu",  id: "thu-scores-upload", type: "scores",    date: daysBefore(TARGETS.thu, 28), est: true, title: "Upload TOEFL/IELTS + SAT/ACT/AP to Tsinghua application draft",
+        note: "4 weeks before your 13 Nov target. English proficiency required if not native English speaker. Include best SAT/ACT/AP as supporting evidence." },
+      { school: "thu",  id: "thu-portfolio",     type: "prep",      date: daysBefore(TARGETS.thu, 14), est: true, title: "Finalize Tsinghua materials — refs, URD portfolio, self-intro video",
+        note: "2 weeks before your 13 Nov target. Both teacher refs must be uploaded in portal before submit. ≤3 min self-intro video (.mp4). URD only: portfolio. GTSE + Zhishan PES: no portfolio." },
       { school: "ntu",  id: "ntu-open",          type: "open",      date: "2026-10-15", est: false, title: "NTU (SG) international application opens",
         note: "Official AY2027–28 window: 15 Oct 2026 – 19 Mar 2027 (NTU IB admissions stages table). US HS / AP track uses the same close date." },
-      { school: "hku",  id: "hku-apply-early",   type: "prep",      date: "2026-10-15", est: true,  title: "Submit HKU application — target before first-round deadline (not rolling yet)",
-        note: "First round is batch evaluation, not rolling. Submitting triggers counsellor portal email; counsellor should input predicted grades before 1 Dec. No need to rush mid-Oct unless you want extra prep time." },
+      { school: "hku",  id: "hku-apply-early",   type: "prep",      date: daysBefore(TARGETS.hku, 7), est: true, title: "Finalize HKU application — 1 week before your 18 Nov target",
+        note: "Official first round noon 25 Nov. Batch evaluation, not rolling. Submitting triggers counsellor portal email; counsellor docs due 1 Dec." },
       { school: "cuhk", id: "cuhk-info",         type: "info",      date: "2026-10-17", est: false, title: "CUHK Information Day for Undergraduate Admissions",
         note: "Official 2027 Important Dates. infoday.cuhk.edu.hk — Hong Kong campus." },
-      { school: "cuhk", id: "cuhk-submit-early", type: "prep",      date: "2026-10-18", est: true,  title: "Submit CUHK application (target mid-Oct for Advance Offer round)",
-        note: "Official: apply on or before 12 Nov for Advance Offer (Dec notifications). Referees have 21 days from invite. Submit supporting docs within 14 days of application." },
-      { school: "cuhk", id: "cuhk-docs-14d",     type: "deadline",  date: "2026-11-01", est: true,  title: "CUHK supporting documents due (~14 days after application est.)",
-        note: "Upload transcript scans, passport copy, personal statement in applicant portal — not mailed official copies unless asked. Referees should complete within 21 days of invite." },
-      { school: "wbb",  id: "wbb-supplement",    type: "prep",      date: "2026-10-01", est: true,  title: "Complete USC Writing Supplement on Common App (WBB)",
-        note: "Required USC supplement attached to your Common Application. Complete before WBB-specific written prompts." },
-      { school: "wbb",  id: "wbb-prompts",       type: "prep",      date: "2026-10-15", est: true,  title: "Complete World Bachelor in Business written prompts (USC supplement)",
-        note: "WBB-specific written prompts are attached to the USC Writing Supplement. Draft and revise before final submission." },
-      { school: "wbb",  id: "wbb-comp-target",   type: "deadline",  date: "2026-10-30", est: false, title: "USC WBB: target date to finish all four application components",
-        note: "Official Marshall timeline: (1) Common Application, (2) USC Writing Supplement, (3) WBB written prompts, (4) submit. Finish components by Oct 30 so you can submit well before Nov 1." },
-      { school: "wbb",  id: "wbb-ed-decide",     type: "prep",      date: "2026-10-20", est: true,  title: "Decide USC WBB plan: Early Decision (binding) vs Early Action",
-        note: "Both ED and EA share the Nov 1 deadline. ED is binding — if admitted you must enroll and withdraw other applications. EA is non-binding; offer acceptance deadline is May 1." },
+      { school: "cuhk", id: "cuhk-submit-early", type: "prep",      date: daysBefore(TARGETS.cuhk, 7), est: true, title: "Finalize CUHK application — 1 week before your 5 Nov target",
+        note: "Official Advance Offer 12 Nov. Enter referee emails before submit; invitations go out after you submit + pay fee." },
+      { school: "cuhk", id: "cuhk-docs-14d",     type: "deadline",  date: daysAfter(TARGETS.cuhk, 14), est: true, title: "CUHK supporting documents — 14 days after your 5 Nov target",
+        note: "CUHK Application Guide (Section VIII.1) recommends uploading all supporting documents within 14 days of submission. Upload transcript scans, passport copy, personal statement in applicant portal." },
+      { school: "cuhk", id: "cuhk-refs-chase",   type: "counselor", date: daysAfter(TARGETS.cuhk, 7), est: true, title: "Chase CUHK referees — 1 week after your 5 Nov submit; push for 14-day doc window",
+        note: "Referees were invited after your submit + fee. CUHK recommends supporting documents within 14 days of submission (Application Guide PDF §VIII.1). Track status on Referee Information page; each referee has 21 days from invite." },
+      { school: "wbb",  id: "wbb-supplement",    type: "prep",      date: daysBefore(TARGETS.wbb, 28), est: true, title: "Complete USC Writing Supplement on Common App (WBB)",
+        note: "4 weeks before your 28 Oct target. Required USC supplement attached to your Common Application. Complete before WBB-specific written prompts." },
+      { school: "wbb",  id: "wbb-prompts",       type: "prep",      date: daysBefore(TARGETS.wbb, 7), est: true, title: "Complete World Bachelor in Business written prompts (USC supplement)",
+        note: "1 week before your 28 Oct target. WBB-specific written prompts are attached to the USC Writing Supplement. Draft and revise before final submission." },
+      { school: "wbb",  id: "wbb-comp-target",   type: "deadline",  date: TARGETS.wbb, est: false, title: "USC WBB: finish all four application components by your 28 Oct target",
+        note: "Official Marshall timeline: (1) Common Application, (2) USC Writing Supplement, (3) WBB written prompts, (4) submit. Official ED/EA close 1 Nov." },
+      { school: "wbb",  id: "wbb-ed-decide",     type: "prep",      date: daysBefore(TARGETS.wbb, 14), est: true, title: "Decide USC WBB plan: Early Decision (binding) vs Early Action",
+        note: "2 weeks before your 28 Oct target. Both ED and EA share the Nov 1 deadline. ED is binding; EA offer acceptance deadline is May 1." },
 
       /* ── Nov 2026 ── */
       { school: "wbb",  id: "wbb-deadline",      type: "deadline",  date: "2026-11-01", est: false, title: "USC WBB application deadline — ED and EA (merit consideration)",
         note: "Official Marshall deadline Nov 1 for WBB merit consideration. Submit via Common App with Common Application + USC Writing Supplement + WBB written prompts complete." },
       { school: "all",  id: "ap-exam-register",  type: "scores",    date: "2026-11-01", est: true,  title: "Register for May 2027 AP exams via school (College Board deadline ~Nov)",
         note: "Required for score reporting to NUS, NTU (SG), UC (if admitted), and other schools." },
-      { school: "nus",  id: "nus-counselor-ask", type: "counselor", date: "2026-11-15", est: true,  title: "Ask school for transcript PDF + grading system explanation for NUS",
-        note: "Upload high school results and grading explanation via NUS Applicant Portal — PDF upload at application; originals only for verification if admitted." },
+      { school: "nus",  id: "nus-counselor-ask", type: "counselor", date: daysBefore(TARGETS.nus, 84), est: true, title: "Ask school for transcript PDF + grading system explanation for NUS",
+        note: "12 weeks before your 10 Feb target. Upload high school results and grading explanation via NUS Applicant Portal — PDF at application; originals only if admitted." },
       { school: "cuhk", id: "cuhk-advance",      type: "deadline",  date: "2026-11-12", est: false, title: "CUHK Advance Offer Round deadline (11:59 PM HKT)",
         note: "Official 2027–28: apply on or before this date for Advance Offer consideration (Dec offers). Not selected? Same app auto-competes in Regular Round (7 Jan). Medicine excluded." },
       { school: "ntutw",id: "ntutw-r1-close",    type: "deadline",  date: "2026-11-05", est: false, title: "NTU Taiwan intl Round 1 closes (4 PM GMT+8)",
@@ -425,16 +462,16 @@ gantt
         note: "Official: apps after noon 25 Nov are reviewed on a rolling basis until 25 Aug 2027. First-round results release from Dec." },
       { school: "thu",  id: "thu-r1",            type: "deadline",  date: "2026-11-20", est: false, title: "Tsinghua English-taught Round 1 ends (5 PM Beijing)",
         note: "Results by January 2027. English-taught may also apply in Round 2 (opens Nov 21). Round-only exceptions: Arts/Design = Round 1 only; THU–CUHK Economics dual degree = Round 2 only." },
-      { school: "ubc",  id: "ubc-counselor-ask", type: "counselor", date: "2026-09-20", est: true,  title: "Ask school for transcript + course list for UBC EducationPlannerBC application",
-        note: "UBC route: two applications — (1) UBC online app via EducationPlannerBC with Bachelor of Commerce as program choice, (2) Sauder–HKU Dual Degree supplemental. Personal profile required; BCom includes video interview. Official docs due Mar 15 for out-of-country HS." },
+      { school: "ubc",  id: "ubc-counselor-ask", type: "counselor", date: daysBefore(TARGETS.ubc, 70), est: true, title: "Ask school for transcript + course list for UBC EducationPlannerBC application",
+        note: "10 weeks before your 30 Nov target. Two applications: (1) UBC via EducationPlannerBC (BCom), (2) Sauder–HKU Dual Degree supplemental. BCom includes video interview. Official docs due Mar 15 for out-of-country HS." },
       { school: "ubc",  id: "ubc-open",          type: "open",      date: "2026-10-01", est: false, title: "UBC undergraduate application opens (EducationPlannerBC)",
         note: "Official opens 1 Oct 2026 for Sep 2027 Winter Session. Select Bachelor of Commerce. No ED/EA and no rolling admission — single Jan 15, 2027 deadline. Decisions released Nov 2026–Jun 2027 on a continuous basis (not first-come-first-served)." },
       { school: "ubc",  id: "ubc-dual-open",       type: "open",      date: "2026-10-01", est: false, title: "UBC Sauder–HKU Dual Degree supplemental application opens",
         note: "Second application required for dual-degree consideration (250–500 word essay). Upload transcript + English test copies to both UBC Admissions and the dual-degree supplemental. Unsuccessful dual-degree applicants still considered for UBC BCom." },
-      { school: "ubc",  id: "ubc-dual-essay",      type: "prep",      date: "2026-10-15", est: true,  title: "Draft UBC Sauder–HKU Dual Degree supplemental essay (250–500 words)",
-        note: "Describe motivation for the dual degree; how it supports intellectual, personal, and professional goals; how you will contribute to campus life outside the classroom." },
-      { school: "ubc",  id: "ubc-apply-early",     type: "prep",      date: "2026-11-01", est: true,  title: "Submit UBC application — target November (not rolling, but decisions start Nov)",
-        note: "UBC removed early admission — Jan 15 is the only application deadline. Earlier submit helps with International Scholars prep and document timeline; admission decisions are not first-come-first-served." },
+      { school: "ubc",  id: "ubc-dual-essay",      type: "prep",      date: daysBefore(TARGETS.ubc, 14), est: true, title: "Draft UBC Sauder–HKU Dual Degree supplemental essay (250–500 words)",
+        note: "2 weeks before your 30 Nov target (main UBC app). Dual-degree supplemental has separate official deadline 31 Jan. Describe motivation, goals, and campus contribution." },
+      { school: "ubc",  id: "ubc-apply-early",     type: "prep",      date: daysBefore(TARGETS.ubc, 7), est: true, title: "Finalize UBC application — 1 week before your 30 Nov target",
+        note: "Official deadline 15 Jan. Not rolling — earlier submit helps document timeline; admission decisions are not first-come-first-served." },
       { school: "ubc",  id: "ubc-isp",             type: "deadline",  date: "2026-11-15", est: false, title: "UBC International Scholars Program — UBC app + award app due (optional)",
         note: "Official: int'l applicants must complete UBC admission application AND International Scholars award application by 15 Nov 2026, 11:59 PM PST for Sep 2027 ISP consideration. Not required for admission." },
       { school: "uc",   id: "uc-deadline",       type: "deadline",  date: "2026-11-30", est: false, title: "UC filing deadline — 11:59 PM Pacific",
@@ -450,8 +487,8 @@ gantt
         note: "Foreign degree-student channel. oiasystem.ntu.edu.tw/globaladmission/foreign/" },
       { school: "nus",  id: "nus-open",          type: "open",      date: "2026-12-16", est: false, title: "NUS international application opens",
         note: "Official AY2027/2028 window for International Qualifications (except IB). SAT/ACT must reach NUS by application close." },
-      { school: "nus",  id: "scores-sat-nus",    type: "scores",    date: "2026-12-20", est: true,  title: "Send official SAT/ACT to NUS via College Board (code 3720)",
-        note: "Mandatory for US HS applicants. Scores must arrive by application close (17 Feb 2027). Also upload copy to NUS Applicant Portal. Allow 2–3 weeks processing." },
+      { school: "nus",  id: "scores-sat-nus",    type: "scores",    date: daysBefore(TARGETS.nus, 21), est: true, title: "Send official SAT/ACT to NUS via College Board (code 3720)",
+        note: "3 weeks before your 10 Feb target (official close 17 Feb). Mandatory for US HS applicants. Also upload copy to NUS Applicant Portal. Allow 2–3 weeks processing." },
       { school: "cuhk", id: "cuhk-regular",      type: "deadline",  date: "2027-01-07", est: false, title: "CUHK Regular Round deadline (11:59 PM HKT)",
         note: "Official 2027–28 brochure date (was 8 Jan in 2026 cycle). All referees should be complete by this date." },
       { school: "ubc",  id: "ubc-deadline",      type: "deadline",  date: "2027-01-15", est: false, title: "UBC undergraduate application deadline — Winter Session Sep 2027",
@@ -462,8 +499,8 @@ gantt
         note: "Official Feb 15, 2027. Submit proof of English competency if required. US AP curriculum may qualify via grades — verify on you.ubc.ca ELAS page." },
       { school: "um",   id: "um-info-reg",       type: "register",  date: "2027-01-26", est: true,  title: "Register for UM education fair / info event",
         note: "UM announces fairs ad hoc (~Feb 9). Register ~2 weeks ahead." },
-      { school: "um",   id: "um-counselor-ask",  type: "counselor", date: "2027-01-15", est: true,  title: "Ask school for transcript PDF + documents for UM MAYA application",
-        note: "Upload supporting docs in MAYA portal — school transcript PDF at application; not mailed official unless requested after offer. IELTS/TOEFL required unless exempt." },
+      { school: "um",   id: "um-counselor-ask",  type: "counselor", date: daysBefore(TARGETS.um, 70), est: true, title: "Ask school for transcript PDF + documents for UM MAYA application",
+        note: "10 weeks before your 23 Aug target. Upload supporting docs in MAYA portal — school transcript PDF at application; not mailed official unless requested after offer." },
       { school: "ntutw",id: "ntutw-r2-close",    type: "deadline",  date: "2027-01-19", est: false, title: "NTU Taiwan intl Round 2 closes",
         note: "Final intl round for Sep 2027 entry — foreign degree students." },
       { school: "thu",  id: "thu-info",          type: "info",      date: "2027-01-30", est: true,  title: "Watch Tsinghua English-taught info session recordings (est. late Jan 2027)",
@@ -478,8 +515,8 @@ gantt
         note: "Verify on MAYA portal news." },
       { school: "um",   id: "um-open",           type: "open",      date: "2027-02-09", est: true,  title: "UM international undergraduate application opens",
         note: "Oct 2027 intake. maya.um.edu.my" },
-      { school: "um",   id: "um-toefl",          type: "scores",    date: "2027-02-09", est: true,  title: "Submit IELTS/TOEFL with UM application (if required)",
-        note: "Typical minimum IELTS 6.0 / TOEFL 79. Send official scores or upload per MAYA instructions." },
+      { school: "um",   id: "um-toefl",          type: "scores",    date: daysBefore(TARGETS.um, 14), est: true, title: "Have IELTS/TOEFL ready for UM application (if required)",
+        note: "2 weeks before your 23 Aug target. Typical minimum IELTS 6.0 / TOEFL 79. Send official scores or upload per MAYA instructions." },
       { school: "nus",  id: "nus-close",         type: "deadline",  date: "2027-02-17", est: false, title: "NUS international application closes (17 Feb 2027)",
         note: "Official AY2027/2028: 16 Dec 2026 – 17 Feb 2027 for International Qualifications (except IB). SAT/ACT must be received by close. Outcomes by July." },
       { school: "ntu",  id: "ntu-info",          type: "info",      date: "2027-02-21", est: true,  title: "NTU (SG) webinar for international students (est. ~2 PM SGT)",
@@ -494,10 +531,14 @@ gantt
         note: "nus.edu.sg/oam" },
       { school: "ntu",  id: "ntu-oh",            type: "info",      date: "2027-02-28", est: true,  title: "NTU (SG) Open House on campus (est. ~9:30 AM–6:30 PM SGT)",
         note: "Feb 28 pattern from 2026 cycle." },
-      { school: "um",   id: "um-apply-early",    type: "rolling",   date: "2027-03-01", est: true,  title: "Submit UM application — target early in window",
-        note: "Rolling review; ~5 working days to hear back." },
-      { school: "ntu",  id: "scores-sat-ntu",    type: "scores",    date: "2027-03-05", est: true,  title: "Official SAT/ACT must reach NTU (SG) before application close",
-        note: "Send via College Board to NTU (SG). Upload copies per NTU checklist." },
+      { school: "ntutw",id: "ntutw-r2-prep",     type: "prep",      date: daysBefore(TARGETS.ntutw, 7), est: true, title: "Finalize NTU Taiwan intl Round 2 application — 1 week before your 10 Jan target",
+        note: "Official Round 2 close 19 Jan. Foreign degree-student channel. oiasystem.ntu.edu.tw/globaladmission/foreign/" },
+      { school: "ntutw",id: "ntutw-counselor-ask", type: "counselor", date: daysBefore(TARGETS.ntutw, 56), est: true, title: "Gather transcript + documents for NTU Taiwan intl Round 2",
+        note: "8 weeks before your 10 Jan target. Prepare uploads for foreign degree-student portal." },
+      { school: "um",   id: "um-apply-early",    type: "rolling",   date: daysBefore(TARGETS.um, 7), est: true, title: "Finalize UM application — 1 week before your 23 Aug target",
+        note: "Official close ~30 Aug. Rolling review; ~5 working days to hear back." },
+      { school: "ntu",  id: "scores-sat-ntu",    type: "scores",    date: daysBefore(TARGETS.ntu, 14), est: true, title: "Official SAT/ACT must reach NTU (SG) before your 12 Mar target",
+        note: "2 weeks before your 12 Mar target (official close 19 Mar). Send via College Board to NTU (SG). Upload copies per NTU checklist." },
       { school: "nus",  id: "nus-campus",        type: "info",      date: "2027-03-07", est: true,  title: "NUS Open House on-campus day",
         note: "Kent Ridge campus, Singapore." },
       { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: false, title: "NTU (SG) application closes — US HS / AP track",
@@ -526,53 +567,75 @@ gantt
       { school: "um",   id: "um-close",          type: "deadline",  date: "2027-08-30", est: true,  title: "UM international application closes",
         note: "Bachelor's international channel." },
 
-      /* ── Submit 1 week before each application close ── */
-      { school: "wbb",  id: "wbb-week",          type: "submit",    date: "2026-10-25", est: false, title: "Submit USC WBB application this week — 1 week before Nov 1 deadline",
-        note: "Hard close Nov 1 for ED/EA and merit consideration. All four components must be complete: Common App + USC supplement + WBB prompts + submit." },
-      { school: "ntutw",id: "ntutw-r1-week",     type: "submit",    date: "2026-10-29", est: false, title: "Submit NTU Taiwan intl Round 1 this week — 1 week before close",
-        note: "Closes 5 Nov 2026, 4 PM GMT+8. Round 2 is a fallback if needed." },
-      { school: "cuhk", id: "cuhk-adv-week",     type: "submit",    date: "2026-11-05", est: false, title: "Submit CUHK this week for Advance Offer — 1 week before that round",
-        note: "Advance Offer deadline 12 Nov 2026, 11:59 PM HKT. One application covers later rounds if you miss this." },
-      { school: "hku",  id: "hku-r1-week",       type: "submit",    date: "2026-11-18", est: false, title: "Submit HKU this week for first-round evaluation — 1 week before",
-        note: "First round noon HKT 25 Nov 2026 (batch evaluation, not rolling). Counsellor/referee docs due 1 Dec. Rolling review only after 25 Nov." },
-      { school: "thu",  id: "thu-r1-week",       type: "submit",    date: "2026-11-13", est: false, title: "Submit Tsinghua English-taught this week for Round 1 — 1 week before",
-        note: "Round 1 closes 20 Nov 2026, 5 PM Beijing → results by Jan 2027. Round 2 opens Nov 21 if you need more time." },
+      /* ── Target submit dates (your plan) ── */
+      { school: "wbb",  id: "wbb-target",        type: "target",    date: TARGETS.wbb, est: false, title: "Target submit — USC WBB application",
+        note: "Your planned submit date. Official ED/EA deadline 1 Nov. All four components complete: Common App + USC supplement + WBB prompts + submit." },
+      { school: "cuhk", id: "cuhk-target",       type: "target",    date: TARGETS.cuhk, est: false, title: "Target submit — CUHK application",
+        note: "Your planned submit date. Official Advance Offer deadline 12 Nov, 11:59 PM HKT. One application covers later rounds if needed." },
+      { school: "thu",  id: "thu-target",        type: "target",    date: TARGETS.thu, est: false, title: "Target submit — Tsinghua English-taught Round 1",
+        note: "Your planned submit date. Both refs must already be uploaded. Official Round 1 close 20 Nov, 5 PM Beijing." },
+      { school: "hku",  id: "hku-target",        type: "target",    date: TARGETS.hku, est: false, title: "Target submit — HKU application (first round)",
+        note: "Your planned submit date. Official first round noon 25 Nov HKT (batch evaluation). Counsellor/referee docs due 1 Dec." },
+      { school: "uc",   id: "uc-target",         type: "target",    date: TARGETS.uc, est: false, title: "Target submit — UC application",
+        note: "Your planned submit date. Official filing deadline 30 Nov, 11:59 PM Pacific. Include HKU–UC Berkeley Dual Degree supplemental if applying." },
+      { school: "ubc",  id: "ubc-target",        type: "target",    date: TARGETS.ubc, est: false, title: "Target submit — UBC application",
+        note: "Your planned submit date. Official deadline 15 Jan 2027, 11:59 PM PST. Dual-degree supplemental due separately by 31 Jan." },
+      { school: "ntutw",id: "ntutw-target",      type: "target",    date: TARGETS.ntutw, est: false, title: "Target submit — NTU Taiwan intl Round 2",
+        note: "Your planned submit date. Official Round 2 close 19 Jan 2027. Foreign degree-student channel." },
+      { school: "nus",  id: "nus-target",        type: "target",    date: TARGETS.nus, est: false, title: "Target submit — NUS application",
+        note: "Your planned submit date. Official close 17 Feb 2027. SAT/ACT must also arrive by official close." },
+      { school: "ntu",  id: "ntu-target",        type: "target",    date: TARGETS.ntu, est: false, title: "Target submit — NTU (SG) application",
+        note: "Your planned submit date. Official close 19 Mar 2027. Docs due within 3 days after close (by 22 Mar)." },
+      { school: "um",   id: "um-target",         type: "target",    date: TARGETS.um, est: false, title: "Target submit — UM application",
+        note: "Your planned submit date. Official close ~30 Aug 2027. Rolling review." },
+
+      /* ── Submit 1 week before each target (backup) ── */
+      { school: "wbb",  id: "wbb-week",          type: "submit",    date: daysBefore(TARGETS.wbb, 7), est: false, title: "Submit USC WBB this week — confirm recs are in; 1 week before your 28 Oct target",
+        note: "Backup reminder. Official ED/EA close 1 Nov. Counselor + teacher recs must be submitted in Common App before or with your submit — chase recommenders ASAP so the combined application is complete by 1 Nov." },
+      { school: "cuhk", id: "cuhk-adv-week",     type: "submit",    date: daysBefore(TARGETS.cuhk, 7), est: false, title: "Submit CUHK this week — 1 week before your 5 Nov target",
+        note: "Backup reminder. Official Advance Offer 12 Nov. Skip if already submitted." },
+      { school: "thu",  id: "thu-r1-week",       type: "submit",    date: daysBefore(TARGETS.thu, 7), est: false, title: "Submit Tsinghua this week — confirm both refs uploaded; 1 week before your 13 Nov target",
+        note: "Backup reminder. Official Round 1 close 20 Nov. Both referrers must have uploaded signed letters before you can submit/pay — chase teachers ASAP. System blocks submit until both refs are in." },
+      { school: "hku",  id: "hku-r1-week",       type: "submit",    date: daysBefore(TARGETS.hku, 7), est: false, title: "Submit HKU this week — 1 week before your 18 Nov target",
+        note: "Backup reminder. Official first round noon 25 Nov. Counsellor/referee docs due 1 Dec." },
+      { school: "uc",   id: "uc-week",           type: "submit",    date: daysBefore(TARGETS.uc, 7), est: false, title: "Submit UC application this week — 1 week before your 21 Nov target",
+        note: "Backup reminder. Official filing deadline 30 Nov, 11:59 PM Pacific." },
+      { school: "ubc",  id: "ubc-target-week",   type: "submit",    date: daysBefore(TARGETS.ubc, 7), est: false, title: "Submit UBC application this week — 1 week before your 30 Nov target",
+        note: "Backup reminder. Official deadline 15 Jan 2027. Complete personal profile (BCom video interview if applicable)." },
       { school: "ubc",  id: "ubc-isp-week",      type: "submit",    date: "2026-11-08", est: false, title: "Submit UBC + International Scholars award app this week — 1 week before ISP deadline",
         note: "ISP deadline 15 Nov 2026, 11:59 PM PST. Optional — skip if not pursuing International Scholars." },
-      { school: "uc",   id: "uc-week",           type: "submit",    date: "2026-11-23", est: false, title: "Submit UC application this week — 1 week before filing deadline",
-        note: "Hard close 30 Nov 2026, 11:59 PM Pacific. No late filing." },
-      { school: "cuhk", id: "cuhk-reg-week",     type: "submit",    date: "2026-12-31", est: false, title: "Submit CUHK this week for Regular Round — 1 week before that round",
-        note: "Regular Round deadline 7 Jan 2027, 11:59 PM HKT. Skip if already submitted." },
-      { school: "ubc",  id: "ubc-week",          type: "submit",    date: "2027-01-08", est: false, title: "Submit UBC application this week — 1 week before Jan 15 deadline",
-        note: "Hard close Jan 15, 2027, 11:59 PM PST. EducationPlannerBC. Complete personal profile (BCom video interview if applicable)." },
+      { school: "ntutw",id: "ntutw-r1-week",     type: "submit",    date: "2026-10-29", est: false, title: "Submit NTU Taiwan intl Round 1 this week — 1 week before official close (optional)",
+        note: "Official Round 1 close 5 Nov. Your main target is 10 Jan (Round 2). Skip if not applying in Round 1." },
+      { school: "ntutw",id: "ntutw-r2-week",     type: "submit",    date: daysBefore(TARGETS.ntutw, 7), est: false, title: "Submit NTU Taiwan intl Round 2 this week — 1 week before your 10 Jan target",
+        note: "Backup reminder. Official Round 2 close 19 Jan." },
+      { school: "nus",  id: "nus-week",          type: "submit",    date: daysBefore(TARGETS.nus, 7), est: false, title: "Submit NUS application this week — 1 week before your 10 Feb target",
+        note: "Backup reminder. Official close 17 Feb. SAT/ACT must also arrive by official close." },
+      { school: "ntu",  id: "ntu-week",          type: "submit",    date: daysBefore(TARGETS.ntu, 7), est: false, title: "Submit NTU (SG) this week — 1 week before your 12 Mar target",
+        note: "Backup reminder. Official close 19 Mar. Docs due within 3 days after close." },
+      { school: "um",   id: "um-week",           type: "submit",    date: daysBefore(TARGETS.um, 7), est: true, title: "Submit UM this week — 1 week before your 23 Aug target",
+        note: "Backup reminder. Official close ~30 Aug. Skip if already submitted." },
+
+      /* ── Submit 1 week before official deadlines (fallback) ── */
+      { school: "cuhk", id: "cuhk-reg-week",     type: "submit",    date: "2026-12-31", est: false, title: "Submit CUHK this week for Regular Round — 1 week before official close",
+        note: "Official Regular Round 7 Jan 2027. Skip if already submitted by your 5 Nov target." },
+      { school: "ubc",  id: "ubc-week",          type: "submit",    date: "2027-01-08", est: false, title: "Submit UBC application this week — 1 week before official Jan 15 deadline",
+        note: "Official hard close Jan 15, 2027. Skip if already submitted by your 30 Nov target." },
       { school: "ubc",  id: "ubc-dual-week",     type: "submit",    date: "2027-01-24", est: false, title: "Submit UBC Sauder–HKU Dual Degree supplemental this week — 1 week before Jan 31",
         note: "Dual-degree supplemental + document upload due 31 Jan 2027. Requires UBC EducationPlannerBC application already submitted." },
-      { school: "ntutw",id: "ntutw-r2-week",     type: "submit",    date: "2027-01-12", est: false, title: "Submit NTU Taiwan intl Round 2 this week — 1 week before close",
-        note: "Closes 19 Jan 2027. Skip if Round 1 was already submitted." },
-      { school: "nus",  id: "nus-week",          type: "submit",    date: "2027-02-10", est: false, title: "Submit NUS application this week — 1 week before close",
-        note: "Closes 17 Feb 2027. SAT/ACT must also arrive by this deadline." },
-      { school: "thu",  id: "thu-week",          type: "submit",    date: "2027-02-21", est: false, title: "Submit Tsinghua English-taught this week for Round 2 — 1 week before",
-        note: "Round 2 closes 28 Feb 2027, 5 PM Beijing. Skip if already submitted in Round 1." },
-      { school: "ntu",  id: "ntu-week",          type: "submit",    date: "2027-03-12", est: false, title: "Submit NTU (SG) application this week — 1 week before close",
-        note: "Closes 19 Mar 2027. Docs due within 3 days after close (by 22 Mar)." },
+      { school: "thu",  id: "thu-week",          type: "submit",    date: "2027-02-21", est: false, title: "Submit Tsinghua English-taught this week for Round 2 — 1 week before official close",
+        note: "Official Round 2 close 28 Feb 2027. Skip if already submitted by your 13 Nov target." },
       { school: "cuhk", id: "cuhk-ext-week",     type: "submit",    date: "2027-05-22", est: true,  title: "CUHK late/Extended submit reminder — only if Extended date is later posted",
-        note: "Extended not on 2027 Important Dates. Skip if already submitted by Regular Round. Medicine: Regular is the practical last deadline." },
+        note: "Extended not on 2027 Important Dates. Skip if already submitted. Medicine: Regular is the practical last deadline." },
       { school: "hku",  id: "hku-week",          type: "submit",    date: "2027-08-18", est: false, title: "Submit HKU this week — 1 week before rolling window closes",
-        note: "Final deadline noon 25 Aug 2027. Only applies if still in rolling phase (after first round). Skip if already submitted." },
-      { school: "um",   id: "um-week",           type: "submit",    date: "2027-08-23", est: true,  title: "Submit UM this week — 1 week before applications close",
-        note: "Closes ~30 Aug 2027. Skip if already submitted (rolling)." },
+        note: "Official final deadline noon 25 Aug 2027. Only if still in rolling phase. Skip if already submitted by your 18 Nov target." },
     ];
 
     const TAG_LABELS = {
       info: "Info session", register: "Register by", open: "Opens",
-      deadline: "Deadline", submit: "1 week left", rolling: "Rolling — early", prep: "Prep",
+      deadline: "Deadline", submit: "1 week left", target: "Target submit",
+      rolling: "Rolling — early", prep: "Prep",
       counselor: "Counselor", scores: "Scores",
     };
-
-    function parseDate(str) {
-      const [y, m, d] = str.split("-").map(Number);
-      return new Date(y, m - 1, d);
-    }
 
     function formatDate(str) {
       return parseDate(str).toLocaleDateString(undefined, {
