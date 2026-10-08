@@ -101,12 +101,12 @@
   </div>
 
   <h2>Master timeline — all schools</h2>
-  <p class="hint">Scroll horizontally. Red bars = rolling admission or priority early round (apply ASAP). Gold diamonds = application deadlines. Teal diamonds = decision releases (est.).</p>
+  <p class="hint">Scroll horizontally. Red bars = rolling admission, EA/ED, or priority early round (apply ASAP). Gold diamonds = application deadlines. Teal diamonds = decision releases (est.).</p>
   <div class="card">
     <div class="chart-scroll">
       <div class="chart-inner">
         <pre class="mermaid" id="chart-main">
-%%{init: {'gantt': {'useMaxWidth': false, 'barHeight': 26, 'barGap': 8, 'topPadding': 90, 'leftPadding': 280, 'gridLineStartPadding': 280, 'fontSize': 12, 'sectionFontSize': 12, 'axisFormat': '%b %Y', 'todayMarker': {'stroke': '#ef4444', 'stroke-width': 3, 'opacity': 1}}}}%%
+%%{init: {'gantt': {'useMaxWidth': false, 'barHeight': 26, 'barGap': 8, 'topPadding': 90, 'leftPadding': 280, 'rightPadding': 200, 'gridLineStartPadding': 280, 'fontSize': 12, 'sectionFontSize': 12, 'axisFormat': '%b %Y', 'todayMarker': {'stroke': '#ef4444', 'stroke-width': 3, 'opacity': 1}}}}%%
 gantt
     title Fall 2027 entry — official dates where published; others estimated
     dateFormat YYYY-MM-DD
@@ -114,7 +114,7 @@ gantt
 
     section USC WBB Marshall
     1 Aug Common App opens              :milestone, m_wbb_open, 2026-08-01, 1d
-    Complete all application components :active, wbb_comp, 2026-08-01, 2026-10-30
+    Complete all application components :crit, wbb_comp, 2026-08-01, 2026-10-30
     30 Oct                              :milestone, m_wbb_comp, 2026-10-30, 1d
     1 Nov ED and EA deadline            :milestone, m_wbb_dead, 2026-11-01, 1d
     1 May EA offer acceptance           :milestone, d_wbb_sir, 2027-05-01, 1d
@@ -190,7 +190,7 @@ gantt
       </div>
     </div>
     <div class="legend">
-      <span><i class="swatch crit"></i> Rolling or priority early round</span>
+      <span><i class="swatch crit"></i> Rolling, EA/ED, or priority early round</span>
       <span><i class="swatch active"></i> Fixed window</span>
       <span><i class="swatch optional"></i> Optional</span>
       <span><i class="swatch milestone"></i> Application deadline</span>
@@ -632,7 +632,7 @@ gantt
       startOnLoad: false, theme: "dark", securityLevel: "loose",
       gantt: {
         useMaxWidth: false, titleTopMargin: 28, barHeight: 26, barGap: 8,
-        topPadding: 90, leftPadding: 280, gridLineStartPadding: 280,
+        topPadding: 90, leftPadding: 280, rightPadding: 200, gridLineStartPadding: 280,
         fontSize: 12, sectionFontSize: 12, axisFormat: "%b %Y", tickInterval: "1month",
         todayMarker: { stroke: "#ef4444", "stroke-width": 3, opacity: 1 },
       },
@@ -681,12 +681,34 @@ gantt
       });
     }
 
+    // Mermaid pushes right-edge milestone labels left when they would overflow the SVG.
+    function fixMilestoneLabels() {
+      const svg = document.querySelector(".chart-inner svg");
+      if (!svg) return;
+
+      svg.querySelectorAll("rect.milestone").forEach((rect) => {
+        const text = svg.querySelector(`#${CSS.escape(rect.id)}-text`);
+        if (!text) return;
+
+        const rectX = parseFloat(rect.getAttribute("x") || "0");
+        const rectW = parseFloat(rect.getAttribute("width") || "0");
+        const textX = parseFloat(text.getAttribute("x") || "0");
+        const diamondRight = rectX + rectW;
+
+        // Misplaced labels sit left of the diamond; snap them to just right of it.
+        if (textX < rectX - 1) {
+          text.setAttribute("x", String(diamondRight + 5));
+        }
+      });
+    }
+
     async function renderChart() {
       const node = document.querySelector("pre.mermaid");
       node.removeAttribute("data-processed");
       node.innerHTML = node.textContent;
       await mermaid.run({ nodes: [node] });
       colorGanttMilestones();
+      fixMilestoneLabels();
       updateTodayLabel();
     }
 
