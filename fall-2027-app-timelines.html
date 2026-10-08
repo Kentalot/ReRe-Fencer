@@ -90,6 +90,7 @@
     .tag.school-um { background: #713f12; color: #fde047; }
     .tag.school-wbb { background: #7f1d1d; color: #fecaca; }
     .tag.school-ubc { background: #0c4a6e; color: #7dd3fc; }
+    .tag.scholarship { background: #854d0e; color: #fef08a; }
   </style>
 </head>
 <body>
@@ -123,6 +124,10 @@ gantt
     Complete all application components :crit, wbb_comp, 2026-08-01, 2026-10-30
     30 Oct                              :milestone, m_wbb_comp, 2026-10-30, 1d
     1 Nov ED and EA deadline            :milestone, m_wbb_dead, 2026-11-01, 1d
+    Town and Gown scholarship window    :wbb_tg, 2026-07-15, 2026-11-15
+    15 Nov Town and Gown deadline       :milestone, m_wbb_tg, 2026-11-15, 1d
+    1 Nov APAA scholarship opens est.   :milestone, m_wbb_apaa_open, 2026-11-01, 1d
+    3 Apr APAA scholarship est.         :milestone, m_wbb_apaa, 2027-04-03, 1d
     1 May EA offer acceptance           :milestone, d_wbb_sir, 2027-05-01, 1d
 
     section CUHK International
@@ -142,6 +147,8 @@ gantt
     1 Dec                              :milestone, m_hku_couns, 2026-12-01, 1d
     Talent Search nomination window    :hku_talent, 2026-10-05, 2026-12-07
     7 Dec                              :milestone, m_hku_talent, 2026-12-07, 1d
+    HKJC Chairman scholarship window   :hku_jc, 2026-12-01, 2027-04-02
+    2 Apr HKJC Chairman est.            :milestone, m_hku_jc, 2027-04-02, 1d
     1 Dec                              :milestone, d_hku_start, 2026-12-01, 1d
     Rolling application window         :crit, hku_roll, 2026-11-26, 2027-08-25
     25 Aug                             :milestone, m_hku_end, 2027-08-25, 1d
@@ -151,11 +158,17 @@ gantt
     Portal open for drafts           :uc_draft, 2026-08-01, 2026-09-30
     Filing period ends Nov 30          :active, uc_file, 2026-10-01, 2026-11-30
     30 Nov                             :milestone, m_uc_end, 2026-11-30, 1d
+    UCLA Alumni Scholarships portal    :uc_ucla_schol, 2027-03-29, 2027-06-30
+    30 Jun UCLA Alumni est.            :milestone, m_uc_ucla_schol, 2027-06-30, 1d
+    UC Davis CAAA Leadership window    :uc_davis_caaa, 2027-04-01, 2027-06-15
+    15 Jun UC Davis CAAA est.          :milestone, m_uc_davis_caaa, 2027-06-15, 1d
     31 Mar                             :milestone, d_uc, 2027-03-31, 1d
 
     section Tsinghua English-taught
     Round 1 application window         :active, thu_r1, 2026-09-30, 2026-11-20
     20 Nov                             :milestone, m_thu_r1, 2026-11-20, 1d
+    CSC Type A via US embassy          :thu_csc, 2026-11-01, 2027-02-16
+    16 Feb CSC Type A embassy est.      :milestone, m_thu_csc, 2027-02-16, 1d
     Round 2 application window         :active, thu_r2, 2026-11-21, 2027-02-28
     28 Feb                             :milestone, m_thu_end, 2027-02-28, 1d
     31 Jan                             :milestone, d_thu_r1, 2027-01-31, 1d
@@ -165,7 +178,6 @@ gantt
     1 Oct                              :milestone, m_ubc_open, 2026-10-01, 1d
     UBC application window             :active, ubc_win, 2026-10-01, 2027-01-15
     Dual degree supplemental window    :active, ubc_supp, 2026-10-01, 2027-01-31
-    15 Nov ISP scholarship deadline    :milestone, m_ubc_isp, 2026-11-15, 1d
     15 Jan UBC application deadline    :milestone, m_ubc_dead, 2027-01-15, 1d
     31 Jan dual degree supplemental    :milestone, m_ubc_supp, 2027-01-31, 1d
     15 Feb ELAS documents              :milestone, m_ubc_elas, 2027-02-15, 1d
@@ -184,18 +196,32 @@ gantt
     5 Nov                              :milestone, m_ntutw_r1, 2026-11-05, 1d
     Round 2 application window         :active, ntutw_r2, 2026-12-01, 2027-01-19
     19 Jan                             :milestone, m_ntutw_r2, 2027-01-19, 1d
+    MOE Taiwan Scholarship via TECO    :ntutw_moe, 2027-02-01, 2027-03-31
+    31 Mar MOE Taiwan Scholarship est.  :milestone, m_ntutw_moe, 2027-03-31, 1d
     14 Jan                             :milestone, d_ntutw_r1, 2027-01-14, 1d
     8 Apr                              :milestone, d_ntutw_r2, 2027-04-08, 1d
 
     section NTU SG US high school AP
     Application window                 :active, ntu_win, 2026-10-15, 2027-03-19
-    19 Mar                             :milestone, m_ntu_end, 2027-03-19, 1d
+    Scholarship application window     :active, ntu_schol, 2026-10-15, 2027-03-19
+    19 Mar admission and scholarship   :milestone, m_ntu_end, 2027-03-19, 1d
     1 Jul                              :milestone, d_ntu, 2027-07-01, 1d
 
     section UM International ROLLING
     9 Feb                              :milestone, m_um_open, 2027-02-09, 1d
     Rolling application window         :crit, um_roll, 2027-02-09, 2027-08-30
     30 Aug                             :milestone, m_um_end, 2027-08-30, 1d
+
+    section All schools scholarships
+    NEHS scholarship window est.       :all_nehs, 2026-09-28, 2026-10-13
+    13 Oct NEHS est.                   :milestone, m_all_nehs, 2026-10-13, 1d
+    Elks MVS window                    :all_elks, 2026-08-01, 2026-11-12
+    12 Nov Elks MVS                    :milestone, m_all_elks, 2026-11-12, 1d
+    NHS National window                :all_nhs, 2026-09-03, 2026-11-20
+    20 Nov NHS National                :milestone, m_all_nhs, 2026-11-20, 1d
+    MVLA Scholars window est.          :all_mvla, 2026-12-01, 2027-02-28
+    CSF Michelson essay window         :all_csf, 2026-11-01, 2026-12-22
+    22 Dec CSF Michelson               :milestone, m_all_csf, 2026-12-22, 1d
         </pre>
       </div>
     </div>
@@ -212,7 +238,8 @@ gantt
   <h2>Checklist — chronological</h2>
   <p class="hint">
     Sorted by date. <span class="tag counselor">Counselor</span> = ask/follow up with school counselor or referees.
-    <span class="tag scores">Scores</span> = SAT/AP/TOEFL submission. Register-by = ~2 weeks before info sessions.
+    <span class="tag scores">Scores</span> = SAT/AP/TOEFL submission. <span class="tag scholarship">Scholarship</span> = separate merit scholarship application (not automatic or need-based aid).
+    Register-by = ~2 weeks before info sessions.
     <span class="tag submit">1 week left</span> = submit this week — do not wait for your target or official close date.
     <span class="tag target">Target submit</span> = your planned application date for that school.
     Each row includes an <strong>Open link →</strong> where a portal or official page applies.
@@ -227,7 +254,7 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v22";
+    const STORAGE_KEY = "fall2027-checklist-v25";
 
     /* Target submit dates — prep/counselor/scores items are offset from these */
     const TARGETS = {
@@ -262,6 +289,23 @@ gantt
       d.setDate(d.getDate() + n);
       return formatDateISO(d);
     }
+
+    /* Scholarship target submit dates — delayed as late as practical within each window */
+    const SCHOL_TARGETS = {
+      hku_jc: "2027-03-20",
+      thu_csc: "2027-02-10",
+      wbb_tg: TARGETS.wbb,
+      wbb_apaa: "2027-02-20",
+      ntu_schol: TARGETS.ntu,
+      ntutw_moe: "2027-03-24",
+      uc_ucla_schol: "2027-04-12",
+      uc_davis_caaa: "2027-06-01",
+      elks_mvs: "2026-11-10",
+      nhs_national: "2026-11-10",
+      nehs: "2026-10-13",
+      mvla_scholars: "2027-01-15",
+      csf_michelson: "2026-12-15",
+    };
 
     const SCHOOL_COLORS = {
       uc: "#3b82f6", hku: "#10b981", cuhk: "#a855f7", thu: "#ef4444",
@@ -334,7 +378,14 @@ gantt
       "ubc-open": "https://apply.educationplannerbc.ca/",
       "ubc-dual-open": "https://www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce/overview/study-globally/hku-dual-degree",
       "ubc-dual-essay": "https://www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce/overview/study-globally/hku-dual-degree",
-      "ubc-isp": "https://you.ubc.ca/financial-planning/scholarships-awards-international-students/international-scholars/",
+      "hku-jc-open": "https://www.jcscholarships.hk/en-US/Scholarship-Schemes/Chairmans-Scholarship/",
+      "thu-csc": "https://international.join-tsinghua.edu.cn/Admission1/Freshmen_Scholarships1.htm",
+      "wbb-tg": "https://townandgownofusc.org/students/scholarship-information/",
+      "wbb-apaa": "https://alumni.usc.edu/apaa/scholarships/",
+      "ntu-schol": "https://www.ntu.edu.sg/admissions/undergraduate/scholarships-and-awards/scholarship-application-process",
+      "ntutw-moe": "https://english.moe.gov.tw/cp-24-16833-23C09-1.html",
+      "uc-ucla-schol": "https://alumni.ucla.edu/scholarships/prospective-students/",
+      "uc-davis-caaa": "https://alumni.ucdavis.edu/scholarships/caaa-leadership-scholarship",
       "ubc-apply-early": "https://apply.educationplannerbc.ca/",
       "ubc-elas": "https://you.ubc.ca/applying-ubc/requirements/english-language/",
       "ubc-docs": "https://you.ubc.ca/applying-ubc/dates-deadlines/",
@@ -348,6 +399,13 @@ gantt
       "wbb-supplement": "https://www.commonapp.org/",
       "wbb-prompts": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business",
       "wbb-sir": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business",
+      "all-elks": "https://enf.elks.org/MVS",
+      "all-nhs": "https://www.nationalhonorsociety.org/the-nhs-scholarship/",
+      "all-nehs": "https://nehs.us/awards-grants/student-opportunities/nehs-scholarships-3/nehs-scholarships/",
+      "all-mvla": "https://mvlascholars.org/scholars/",
+      "all-csf": "https://csf-cjsf.org/csf-awards/",
+      "all-mvhs-schol": "https://mvhs.mvla.net/scholarships",
+      "thu-csc-embassy": "https://us.china-embassy.gov.cn/eng/lxfw/studyinchina/chinesegovernmentscholarship/",
     };
 
     function itemActionLink(item) {
@@ -364,6 +422,10 @@ gantt
 
     const CHECKLIST_ITEMS = [
       /* ── Jul–Aug 2026 ── */
+      { school: "all",  id: "all-elks-open",     type: "open",      date: "2026-08-01", est: false, title: "Elks Most Valuable Student (MVS) scholarship opens",
+        note: "Merit + leadership + service + financial need. US citizen; current senior; 4-year US college. $500–$50,000. Separate app at enf.elks.org/MVS. Counselor report due Nov 19." },
+      { school: "all",  id: "all-nhs-open",      type: "open",      date: "2026-09-03", est: false, title: "NHS National Scholarship opens — verify NHS account with adviser now",
+        note: "nationalhonorsociety.org/the-nhs-scholarship — active NHS member required. Adviser certification + non-family recommender must complete before you can submit. $2M to 600 students." },
       { school: "wbb",  id: "wbb-info-reg",      type: "register",  date: "2026-08-01", est: false, title: "Register for USC Marshall WBB virtual info sessions (Wednesdays 11 AM / 3 PM PT)",
         note: "Official Marshall first-year info sessions for juniors/seniors/families. Register on the WBB program page. Ongoing Wednesdays — pick a date ~2 weeks ahead." },
       { school: "uc",   id: "uc-info-reg",       type: "register",  date: "2026-08-01", est: true,  title: "Register for UC campus virtual info sessions",
@@ -386,6 +448,8 @@ gantt
         note: "Check each campus admissions site." },
 
       /* ── Sep 2026 ── */
+      { school: "all",  id: "all-nehs-open",     type: "open",      date: "2026-09-28", est: true,  title: "NEHS scholarship fall window opens (if “Lost in Translation” = NEHS — confirm with CCC)",
+        note: "Could not verify a scholarship named “Lost in Translation.” Closest match: NEHS Scholarships (essay + 1–2 min video). Requires NEHS membership at active chapter. Fall window Sep 28 – Oct 13, 2026. Ask MVHS CCC if your list refers to something else." },
       { school: "thu",  id: "thu-info-reg",      type: "prep",      date: "2026-10-05", est: true,  title: "Tsinghua English-taught: bookmark admissions page for info session videos",
         note: "Zijing + Zhishan college sessions. No registration — recorded YouTube videos on international.join-tsinghua.edu.cn (~late Jan est.)." },
       { school: "hku",  id: "hku-info-reg",      type: "register",  date: "2026-09-09", est: true,  title: "Register for HKU International Admissions Talk",
@@ -398,8 +462,8 @@ gantt
         note: "2 weeks before target. Required upload with application (colored scan .jpg/.jpeg, ≤600 KB per file). No fixed format; keep to one page. Must be ready before submit (WBB-with-submit pattern)." },
       { school: "hku",  id: "hku-counselor-ask", type: "counselor", date: daysBefore(TARGETS.hku, OFF.w2), est: true, title: "Confirm HKU counsellor/referee — must agree BEFORE you submit",
         note: "2 weeks before target. Counsellor or teacher enters predicted grades + reference in HKU Counsellors' Portal after you submit (due 1 Dec). Referee contacts cannot be edited after submission." },
-      { school: "hku",  id: "hku-talent-reg",    type: "open",      date: "2026-10-05", est: false, title: "HKU Talent Search Scheme self-nomination opens (optional)",
-        note: "Official: 5 Oct – 7 Dec 2026 HKT. Online form available from 5 Oct. Must also apply via main HKU undergrad portal; nominate ONE programme as first choice. admissions.hku.hk/sndas_highschool" },
+      { school: "hku",  id: "hku-talent-reg",    type: "open",      date: "2026-10-05", est: false, title: "HKU Talent Search early-admission pathway opens (optional — not a scholarship)",
+        note: "Admission pathway, not a cash scholarship. Separate self-nomination + main HKU app; may yield earlier admission review for competitive programmes. 5 Oct – 7 Dec 2026 HKT. admissions.hku.hk/sndas_highschool" },
       { school: "cuhk", id: "cuhk-counselor-ask",type: "counselor", date: daysBefore(TARGETS.cuhk, OFF.w1), est: true, title: "Confirm 1–3 CUHK referees + enter emails in application draft",
         note: "1 week before target. Invitations go out after you submit + pay fee (21 days per referee). Teachers OK — counselor not required." },
       { school: "cuhk", id: "cuhk-info-reg",     type: "register",  date: "2026-10-03", est: true,  title: "Register for CUHK Information Day",
@@ -465,6 +529,14 @@ gantt
         note: "Official Marshall deadline Nov 1 for WBB merit consideration. Submit via Common App with Common Application + USC Writing Supplement + WBB written prompts complete." },
       { school: "all",  id: "ap-exam-register",  type: "scores",    date: "2026-11-01", est: true,  title: "Register for May 2027 AP exams via school (College Board deadline ~Nov)",
         note: "Required for score reporting to NUS, NTU (SG), UC (if admitted), and other schools." },
+      { school: "all",  id: "all-nehs",          type: "scholarship", date: SCHOL_TARGETS.nehs, est: true, title: "Target submit — NEHS scholarship (drop if not NEHS member / not “Lost in Translation”)",
+        note: "Oct 13, 2026 est. hard close (11:59 PM CT). Skip if not an NEHS member or if CCC confirms a different scholarship." },
+      { school: "all",  id: "all-elks",          type: "scholarship", date: SCHOL_TARGETS.elks_mvs, est: false, title: "Target submit — Elks MVS scholarship",
+        note: "Your planned date (Nov 5). Official close Nov 12, 2026, 11:59 PM PT. Counselor report due Nov 19." },
+      { school: "all",  id: "all-nhs",           type: "scholarship", date: SCHOL_TARGETS.nhs_national, est: false, title: "Target submit — NHS National Scholarship (NASSP)",
+        note: "Your planned date (Nov 10). Official close Nov 20, 2026, 5 PM ET. Adviser + recommender must be done before submit." },
+      { school: "all",  id: "all-csf-open",      type: "open",      date: "2026-11-01", est: false, title: "CSF Michelson Memorial Award essay contest opens",
+        note: "csf-cjsf.org/csf-awards — separate from CSF membership. $1,000 essay contest for CSF members. Nov 1 – Dec 22, 2026, 6 PM." },
       { school: "nus",  id: "nus-counselor-ask", type: "counselor", date: daysBefore(TARGETS.nus, OFF.w2), est: true, title: "NUS: no recommendation letters or CV — gather transcript PDF + grading explanation",
         note: "2 weeks before target. Standard International Qualifications app does not require referee letters or a CV. Upload high school results and grading explanation via Applicant Portal — PDF at application; originals only if admitted. NUS College (if opting in) needs short-answer prompts, not a letter for foreign applicants." },
       { school: "cuhk", id: "cuhk-advance",      type: "deadline",  date: "2026-11-12", est: false, title: "CUHK Advance Offer Round deadline (11:59 PM HKT)",
@@ -493,8 +565,12 @@ gantt
         note: "1 week before target. Names + contact info required in Personal Profile with the application. No letter upload; UBC may contact after offers. Not friends/family/paid agents." },
       { school: "ubc",  id: "ubc-apply-early",     type: "prep",      date: daysBefore(TARGETS.ubc, OFF.w1), est: true, title: "Finalize UBC application — 1 week before target",
         note: "Official deadline 15 Jan. Not rolling — earlier submit helps document timeline; admission decisions are not first-come-first-served. Confirm both referee contacts are entered." },
-      { school: "ubc",  id: "ubc-isp",             type: "deadline",  date: "2026-11-15", est: false, title: "UBC International Scholars Program — UBC app + award app due (optional)",
-        note: "Official: int'l applicants must complete UBC admission application AND International Scholars award application by 15 Nov 2026, 11:59 PM PST for Sep 2027 ISP consideration. Not required for admission." },
+      { school: "hku",  id: "hku-jc-open",       type: "open",      date: "2026-12-01", est: true, title: "HKJC Chairman’s Scholarship portal opens — no HKU offer needed to apply",
+        note: "HKU admission offer NOT required at application — only intent to attend a UGC-funded HK university. If shortlisted, upload admission proof within 2 days of offer release. Separate portal jcscholarships.hk; principal + referee forms. Est. window Dec 1, 2026 – Apr 2, 2027." },
+      { school: "wbb",  id: "wbb-tg-open",       type: "open",      date: "2026-07-15", est: false, title: "USC Town & Gown Merit Scholarship application opens",
+        note: "Merit: $10,000/yr until graduation. Separate application + interview. Requires US citizenship, SoCal permanent residency, 3.4+ unweighted GPA, leadership + community service. Not tied to WBB admission." },
+      { school: "wbb",  id: "wbb-tg",            type: "scholarship", date: SCHOL_TARGETS.wbb_tg, est: false, title: "Target submit — USC Town & Gown Merit Scholarship",
+        note: "Your planned submit date (concurrent with WBB app). Official window Jul 15 – Nov 15, 2026 for 2027–28 award year. Separate from Common App." },
       { school: "uc",   id: "uc-deadline",       type: "deadline",  date: "2026-11-30", est: false, title: "UC filing deadline — 11:59 PM Pacific",
         note: "Hard deadline. No ED/EA. Self-reported grades only at this stage. No CV or recommendation letters with the application." },
       { school: "uc",   id: "uc-hku-dual-deadline", type: "deadline", date: "2026-11-30", est: false, title: "HKU–UC Berkeley Dual Degree supplemental deadline",
@@ -503,9 +579,17 @@ gantt
         note: "Hybrid/optional after submit (HKU-like timing). Only if invited by email Oct–early Dec; unsolicited letters not accepted. Typically up to 2 letters; at least one from a core academic teacher. Prior-cycle Berkeley due date ~Jan 10 — confirm if invited." },
       { school: "uc",   id: "uc-recs-due",       type: "deadline",  date: "2027-01-10", est: true, title: "Berkeley optional recommendation letters due (only if invited)",
         note: "Prior-cycle Berkeley augmented-review due date. Skip unless you received an invitation. Submission is voluntary and declining does not hurt admission." },
-      { school: "hku",  id: "hku-talent",        type: "deadline",  date: "2026-12-07", est: false, title: "HKU Talent Search Scheme nomination deadline",
-        note: "Official close 7 Dec 2026 HKT. Interviews Jan–Feb; firm offers rolling through end of Aug. Need reference letter + academic evidence + programme extras." },
+      { school: "hku",  id: "hku-talent",        type: "deadline",  date: "2026-12-07", est: false, title: "HKU Talent Search early-admission nomination deadline (not a scholarship)",
+        note: "Admission pathway only — not a cash award. Official close 7 Dec 2026 HKT. Interviews Jan–Feb; early admission offers rolling through Aug. Reference letter + academic evidence + programme extras." },
       /* ── Dec 2026 – Jan 2027 ── */
+      { school: "all",  id: "all-csf",           type: "scholarship", date: SCHOL_TARGETS.csf_michelson, est: false, title: "Target submit — CSF Michelson Memorial Award essay",
+        note: "Your planned date (Dec 15). Official close Dec 22, 2026, 6 PM. Must be CSF member." },
+      { school: "all",  id: "all-mvla-open",     type: "open",      date: "2026-12-01", est: true,  title: "MVLA Scholars common app opens (no standalone “Class of 2027” fund found)",
+        note: "mvlascholars.org — $2K–$6K need-based, renewable. Shared app with Rotary/Kiwanis/Chamber. Class of 2026 opened Dec 2025, due Feb 2026; Class of 2027 est. Dec 2026 – Feb 2027. Check mvhs.mvla.net/scholarships." },
+      { school: "all",  id: "all-mvla-check",    type: "prep",      date: "2026-12-15", est: true,  title: "Check MVHS scholarships page — MVLA Scholars + local awards (your Dec 15 target)",
+        note: "No standalone “MVHS Class of 2027” scholarship found. MVLA Scholars + Rotary/Kiwanis/Chamber share one common app. Email heather.lowe@mvla.net for self-nomination scholarships; resume in Naviance required." },
+      { school: "hku",  id: "hku-jc-prep",       type: "scholarship", date: "2027-01-15", est: true, title: "HKJC Chairman’s — ask principal + referee to start forms (submit delayed to Mar 20)",
+        note: "Application delayed to late window, but principal + teacher referee need lead time. Portal open est. Dec 2026. No HKU offer needed to apply." },
       { school: "thu",  id: "thu-r2-open",       type: "open",      date: "2026-11-21", est: false, title: "Tsinghua English-taught Round 2 opens (8 AM Beijing)",
         note: "Round 2 closes Feb 28; results by early May 2027. THU–CUHK Economics dual degree (English-taught) is Round 2 only — not a target program for us." },
       { school: "ntutw",id: "ntutw-r2-open",     type: "open",      date: "2026-12-01", est: false, title: "NTU Taiwan intl Round 2 opens",
@@ -519,7 +603,7 @@ gantt
       { school: "ubc",  id: "ubc-deadline",      type: "deadline",  date: "2027-01-15", est: false, title: "UBC undergraduate application deadline — Winter Session Sep 2027",
         note: "Official Jan 15, 2027, 11:59 PM PST via EducationPlannerBC. No ED/EA. Not rolling — one hard deadline. Late apps only for visiting/unclassified/Access Studies." },
       { school: "ubc",  id: "ubc-dual-deadline", type: "deadline",  date: "2027-01-31", est: false, title: "UBC Sauder–HKU Dual Degree supplemental + documents deadline",
-        note: "Official: submit dual-degree supplemental and upload documents by 31 Jan 2027. Also send required documents to UBC Admissions by Mar 15. ISP applicants: UBC document deadline is 31 Jan (overrides Next Steps email date)." },
+        note: "Official: submit dual-degree supplemental and upload documents by 31 Jan 2027. Also send required documents to UBC Admissions by Mar 15." },
       { school: "ubc",  id: "ubc-elas",          type: "deadline",  date: "2027-02-15", est: false, title: "UBC English Language Admission Standard (ELAS) documents due",
         note: "Official Feb 15, 2027. Submit proof of English competency if required. US AP curriculum may qualify via grades — verify on you.ubc.ca ELAS page." },
       { school: "um",   id: "um-info-reg",       type: "register",  date: "2027-01-26", est: true,  title: "Register for UM education fair / info event",
@@ -570,8 +654,30 @@ gantt
         note: "2 weeks before target (official close 19 Mar). Send via College Board to NTU (SG). Upload copies per NTU checklist." },
       { school: "nus",  id: "nus-campus",        type: "info",      date: "2027-03-07", est: true,  title: "NUS Open House on-campus day",
         note: "Kent Ridge campus, Singapore." },
-      { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: false, title: "NTU (SG) application closes — US HS / AP track",
-        note: "Official AY2027–28 close 19 Mar 2027. Submit docs within 3 days after close (by 22 Mar)." },
+      { school: "ntu",  id: "ntu-schol-prep",    type: "scholarship", date: daysBefore(SCHOL_TARGETS.ntu_schol, OFF.w2), est: false, title: "NTU (SG) scholarship — draft essay + ask teacher for appraisal",
+        note: "2 weeks before target. Separate scholarship form after admission submit: one application covers Nanyang Global, Nanyang Merit, President Award, Talent, and programme-linked awards. Essay + photo + teacher appraisal required." },
+      { school: "ntu",  id: "ntu-schol",         type: "scholarship", date: SCHOL_TARGETS.ntu_schol, est: false, title: "Target submit — NTU (SG) scholarship application",
+        note: "Concurrent with admission target. Submit admission first, then click “Apply for Scholarship” in portal. Official close 19 Mar 2027; photo/appraisal by 26 Mar." },
+      { school: "ntutw",id: "ntutw-moe-open",    type: "open",      date: "2027-02-01", est: true, title: "MOE Taiwan Scholarship via TECO opens — ASK TECO if ROC-by-birth eligible",
+        note: "Official rules likely exclude ROC nationals by birth (even with US passport). ASK TECO SF when window opens before investing effort. If eligible: up to NT$40,000/semester + NT$15,000/month; separate from NTU admission. Est. Feb 1 – Mar 31, 2027." },
+      { school: "ntutw",id: "ntutw-moe",         type: "scholarship", date: SCHOL_TARGETS.ntutw_moe, est: true, title: "Target submit — MOE Taiwan Scholarship via TECO (drop if TECO says ineligible)",
+        note: "Delayed to late window (Mar 24). Requires NTU application proof. Cannot combine with NTU intl scholarship checkbox. Skip if TECO confirms ROC-by-birth disqualifies." },
+      { school: "thu",  id: "thu-csc",           type: "scholarship", date: SCHOL_TARGETS.thu_csc, est: true, title: "Target submit — CSC Type A via US embassy (watch for 2027 notice ~Oct 2026)",
+        note: "After Tsinghua admission target. Separate embassy app + campuschina.org; Tsinghua as first choice. US-born US passport eligible (no PRC citizenship). Prior-cycle embassy deadline est. Feb 16, 2027 — hard cutoff, not Apr." },
+      { school: "wbb",  id: "wbb-apaa-open",     type: "open",      date: "2026-11-01", est: true, title: "USC APAA scholarship application opens (est. Nov 2026)",
+        note: "Merit; typically $1K–$3K+. Opens ~Nov; closes est. Apr 3, 2027. Separate from USC admission. Tzuchi + Penghu tutoring are relevant API community activities." },
+      { school: "wbb",  id: "wbb-apaa",          type: "scholarship", date: SCHOL_TARGETS.wbb_apaa, est: true, title: "Target submit — USC APAA scholarship (highlight Tzuchi + Penghu tutoring)",
+        note: "Moved earlier (Feb 20) — well before est. Apr 3 close. All ethnicities eligible; API community involvement preferred. alumni.usc.edu/apaa" },
+      { school: "uc",   id: "uc-ucla-schol-open",type: "open",      date: "2027-03-29", est: true, title: "UCLA Alumni Scholarships portal opens — MUST be admitted to UCLA first",
+        note: "Cannot apply before UCLA admission. Portal opens ~2–3 days after UCLA decision (est. late Mar 2027). Merit + leadership; $6K–$20K over 4 years." },
+      { school: "uc",   id: "uc-ucla-schol",     type: "scholarship", date: SCHOL_TARGETS.uc_ucla_schol, est: true, title: "Target submit — UCLA Alumni Scholarships (only if UCLA-admitted)",
+        note: "~2 weeks after portal opens. Apply within 2 weeks of admission for best chance; priority est. Jun 30. General App + per-scholarship essays." },
+      { school: "uc",   id: "uc-davis-caaa-open",type: "open",      date: "2027-04-01", est: true, title: "UC Davis CAAA Leadership opens — MUST be Davis-admitted + SIR returned",
+        note: "Cannot apply before Davis admission and Statement of Intent to Register. Merit: $1K–$4K (up to $10K). Requires 3.5+ UC GPA. Apr 1 – Jun 15, 2027 est." },
+      { school: "uc",   id: "uc-davis-caaa",     type: "scholarship", date: SCHOL_TARGETS.uc_davis_caaa, est: true, title: "Target submit — UC Davis CAAA Leadership (only if Davis-admitted + SIR done)",
+        note: "Delayed to Jun 1 (late in window). US citizen; leadership record; 3.5+ GPA. SIR due May 1 — complete SIR before applying." },
+      { school: "ntu",  id: "ntu-close",         type: "deadline",  date: "2027-03-19", est: false, title: "NTU (SG) application + scholarship close — US HS / AP track",
+        note: "Official AY2027–28 close 19 Mar 2027. Scholarship form shares this deadline. Submit docs within 3 days after close (by 22 Mar); photo/appraisal by 26 Mar." },
       /* ── May–Aug 2027 ── */
       { school: "cuhk", id: "cuhk-extended",     type: "deadline",  date: "2027-05-29", est: true,  title: "CUHK Extended deadline — not listed for 2027 (prior-cycle pattern)",
         note: "2027 Important Dates list only Advance (12 Nov) + Regular (7 Jan). Extended date not published; prior cycle was 29 May. Medicine: apply by Regular; later apps only if places remain." },
@@ -617,6 +723,10 @@ gantt
         note: "Your planned submit date. Official close 19 Mar 2027. Docs due within 3 days after close (by 22 Mar)." },
       { school: "um",   id: "um-target",         type: "target",    date: TARGETS.um, est: false, title: "Target submit — UM application",
         note: "Your planned submit date. Official close ~30 Aug 2027. Rolling review." },
+      { school: "all",  id: "all-mvla",          type: "scholarship", date: SCHOL_TARGETS.mvla_scholars, est: true, title: "Target submit — MVLA Scholars common application",
+        note: "Est. Jan 15, 2027 (late in window). Prior cycle due late Feb. Need-based; 2.75+ GPA; MVHS student. One app covers Rotary, Kiwanis, Chamber, MVLA Scholars." },
+      { school: "hku",  id: "hku-jc-target",     type: "target",    date: SCHOL_TARGETS.hku_jc, est: true, title: "Target submit — HKJC Chairman’s (drop if not near-top: IB 45 / SAT ~1580+)",
+        note: "Delayed to Mar 20. No HKU offer needed to apply. Est. close Apr 2, 2027." },
 
       /* ── Submit 1 week before each target (backup) ── */
       { school: "wbb",  id: "wbb-week",          type: "submit",    date: daysBefore(TARGETS.wbb, OFF.w1), est: false, title: "Submit USC WBB this week — confirm recs are in; 1 week before target",
@@ -631,8 +741,10 @@ gantt
         note: "Backup reminder. Official filing deadline 30 Nov, 11:59 PM Pacific." },
       { school: "ubc",  id: "ubc-target-week",   type: "submit",    date: daysBefore(TARGETS.ubc, OFF.w1), est: false, title: "Submit UBC this week — confirm 2 referee contacts entered; 1 week before target",
         note: "Backup reminder. Official deadline 15 Jan 2027. Personal Profile must include 2 referee contacts (permission already asked). Complete BCom video interview if applicable. No recommendation-letter uploads." },
-      { school: "ubc",  id: "ubc-isp-week",      type: "submit",    date: "2026-11-08", est: false, title: "Submit UBC + International Scholars award app this week — 1 week before ISP deadline",
-        note: "ISP deadline 15 Nov 2026, 11:59 PM PST. Optional — skip if not pursuing International Scholars." },
+      { school: "hku",  id: "hku-jc-week",       type: "submit",    date: daysBefore("2027-04-02", OFF.w1), est: true, title: "Submit HKJC Chairman’s this week — 1 week before est. deadline (drop if below benchmark)",
+        note: "Est. Apr 2, 2027. Allow weeks for principal/referee forms — do not wait until this week if forms not started." },
+      { school: "wbb",  id: "wbb-tg-week",       type: "submit",    date: daysBefore("2026-11-15", OFF.w1), est: false, title: "Submit Town & Gown scholarship this week — 1 week before Nov 15 deadline",
+        note: "Backup reminder. Requires SoCal permanent residency + 3.4+ GPA + interview. Skip if not eligible." },
       { school: "ntutw",id: "ntutw-r1-week",     type: "submit",    date: "2026-10-29", est: false, title: "Submit NTU Taiwan intl Round 1 this week — 1 week before official close (optional)",
         note: "Official Round 1 close 5 Nov. Your main target is 10 Jan (Round 2). Skip if not applying in Round 1." },
       { school: "ntutw",id: "ntutw-r2-week",     type: "submit",    date: daysBefore(TARGETS.ntutw, OFF.w1), est: false, title: "Submit NTU Taiwan intl Round 2 this week — confirm required letters in; 1 week before target",
@@ -657,13 +769,47 @@ gantt
         note: "Extended not on 2027 Important Dates. Skip if already submitted. Medicine: Regular is the practical last deadline." },
       { school: "hku",  id: "hku-week",          type: "submit",    date: "2027-08-18", est: false, title: "Submit HKU this week — 1 week before rolling window closes",
         note: "Official final deadline noon 25 Aug 2027. Only if still in rolling phase. Skip if already submitted by your 18 Nov target." },
+      { school: "ntu",  id: "ntu-schol-week",    type: "submit",    date: daysBefore(SCHOL_TARGETS.ntu_schol, OFF.w1), est: false, title: "Submit NTU (SG) scholarship this week — 1 week before target",
+        note: "Backup reminder. Official close 19 Mar. Admission must be submitted first." },
+      { school: "ntu",  id: "ntu-schol-dead-week", type: "submit", date: "2027-03-12", est: false, title: "Submit NTU (SG) scholarship this week — 1 week before official close",
+        note: "Official close 19 Mar 2027. Skip if already submitted by your 12 Mar target." },
+      { school: "ntutw",id: "ntutw-moe-week",    type: "submit",    date: daysBefore(SCHOL_TARGETS.ntutw_moe, OFF.w1), est: true, title: "Submit MOE Taiwan Scholarship via TECO this week — 1 week before target",
+        note: "Backup reminder. Est. TECO window closes Mar 31, 2027." },
+      { school: "ntutw",id: "ntutw-moe-dead-week",type: "submit",   date: "2027-03-24", est: true, title: "Submit MOE Taiwan Scholarship this week — 1 week before est. Mar 31 close",
+        note: "Est. Mar 31, 2027. Requires NTU application proof. Skip if not pursuing or if 僑生 pathway used instead." },
+      { school: "thu",  id: "thu-csc-week",      type: "submit",    date: daysBefore(SCHOL_TARGETS.thu_csc, OFF.w1), est: true, title: "Start Chinese Government Scholarship (Type A) embassy app this week — 1 week before target",
+        note: "Backup reminder. Embassy deadlines vary; est. window through Apr 2027." },
+      { school: "thu",  id: "thu-csc-dead-week", type: "submit",    date: "2027-02-09", est: true, title: "Submit CSC Type A via US embassy this week — 1 week before est. Feb 16 embassy close",
+        note: "Prior-cycle embassy deadline est. Feb 16, 2027. Watch us.china-embassy.gov.cn for 2027 notice (~Oct 2026). Hard cutoff." },
+      { school: "wbb",  id: "wbb-apaa-week",     type: "submit",    date: daysBefore(SCHOL_TARGETS.wbb_apaa, OFF.w1), est: true, title: "Submit USC APAA scholarship this week — 1 week before Feb 20 target",
+        note: "Backup reminder. Official close est. Apr 3, 2027. Highlight Tzuchi + Penghu tutoring." },
+      { school: "wbb",  id: "wbb-apaa-dead-week",type: "submit",    date: "2027-03-27", est: true, title: "Submit USC APAA this week — 1 week before est. Apr 3 close",
+        note: "Est. Apr 3, 2027. Skip if already submitted by Feb 20 target." },
+      { school: "uc",   id: "uc-ucla-schol-week",type: "submit",    date: daysBefore(SCHOL_TARGETS.uc_ucla_schol, OFF.w1), est: true, title: "Submit UCLA Alumni Scholarships this week — 1 week before target (if admitted)",
+        note: "Only if admitted to UCLA. Est. portal opens late Mar 2027." },
+      { school: "uc",   id: "uc-ucla-schol-dead-week", type: "submit", date: "2027-06-23", est: true, title: "Submit UCLA Alumni Scholarships this week — 1 week before est. Jun 30 priority",
+        note: "Est. priority Jun 30, 2027. Skip if not admitted to UCLA or already submitted." },
+      { school: "uc",   id: "uc-davis-caaa-week",type: "submit",    date: daysBefore(SCHOL_TARGETS.uc_davis_caaa, OFF.w1), est: true, title: "Submit UC Davis CAAA scholarship this week — 1 week before target (if admitted)",
+        note: "Only if admitted to UC Davis with 3.5+ GPA. Est. close Jun 15, 2027." },
+      { school: "uc",   id: "uc-davis-caaa-dead-week", type: "submit", date: "2027-06-08", est: true, title: "Submit UC Davis CAAA this week — 1 week before est. Jun 15 close",
+        note: "Est. Jun 15, 2027. Requires SIR returned. Skip if not admitted to Davis." },
+      { school: "all",  id: "all-nehs-week",     type: "submit",    date: daysBefore(SCHOL_TARGETS.nehs, OFF.w1), est: true, title: "Submit NEHS scholarship this week — 1 week before Oct 13 est. close",
+        note: "Backup if pursuing NEHS / “Lost in Translation” item." },
+      { school: "all",  id: "all-elks-week",     type: "submit",    date: daysBefore(SCHOL_TARGETS.elks_mvs, OFF.w1), est: false, title: "Submit Elks MVS this week — 1 week before target",
+        note: "Official close Nov 12. Counselor report due Nov 19." },
+      { school: "all",  id: "all-nhs-week",      type: "submit",    date: daysBefore(SCHOL_TARGETS.nhs_national, OFF.w1), est: false, title: "Submit NHS National this week — 1 week before target",
+        note: "Official close Nov 20, 5 PM ET." },
+      { school: "all",  id: "all-csf-week",      type: "submit",    date: daysBefore(SCHOL_TARGETS.csf_michelson, OFF.w1), est: false, title: "Submit CSF Michelson essay this week — 1 week before target",
+        note: "Official close Dec 22, 6 PM." },
+      { school: "all",  id: "all-mvla-week",     type: "submit",    date: daysBefore(SCHOL_TARGETS.mvla_scholars, OFF.w1), est: true, title: "Submit MVLA Scholars common app this week — 1 week before target",
+        note: "Est. late-Feb official close. Skip if not pursuing need-based local awards." },
     ];
 
     const TAG_LABELS = {
       info: "Info session", register: "Register by", open: "Opens",
       deadline: "Deadline", submit: "1 week left", target: "Target submit",
       rolling: "Rolling — early", prep: "Prep",
-      counselor: "Counselor", scores: "Scores",
+      counselor: "Counselor", scores: "Scores", scholarship: "Scholarship",
     };
 
     function formatDate(str) {
