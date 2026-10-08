@@ -57,6 +57,7 @@
     .checklist li.school-ntutw { border-left-color: #ec4899; background: rgba(236,72,153,0.07); }
     .checklist li.school-um { border-left-color: #eab308; background: rgba(234,179,8,0.07); }
     .checklist li.school-uec { border-left-color: #f43f5e; background: rgba(244,63,94,0.07); }
+    .checklist li.school-wbb { border-left-color: #cb0200; background: rgba(203,2,0,0.07); }
     .checklist input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; accent-color: var(--accent); }
     .item-title { color: var(--text); font-weight: 500; }
     .item-meta { grid-column: 2; font-size: 0.82rem; color: var(--muted); }
@@ -82,6 +83,7 @@
     .tag.school-ntutw { background: #831843; color: #f9a8d4; }
     .tag.school-um { background: #713f12; color: #fde047; }
     .tag.school-uec { background: #881337; color: #fda4af; }
+    .tag.school-wbb { background: #7f1d1d; color: #fecaca; }
   </style>
 </head>
 <body>
@@ -109,6 +111,13 @@ gantt
     title Fall 2027 entry — official dates where published; others estimated
     dateFormat YYYY-MM-DD
     todayMarker stroke-width:3px,stroke:#ef4444,opacity:1
+
+    section USC WBB Marshall
+    1 Aug Common App opens              :milestone, m_wbb_open, 2026-08-01, 1d
+    Complete all application components :active, wbb_comp, 2026-08-01, 2026-10-30
+    30 Oct                              :milestone, m_wbb_comp, 2026-10-30, 1d
+    1 Nov ED and EA deadline            :milestone, m_wbb_dead, 2026-11-01, 1d
+    1 May EA offer acceptance           :milestone, d_wbb_sir, 2027-05-01, 1d
 
     section UC California resident
     Portal open for drafts           :uc_draft, 2026-08-01, 2026-09-30
@@ -207,12 +216,12 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v13";
+    const STORAGE_KEY = "fall2027-checklist-v14";
 
     const SCHOOL_COLORS = {
       uc: "#3b82f6", hku: "#10b981", cuhk: "#a855f7", thu: "#ef4444",
       nus: "#f59e0b", ntu: "#06b6d4", ntutw: "#ec4899",
-      um: "#eab308", uec: "#f43f5e",
+      um: "#eab308", uec: "#f43f5e", wbb: "#cb0200",
     };
 
     const MILESTONE_DEADLINE_FILL = "#eab308";
@@ -230,6 +239,7 @@ gantt
       ntu: { name: "NTU (SG)", short: "NTU (SG)", link: "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications", apply: "https://www.wired.ntu.edu.sg/apply/" },
       ntutw: { name: "NTU Taiwan (intl)", short: "NTU TW intl", link: "https://admissions.ntu.edu.tw/apply/degree-students/international-students/", apply: "https://oiasystem.ntu.edu.tw/globaladmission/foreign/" },
       um:  { name: "UM", short: "UM", link: "https://study.um.edu.my/how-to-apply", apply: "https://maya.um.edu.my/" },
+      wbb: { name: "USC WBB (Marshall)", short: "USC WBB", link: "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business", apply: "https://www.commonapp.org/" },
     };
 
     const ITEM_LINKS = {
@@ -269,6 +279,14 @@ gantt
       "hku-talent": "https://admissions.hku.hk/sndas_highschool",
       "uc-hku-dual-open": "https://hku.berkeley.edu/admissions",
       "uc-hku-dual-deadline": "https://hku.berkeley.edu/admissions",
+      "wbb-info-reg": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business",
+      "wbb-info": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business",
+      "wbb-counselor-ask": "https://www.commonapp.org/",
+      "wbb-ed-decide": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business",
+      "wbb-supplement": "https://www.commonapp.org/",
+      "wbb-prompts": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business",
+      "wbb-comp-target": "https://www.commonapp.org/",
+      "wbb-sir": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business",
     };
 
     function itemActionLink(item) {
@@ -285,12 +303,20 @@ gantt
 
     const CHECKLIST_ITEMS = [
       /* ── Jul–Aug 2026 ── */
+      { school: "wbb",  id: "wbb-info-reg",      type: "register",  date: "2026-08-01", est: false, title: "Register for USC Marshall WBB virtual info sessions (Wednesdays 11 AM / 3 PM PT)",
+        note: "Official Marshall first-year info sessions for juniors/seniors/families. Register on the WBB program page. Ongoing Wednesdays — pick a date ~2 weeks ahead." },
       { school: "uc",   id: "uc-info-reg",       type: "register",  date: "2026-08-01", est: true,  title: "Register for UC campus virtual info sessions",
         note: "Sessions typically Aug–Nov. Register ~2 weeks before your target session." },
+      { school: "wbb",  id: "wbb-open",          type: "open",      date: "2026-08-01", est: false, title: "USC WBB: Common Application opens — start application via CommonApp.org",
+        note: "Apply to USC Marshall World Bachelor in Business through Common App. Select WBB as your program. Three partner schools: USC Marshall (LA), HKUST (Hong Kong), Bocconi (Milan)." },
+      { school: "wbb",  id: "wbb-counselor-ask", type: "counselor", date: "2026-08-15", est: true,  title: "Ask counselor + 1 teacher for Common App recommendations (USC WBB)",
+        note: "WBB evaluates counselor/teacher recommendations, coursework rigor, grades, test scores, activities, and essays. Invite recommenders in Common App early so they have time before Nov 1." },
       { school: "nus",  id: "scores-sat-reg",    type: "scores",    date: "2026-08-01", est: true,  title: "Register for SAT or ACT (if needed for NUS / NTU (SG) / Tsinghua English-taught)",
         note: "NUS & NTU (SG) require SAT or ACT for US HS + AP. Allow 3–4 weeks for scores to reach schools via College Board." },
       { school: "all",  id: "icard-apply",       type: "prep",      date: "2026-08-05", est: false, title: "Apply for OCAC i僑卡 (i Compatriot Card) — recommended before Taiwan 僑生 pathways",
         note: "icard.taiwan-world.net — virtual OCAC member card. Not required to log into UECFOCS/NTU apps. Not 僑生 identity proof. Needed for OCAC scholarships, work-study, and activity sign-ups after enrollment. Review ~3–7 business days." },
+      { school: "wbb",  id: "wbb-info",          type: "info",      date: "2026-08-20", est: true,  title: "Attend USC Marshall WBB virtual info session",
+        note: "Comprehensive Marshall overview for families. Wednesdays 11 AM or 3 PM PT. Also consider USC on-campus / virtual campus tours." },
       { school: "uc",   id: "uc-open",           type: "open",      date: "2026-08-01", est: false, title: "UC application portal opens (draft)",
         note: "apply.universityofcalifornia.edu — no counselor letters required." },
       { school: "uc",   id: "uc-counselor-ask",  type: "counselor", date: "2026-08-15", est: true,  title: "Ask counselor: UC needs self-reported grades only (no recommendation letters)",
@@ -360,8 +386,18 @@ gantt
         note: "Official: apply on or before 12 Nov for Advance Offer (Dec notifications). Referees have 21 days from invite. Submit supporting docs within 14 days of application." },
       { school: "cuhk", id: "cuhk-docs-14d",     type: "deadline",  date: "2026-11-01", est: true,  title: "CUHK supporting documents due (~14 days after application est.)",
         note: "Upload transcript scans, passport copy, personal statement in applicant portal — not mailed official copies unless asked. Referees should complete within 21 days of invite." },
+      { school: "wbb",  id: "wbb-supplement",    type: "prep",      date: "2026-10-01", est: true,  title: "Complete USC Writing Supplement on Common App (WBB)",
+        note: "Required USC supplement attached to your Common Application. Complete before WBB-specific written prompts." },
+      { school: "wbb",  id: "wbb-prompts",       type: "prep",      date: "2026-10-15", est: true,  title: "Complete World Bachelor in Business written prompts (USC supplement)",
+        note: "WBB-specific written prompts are attached to the USC Writing Supplement. Draft and revise before final submission." },
+      { school: "wbb",  id: "wbb-comp-target",   type: "deadline",  date: "2026-10-30", est: false, title: "USC WBB: target date to finish all four application components",
+        note: "Official Marshall timeline: (1) Common Application, (2) USC Writing Supplement, (3) WBB written prompts, (4) submit. Finish components by Oct 30 so you can submit well before Nov 1." },
+      { school: "wbb",  id: "wbb-ed-decide",     type: "prep",      date: "2026-10-20", est: true,  title: "Decide USC WBB plan: Early Decision (binding) vs Early Action",
+        note: "Both ED and EA share the Nov 1 deadline. ED is binding — if admitted you must enroll and withdraw other applications. EA is non-binding; offer acceptance deadline is May 1." },
 
       /* ── Nov 2026 ── */
+      { school: "wbb",  id: "wbb-deadline",      type: "deadline",  date: "2026-11-01", est: false, title: "USC WBB application deadline — ED and EA (merit consideration)",
+        note: "Official Marshall deadline Nov 1 for WBB merit consideration. Submit via Common App with Common Application + USC Writing Supplement + WBB written prompts complete." },
       { school: "all",  id: "ap-exam-register",  type: "scores",    date: "2026-11-01", est: true,  title: "Register for May 2027 AP exams via school (College Board deadline ~Nov)",
         note: "Required for score reporting to NUS, NTU (SG), UC (if admitted), and other schools." },
       { school: "nus",  id: "nus-counselor-ask", type: "counselor", date: "2026-11-15", est: true,  title: "Ask school for transcript PDF + grading system explanation for NUS",
@@ -449,6 +485,8 @@ gantt
         note: "2027 Important Dates list only Advance (12 Nov) + Regular (7 Jan). Extended date not published; prior cycle was 29 May. Medicine: apply by Regular; later apps only if places remain." },
       { school: "uc",   id: "uc-sir",            type: "deadline",  date: "2027-05-01", est: false, title: "UC Statement of Intent to Register (if admitted)",
         note: "Official first-year SIR deadline for fall 2027. Check your offer letter for campus portal details." },
+      { school: "wbb",  id: "wbb-sir",           type: "deadline",  date: "2027-05-01", est: false, title: "USC WBB offer acceptance deadline (EA applicants)",
+        note: "Official Marshall timeline: May 1 for EA offer acceptance. ED applicants commit at admission. Contact busadm@marshall.usc.edu with questions." },
       { school: "nus",  id: "scores-ap-nus",     type: "scores",    date: "2027-07-09", est: true,  title: "May 2027 AP scores: send to NUS (College Board code 3720) + upload within 3 days",
         note: "NUS requires AP / other final results updated in Applicant Portal within 3 days of official release. Jul 9 is a planning date around typical AP score release." },
       { school: "uc",   id: "uc-transcript",     type: "scores",    date: "2027-07-01", est: false, title: "If UC-admitted: official high school transcript to enrolling campus",
@@ -463,6 +501,8 @@ gantt
         note: "Bachelor's international channel." },
 
       /* ── Submit 1 week before each application close ── */
+      { school: "wbb",  id: "wbb-week",          type: "submit",    date: "2026-10-25", est: false, title: "Submit USC WBB application this week — 1 week before Nov 1 deadline",
+        note: "Hard close Nov 1 for ED/EA and merit consideration. All four components must be complete: Common App + USC supplement + WBB prompts + submit." },
       { school: "ntutw",id: "ntutw-r1-week",     type: "submit",    date: "2026-10-29", est: false, title: "Submit NTU Taiwan intl Round 1 this week — 1 week before close",
         note: "Closes 5 Nov 2026, 4 PM GMT+8. Round 2 is a fallback if needed." },
       { school: "cuhk", id: "cuhk-adv-week",     type: "submit",    date: "2026-11-05", est: false, title: "Submit CUHK this week for Advance Offer — 1 week before that round",
