@@ -213,13 +213,11 @@ gantt
     30 Aug                             :milestone, m_um_end, 2027-08-30, 1d
 
     section All schools scholarships
-    NEHS scholarship window est.       :all_nehs, 2026-09-28, 2026-10-13
-    13 Oct NEHS est.                   :milestone, m_all_nehs, 2026-10-13, 1d
     Elks MVS window                    :all_elks, 2026-08-01, 2026-11-12
     12 Nov Elks MVS                    :milestone, m_all_elks, 2026-11-12, 1d
     NHS National window                :all_nhs, 2026-09-03, 2026-11-20
     20 Nov NHS National                :milestone, m_all_nhs, 2026-11-20, 1d
-    MVLA Scholars window est.          :all_mvla, 2026-12-01, 2027-02-28
+    MVHS counseling scholarship board  :all_mvhs_schol, 2026-09-01, 2027-06-30
     CSF Michelson essay window         :all_csf, 2026-11-01, 2026-12-22
     22 Dec CSF Michelson               :milestone, m_all_csf, 2026-12-22, 1d
         </pre>
@@ -254,7 +252,7 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v25";
+    const STORAGE_KEY = "fall2027-checklist-v28";
 
     /* Target submit dates — prep/counselor/scores items are offset from these */
     const TARGETS = {
@@ -302,8 +300,7 @@ gantt
       uc_davis_caaa: "2027-06-01",
       elks_mvs: "2026-11-10",
       nhs_national: "2026-11-10",
-      nehs: "2026-10-13",
-      mvla_scholars: "2027-01-15",
+      mvhs_schol_check: "2026-12-15",
       csf_michelson: "2026-12-15",
     };
 
@@ -401,10 +398,10 @@ gantt
       "wbb-sir": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business",
       "all-elks": "https://enf.elks.org/MVS",
       "all-nhs": "https://www.nationalhonorsociety.org/the-nhs-scholarship/",
-      "all-nehs": "https://nehs.us/awards-grants/student-opportunities/nehs-scholarships-3/nehs-scholarships/",
-      "all-mvla": "https://mvlascholars.org/scholars/",
       "all-csf": "https://csf-cjsf.org/csf-awards/",
-      "all-mvhs-schol": "https://mvhs.mvla.net/scholarships",
+      "all-mvhs-schol": "https://sites.google.com/vistausd.org/mvhs-counseling/college/financial-aid-scholarships/scholarship-board",
+      "all-mvhs-nhs": "http://missionvistanhs.weebly.com/",
+      "all-mvhs-csf": "http://mvhscsf.weebly.com/",
       "thu-csc-embassy": "https://us.china-embassy.gov.cn/eng/lxfw/studyinchina/chinesegovernmentscholarship/",
     };
 
@@ -424,8 +421,8 @@ gantt
       /* ── Jul–Aug 2026 ── */
       { school: "all",  id: "all-elks-open",     type: "open",      date: "2026-08-01", est: false, title: "Elks Most Valuable Student (MVS) scholarship opens",
         note: "Merit + leadership + service + financial need. US citizen; current senior; 4-year US college. $500–$50,000. Separate app at enf.elks.org/MVS. Counselor report due Nov 19." },
-      { school: "all",  id: "all-nhs-open",      type: "open",      date: "2026-09-03", est: false, title: "NHS National Scholarship opens — verify NHS account with adviser now",
-        note: "nationalhonorsociety.org/the-nhs-scholarship — active NHS member required. Adviser certification + non-family recommender must complete before you can submit. $2M to 600 students." },
+      { school: "all",  id: "all-nhs-open",      type: "open",      date: "2026-09-03", est: false, title: "NHS National Scholarship opens — verify NHS account with MVHS adviser",
+        note: "nationalhonorsociety.org/the-nhs-scholarship — active Mission Vista NHS member required (missionvistanhs.weebly.com). Adviser certification + non-family recommender must complete before you can submit." },
       { school: "wbb",  id: "wbb-info-reg",      type: "register",  date: "2026-08-01", est: false, title: "Register for USC Marshall WBB virtual info sessions (Wednesdays 11 AM / 3 PM PT)",
         note: "Official Marshall first-year info sessions for juniors/seniors/families. Register on the WBB program page. Ongoing Wednesdays — pick a date ~2 weeks ahead." },
       { school: "uc",   id: "uc-info-reg",       type: "register",  date: "2026-08-01", est: true,  title: "Register for UC campus virtual info sessions",
@@ -448,8 +445,6 @@ gantt
         note: "Check each campus admissions site." },
 
       /* ── Sep 2026 ── */
-      { school: "all",  id: "all-nehs-open",     type: "open",      date: "2026-09-28", est: true,  title: "NEHS scholarship fall window opens (if “Lost in Translation” = NEHS — confirm with CCC)",
-        note: "Could not verify a scholarship named “Lost in Translation.” Closest match: NEHS Scholarships (essay + 1–2 min video). Requires NEHS membership at active chapter. Fall window Sep 28 – Oct 13, 2026. Ask MVHS CCC if your list refers to something else." },
       { school: "thu",  id: "thu-info-reg",      type: "prep",      date: "2026-10-05", est: true,  title: "Tsinghua English-taught: bookmark admissions page for info session videos",
         note: "Zijing + Zhishan college sessions. No registration — recorded YouTube videos on international.join-tsinghua.edu.cn (~late Jan est.)." },
       { school: "hku",  id: "hku-info-reg",      type: "register",  date: "2026-09-09", est: true,  title: "Register for HKU International Admissions Talk",
@@ -529,8 +524,6 @@ gantt
         note: "Official Marshall deadline Nov 1 for WBB merit consideration. Submit via Common App with Common Application + USC Writing Supplement + WBB written prompts complete." },
       { school: "all",  id: "ap-exam-register",  type: "scores",    date: "2026-11-01", est: true,  title: "Register for May 2027 AP exams via school (College Board deadline ~Nov)",
         note: "Required for score reporting to NUS, NTU (SG), UC (if admitted), and other schools." },
-      { school: "all",  id: "all-nehs",          type: "scholarship", date: SCHOL_TARGETS.nehs, est: true, title: "Target submit — NEHS scholarship (drop if not NEHS member / not “Lost in Translation”)",
-        note: "Oct 13, 2026 est. hard close (11:59 PM CT). Skip if not an NEHS member or if CCC confirms a different scholarship." },
       { school: "all",  id: "all-elks",          type: "scholarship", date: SCHOL_TARGETS.elks_mvs, est: false, title: "Target submit — Elks MVS scholarship",
         note: "Your planned date (Nov 5). Official close Nov 12, 2026, 11:59 PM PT. Counselor report due Nov 19." },
       { school: "all",  id: "all-nhs",           type: "scholarship", date: SCHOL_TARGETS.nhs_national, est: false, title: "Target submit — NHS National Scholarship (NASSP)",
@@ -584,10 +577,10 @@ gantt
       /* ── Dec 2026 – Jan 2027 ── */
       { school: "all",  id: "all-csf",           type: "scholarship", date: SCHOL_TARGETS.csf_michelson, est: false, title: "Target submit — CSF Michelson Memorial Award essay",
         note: "Your planned date (Dec 15). Official close Dec 22, 2026, 6 PM. Must be CSF member." },
-      { school: "all",  id: "all-mvla-open",     type: "open",      date: "2026-12-01", est: true,  title: "MVLA Scholars common app opens (no standalone “Class of 2027” fund found)",
-        note: "mvlascholars.org — $2K–$6K need-based, renewable. Shared app with Rotary/Kiwanis/Chamber. Class of 2026 opened Dec 2025, due Feb 2026; Class of 2027 est. Dec 2026 – Feb 2027. Check mvhs.mvla.net/scholarships." },
-      { school: "all",  id: "all-mvla-check",    type: "prep",      date: "2026-12-15", est: true,  title: "Check MVHS scholarships page — MVLA Scholars + local awards (your Dec 15 target)",
-        note: "No standalone “MVHS Class of 2027” scholarship found. MVLA Scholars + Rotary/Kiwanis/Chamber share one common app. Email heather.lowe@mvla.net for self-nomination scholarships; resume in Naviance required." },
+      { school: "all",  id: "all-mvhs-schol-board",type: "open",  date: "2026-09-01", est: false, title: "Mission Vista HS counseling scholarship board — review weekly for new awards",
+        note: "sites.google.com/vistausd.org/mvhs-counseling — Google sheet sorted by due date, updated weekly. Questions: mvhscollegeandcareer@vistausd.org. NOT the Bay Area MVLA Scholars program (Los Altos/Mountain View HS only)." },
+      { school: "all",  id: "all-mvhs-schol-check",type: "prep",  date: SCHOL_TARGETS.mvhs_schol_check, est: false, title: "Review MVHS scholarship board — Class of 2027 local awards (your Dec 15 target)",
+        note: "Check counseling scholarship board for school-specific and North County SD awards (e.g. Assistance League of North Coast). No standalone “Class of 2027” fund found publicly — board may list it when posted." },
       { school: "hku",  id: "hku-jc-prep",       type: "scholarship", date: "2027-01-15", est: true, title: "HKJC Chairman’s — ask principal + referee to start forms (submit delayed to Mar 20)",
         note: "Application delayed to late window, but principal + teacher referee need lead time. Portal open est. Dec 2026. No HKU offer needed to apply." },
       { school: "thu",  id: "thu-r2-open",       type: "open",      date: "2026-11-21", est: false, title: "Tsinghua English-taught Round 2 opens (8 AM Beijing)",
@@ -723,8 +716,6 @@ gantt
         note: "Your planned submit date. Official close 19 Mar 2027. Docs due within 3 days after close (by 22 Mar)." },
       { school: "um",   id: "um-target",         type: "target",    date: TARGETS.um, est: false, title: "Target submit — UM application",
         note: "Your planned submit date. Official close ~30 Aug 2027. Rolling review." },
-      { school: "all",  id: "all-mvla",          type: "scholarship", date: SCHOL_TARGETS.mvla_scholars, est: true, title: "Target submit — MVLA Scholars common application",
-        note: "Est. Jan 15, 2027 (late in window). Prior cycle due late Feb. Need-based; 2.75+ GPA; MVHS student. One app covers Rotary, Kiwanis, Chamber, MVLA Scholars." },
       { school: "hku",  id: "hku-jc-target",     type: "target",    date: SCHOL_TARGETS.hku_jc, est: true, title: "Target submit — HKJC Chairman’s (drop if not near-top: IB 45 / SAT ~1580+)",
         note: "Delayed to Mar 20. No HKU offer needed to apply. Est. close Apr 2, 2027." },
 
@@ -793,16 +784,14 @@ gantt
         note: "Only if admitted to UC Davis with 3.5+ GPA. Est. close Jun 15, 2027." },
       { school: "uc",   id: "uc-davis-caaa-dead-week", type: "submit", date: "2027-06-08", est: true, title: "Submit UC Davis CAAA this week — 1 week before est. Jun 15 close",
         note: "Est. Jun 15, 2027. Requires SIR returned. Skip if not admitted to Davis." },
-      { school: "all",  id: "all-nehs-week",     type: "submit",    date: daysBefore(SCHOL_TARGETS.nehs, OFF.w1), est: true, title: "Submit NEHS scholarship this week — 1 week before Oct 13 est. close",
-        note: "Backup if pursuing NEHS / “Lost in Translation” item." },
       { school: "all",  id: "all-elks-week",     type: "submit",    date: daysBefore(SCHOL_TARGETS.elks_mvs, OFF.w1), est: false, title: "Submit Elks MVS this week — 1 week before target",
         note: "Official close Nov 12. Counselor report due Nov 19." },
       { school: "all",  id: "all-nhs-week",      type: "submit",    date: daysBefore(SCHOL_TARGETS.nhs_national, OFF.w1), est: false, title: "Submit NHS National this week — 1 week before target",
         note: "Official close Nov 20, 5 PM ET." },
       { school: "all",  id: "all-csf-week",      type: "submit",    date: daysBefore(SCHOL_TARGETS.csf_michelson, OFF.w1), est: false, title: "Submit CSF Michelson essay this week — 1 week before target",
         note: "Official close Dec 22, 6 PM." },
-      { school: "all",  id: "all-mvla-week",     type: "submit",    date: daysBefore(SCHOL_TARGETS.mvla_scholars, OFF.w1), est: true, title: "Submit MVLA Scholars common app this week — 1 week before target",
-        note: "Est. late-Feb official close. Skip if not pursuing need-based local awards." },
+      { school: "all",  id: "all-mvhs-schol-week",type: "submit", date: daysBefore(SCHOL_TARGETS.mvhs_schol_check, OFF.w1), est: false, title: "Review MVHS scholarship board this week — 1 week before Dec 15 target",
+        note: "Flag any local scholarships due before your next review. Apply per each award’s own deadline on the counseling board." },
     ];
 
     const TAG_LABELS = {
