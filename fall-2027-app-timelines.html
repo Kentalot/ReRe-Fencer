@@ -264,7 +264,7 @@ gantt
 
     /* Target submit dates — prep/counselor/scores items are offset from these */
     const TARGETS = {
-      wbb: "2026-10-28", cuhk: "2026-11-05", thu: "2026-11-13", hku: "2026-11-18",
+      wbb: "2026-10-28", cuhk: "2026-10-27", thu: "2026-11-13", hku: "2026-11-16",
       uc: "2026-11-21", ubc: "2026-11-30", ntutw: "2027-01-10", nus: "2027-02-10",
       ntu: "2027-03-12", um: "2027-08-23",
     };
@@ -329,7 +329,7 @@ gantt
 
     const SCHOOLS = {
       uc:  { name: "UC", short: "UC", link: "https://admission.universityofcalifornia.edu/", apply: "https://apply.universityofcalifornia.edu/" },
-      hku: { name: "HKU", short: "HKU", link: "https://admissions.hku.hk/apply/international-qualifications", apply: "https://admissions.hku.hk/apply" },
+      hku: { name: "HKU", short: "HKU", link: "https://admissions.hku.hk/apply/international-qualifications", apply: "https://admissions.hku.hk/apply/overview" },
       cuhk:{ name: "CUHK", short: "CUHK", link: "https://admission.cuhk.edu.hk/application/overseas-other-qualifications-non-local-international-team/requirements/", apply: "https://applicant.adm.cuhk.edu.hk/" },
       thu: { name: "Tsinghua English-taught", short: "Tsinghua EN", link: "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm", apply: "https://apply.join-tsinghua.edu.cn/international" },
       ubc: { name: "UBC HKU Dual Degree", short: "UBC HKU", link: "https://www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce/overview/study-globally/hku-dual-degree", apply: "https://apply.educationplannerbc.ca/" },
@@ -732,7 +732,7 @@ gantt
 
       /* ── Submit 1 week before official deadlines (fallback) ── */
       { school: "cuhk", id: "cuhk-reg-week",     type: "submit",    date: "2026-12-31", est: false, title: "Submit CUHK this week for Regular Round — 1 week before official close",
-        note: "Official Regular Round 7 Jan 2027. Skip if already submitted by your 5 Nov target." },
+        note: "Official Regular Round 7 Jan 2027. Skip if already submitted by your 27 Oct target." },
       { school: "ubc",  id: "ubc-week",          type: "submit",    date: "2027-01-08", est: false, title: "Submit UBC application this week — 1 week before official Jan 15 deadline",
         note: "Official hard close Jan 15, 2027. Skip if already submitted by your 30 Nov target." },
       { school: "ubc",  id: "ubc-dual-week",     type: "submit",    date: "2027-01-24", est: false, title: "Submit UBC Sauder–HKU Dual Degree supplemental this week — 1 week before Jan 31",
@@ -742,7 +742,7 @@ gantt
       { school: "cuhk", id: "cuhk-ext-week",     type: "submit",    date: "2027-05-22", est: true,  title: "CUHK late/Extended submit reminder — only if Extended date is later posted",
         note: "Extended not on 2027 Important Dates. Skip if already submitted. Medicine: Regular is the practical last deadline." },
       { school: "hku",  id: "hku-week",          type: "submit",    date: "2027-08-18", est: false, title: "Submit HKU this week — 1 week before rolling window closes",
-        note: "Official final deadline noon 25 Aug 2027. Only if still in rolling phase. Skip if already submitted by your 18 Nov target." },
+        note: "Official final deadline noon 25 Aug 2027. Only if still in rolling phase. Skip if already submitted by your 16 Nov target." },
       { school: "ntu",  id: "ntu-schol-week",    type: "submit",    date: daysBefore(SCHOL_TARGETS.ntu_schol, OFF.w1), est: false, title: "Submit NTU (SG) scholarship this week — 1 week before target",
         note: "Backup reminder. Official close 19 Mar. Admission must be submitted first." },
       { school: "ntu",  id: "ntu-schol-dead-week", type: "submit", date: "2027-03-12", est: false, title: "Submit NTU (SG) scholarship this week — 1 week before official close",
