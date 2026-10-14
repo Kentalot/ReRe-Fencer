@@ -104,7 +104,7 @@
   </div>
 
   <div class="banner">
-    <strong>Rolling admission — apply ASAP:</strong> HKU (only after first-round deadline, noon 25 Nov 2026) and UM (Feb–Aug 2027). HKU first round is batch evaluation, not rolling.
+    <strong>Rolling admission — apply ASAP:</strong> HKU (only after first-round deadline, noon 25 Nov 2026) and UM October intake (est. apply Feb–Aug 2027). HKU first round is batch evaluation, not rolling.
   </div>
 
   <h2>Master timeline — all schools</h2>
@@ -207,10 +207,10 @@ gantt
     19 Mar admission and scholarship   :milestone, m_ntu_end, 2027-03-19, 1d
     1 Jul                              :milestone, d_ntu, 2027-07-01, 1d
 
-    section UM International ROLLING
-    9 Feb                              :milestone, m_um_open, 2027-02-09, 1d
-    Rolling application window         :crit, um_roll, 2027-02-09, 2027-08-30
-    30 Aug                             :milestone, m_um_end, 2027-08-30, 1d
+    section UM International Oct intake
+    9 Feb est. MAYA opens              :milestone, m_um_open, 2027-02-09, 1d
+    Rolling application window est.    :crit, um_roll, 2027-02-09, 2027-08-30
+    30 Aug est. application close      :milestone, m_um_end, 2027-08-30, 1d
 
     section All schools scholarships
     Elks MVS window                    :all_elks, 2026-08-01, 2026-11-12
@@ -224,8 +224,6 @@ gantt
     9 Jan Foot Locker Scholars         :milestone, m_all_fl, 2027-01-09, 1d
     CACA essay registration window     :all_caca_reg, 2027-01-25, 2027-02-28
     14 Mar CACA essay contest          :milestone, m_all_caca, 2027-03-14, 1d
-    SDF common scholarship window      :all_sdf, 2027-01-01, 2027-03-04
-    4 Mar SDF Gandhi and Forbes        :milestone, m_all_sdf, 2027-03-04, 1d
     Panhellenic merit window           :all_pan, 2027-02-01, 2027-03-20
     20 Mar Panhellenic est.            :milestone, m_all_pan, 2027-03-20, 1d
         </pre>
@@ -260,7 +258,7 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v32";
+    const STORAGE_KEY = "fall2027-checklist-v33";
 
     /* Target submit dates — prep/counselor/scores items are offset from these */
     const TARGETS = {
@@ -312,7 +310,6 @@ gantt
       csf_michelson: "2026-12-15",
       footlocker: "2027-01-02",
       caca_reg: "2027-02-21",
-      sdias_sdf: "2027-02-25",
       panhellenic: "2027-03-13",
     };
 
@@ -420,9 +417,6 @@ gantt
       "all-caca-open": "https://www.cacanational.org/programs/education/essay-contest",
       "all-caca-reg": "https://www.cacanational.org/programs/education/essay-contest",
       "all-caca-contest": "https://www.cacanational.org/programs/education/essay-contest",
-      "all-sdf": "https://www.sdfoundation.org/students/scholarships/",
-      "all-sdf-open": "https://www.sdfoundation.org/students/scholarships/",
-      "all-sdias": "https://www.sdfoundation.org/students/scholarships/",
       "all-panhellenic": "https://www.sdaph.org/scholarships.html",
       "all-panhellenic-open": "https://www.sdaph.org/scholarships.html",
       "thu-csc-embassy": "https://us.china-embassy.gov.cn/eng/lxfw/studyinchina/chinesegovernmentscholarship/",
@@ -580,8 +574,8 @@ gantt
         note: "Official: submit dual-degree supplemental and upload documents by 31 Jan 2027. Also send required documents to UBC Admissions by Mar 15." },
       { school: "ubc",  id: "ubc-elas",          type: "deadline",  date: "2027-02-15", est: false, title: "UBC English Language Admission Standard (ELAS) documents due",
         note: "Official Feb 15, 2027. Submit proof of English competency if required. US AP curriculum may qualify via grades — verify on you.ubc.ca ELAS page." },
-      { school: "um",   id: "um-info-reg",       type: "register",  date: "2027-01-26", est: true,  title: "Register for UM education fair / info event",
-        note: "UM announces fairs ad hoc (~Feb 9). Register ~2 weeks ahead." },
+      { school: "um",   id: "um-info-reg",       type: "register",  date: "2027-01-26", est: true,  title: "Register for UM education fair / info event (October intake)",
+        note: "Semester I (October) int’l channel only — not March intake. UM announces fairs ad hoc (~Feb). Register ~2 weeks ahead." },
       { school: "um",   id: "um-counselor-ask",  type: "counselor", date: daysBefore(TARGETS.um, OFF.w2), est: true, title: "UM: no recommendation letters or CV — gather transcript PDF for MAYA",
         note: "2 weeks before target. Official int'l undergrad docs: passport photo, passport, academic transcript/certificate, English proficiency — no referee letters or CV required. Support/sponsorship letter only if applicable. Upload in MAYA; not mailed official unless requested after offer." },
       { school: "ntutw",id: "ntutw-r2-close",    type: "deadline",  date: "2027-01-19", est: false, title: "NTU Taiwan intl Round 2 closes",
@@ -596,16 +590,12 @@ gantt
         note: "2026 OH was Feb 28 + Mar 7 campus. Register ~2 weeks ahead." },
       { school: "all",  id: "all-caca-reg",      type: "scholarship", date: SCHOL_TARGETS.caca_reg, est: true, title: "Target register — C.A.C.A. National Essay Contest",
         note: "Your planned date (Feb 21). Official registration close est. Feb 28, 2027. Pick nearest participating lodge (check cacanational.org for SoCal sites)." },
-      { school: "all",  id: "all-sdias-prep",    type: "prep",      date: daysBefore(SCHOL_TARGETS.sdias_sdf, OFF.w2), est: true, title: "SDF common app — ask coach for Brian Forbes varsity letter; draft SDIAS Gandhi essay",
-        note: "2 weeks before target. Forbes: 2+ years varsity + attending a UC (not USC). Coach letter on official letterhead required. Gandhi: 3.5+ GPA; Gandhi-values essay (major-agnostic)." },
-      { school: "all",  id: "all-sdias",         type: "scholarship", date: SCHOL_TARGETS.sdias_sdf, est: true, title: "Target submit — SDF common app (SDIAS Gandhi + Brian Forbes)",
-        note: "Your planned date (Feb 25). Official close Wed Mar 4, 2027, 2:00 PM PST. One SDF application — select eligible funds. Forbes award usable only at a UC campus." },
       { school: "all",  id: "all-panhellenic",   type: "scholarship", date: SCHOL_TARGETS.panhellenic, est: true, title: "Target submit — San Diego Alumnae Panhellenic merit scholarship",
         note: "Your planned date (Mar 13). Official close est. Mar 20, 2027 (2026 cycle was Mar 20). Interview if shortlisted; June luncheon for winners." },
 
       /* ── Feb–Mar 2027 ── */
-      { school: "um",   id: "um-info",           type: "info",      date: "2027-02-09", est: true,  title: "UM international info / fair (est. early Feb 2027)",
-        note: "Verify on MAYA portal news." },
+      { school: "um",   id: "um-info",           type: "info",      date: "2027-02-09", est: true,  title: "UM international info / fair — October intake (est. early Feb 2027)",
+        note: "Semester I (October 2027) int’l applications on MAYA — est. open ~Feb 9 (2026 cycle pattern). Not March/Semester II intake. Verify on study.um.edu.my / MAYA news." },
       { school: "um",   id: "um-toefl",          type: "scores",    date: daysBefore(TARGETS.um, OFF.w2), est: true, title: "Have IELTS/TOEFL ready for UM application (if required)",
         note: "2 weeks before target. Typical minimum IELTS 6.0 / TOEFL 79. Send official scores or upload per MAYA instructions." },
       { school: "nus",  id: "nus-close",         type: "deadline",  date: "2027-02-17", est: false, title: "NUS international application closes (17 Feb 2027)",
@@ -630,8 +620,8 @@ gantt
         note: "2 weeks before target. Not a university-wide CV requirement — check each department’s required documents (e.g. some English-taught programs ask autobiography/CV + study plan). Upload with application if listed." },
       { school: "ntutw",id: "ntutw-r2-prep",     type: "prep",      date: daysBefore(TARGETS.ntutw, OFF.w1), est: true, title: "Finalize NTU Taiwan intl Round 2 — confirm required letters uploaded; 1 week before target",
         note: "Official Round 2 close 19 Jan. Confirm minimum recommendation letters are in (if dept requires any) — cannot submit without them. Foreign degree-student channel." },
-      { school: "um",   id: "um-apply-early",    type: "rolling",   date: daysBefore(TARGETS.um, OFF.w1), est: true, title: "Finalize UM application — 1 week before target",
-        note: "Official close ~30 Aug. Rolling review; ~5 working days to hear back." },
+      { school: "um",   id: "um-apply-early",    type: "rolling",   date: daysBefore(TARGETS.um, OFF.w1), est: true, title: "Finalize UM application (October intake) — 1 week before target",
+        note: "Semester I (October) int’l channel. Est. close ~30 Aug 2027 (2026 Oct intake closed 30 Aug 2026). Rolling review; ~5 working days to hear back." },
       { school: "ntu",  id: "scores-sat-ntu",    type: "scores",    date: daysBefore(TARGETS.ntu, OFF.w2), est: true, title: "Official SAT/ACT must reach NTU (SG) before target submit",
         note: "2 weeks before target (official close 19 Mar). Send via College Board to NTU (SG). Upload copies per NTU checklist." },
       { school: "nus",  id: "nus-campus",        type: "info",      date: "2027-03-07", est: true,  title: "NUS Open House on-campus day",
@@ -675,8 +665,8 @@ gantt
         note: "Official fall 2027 deadline. Only after accepting offer. Postmarked or submitted electronically by Jul 15." },
       { school: "hku",  id: "hku-close",         type: "deadline",  date: "2027-08-25", est: false, title: "HKU international applications close",
         note: "Official 2027 intake final deadline (25 Aug 2027)." },
-      { school: "um",   id: "um-close",          type: "deadline",  date: "2027-08-30", est: true,  title: "UM international application closes",
-        note: "Bachelor's international channel." },
+      { school: "um",   id: "um-close",          type: "deadline",  date: "2027-08-30", est: true,  title: "UM international application closes — Semester I (October) intake",
+        note: "Est. from prior Oct intake cycle (Feb–Aug). 2027/2028 window not published on study.um.edu.my yet. March/Semester II intake not tracked." },
 
       /* ── Target submit dates (your plan) ── */
       { school: "wbb",  id: "wbb-target",        type: "target",    date: TARGETS.wbb, est: false, title: "Target submit — USC WBB application",
@@ -697,8 +687,8 @@ gantt
         note: "Your planned submit date. Official close 17 Feb 2027. SAT/ACT must also arrive by official close." },
       { school: "ntu",  id: "ntu-target",        type: "target",    date: TARGETS.ntu, est: false, title: "Target submit — NTU (SG) application",
         note: "Your planned submit date. Official close 19 Mar 2027. Docs due within 3 days after close (by 22 Mar)." },
-      { school: "um",   id: "um-target",         type: "target",    date: TARGETS.um, est: false, title: "Target submit — UM application",
-        note: "Your planned submit date. Official close ~30 Aug 2027. Rolling review." },
+      { school: "um",   id: "um-target",         type: "target",    date: TARGETS.um, est: false, title: "Target submit — UM application (October intake)",
+        note: "Your planned submit date. Semester I (October 2027) int’l channel on MAYA. Est. official close ~30 Aug 2027. Rolling review." },
       { school: "hku",  id: "hku-jc-target",     type: "target",    date: SCHOL_TARGETS.hku_jc, est: true, title: "Target submit — HKJC Chairman’s (drop if not near-top: IB 45 / SAT ~1580+)",
         note: "Delayed to Mar 20. No HKU offer needed to apply. Est. close Apr 2, 2027." },
 
@@ -727,8 +717,8 @@ gantt
         note: "Backup reminder. Official close 17 Feb. SAT/ACT must also arrive by official close." },
       { school: "ntu",  id: "ntu-week",          type: "submit",    date: daysBefore(TARGETS.ntu, OFF.w1), est: false, title: "Submit NTU (SG) this week — 1 week before target",
         note: "Backup reminder. Official close 19 Mar. Docs due within 3 days after close." },
-      { school: "um",   id: "um-week",           type: "submit",    date: daysBefore(TARGETS.um, OFF.w1), est: true, title: "Submit UM this week — 1 week before target",
-        note: "Backup reminder. Official close ~30 Aug. Skip if already submitted." },
+      { school: "um",   id: "um-week",           type: "submit",    date: daysBefore(TARGETS.um, OFF.w1), est: true, title: "Submit UM (October intake) this week — 1 week before target",
+        note: "Backup reminder. Est. Semester I close ~30 Aug 2027. Skip if already submitted." },
 
       /* ── Submit 1 week before official deadlines (fallback) ── */
       { school: "cuhk", id: "cuhk-reg-week",     type: "submit",    date: "2026-12-31", est: false, title: "Submit CUHK this week for Regular Round — 1 week before official close",
@@ -779,8 +769,6 @@ gantt
         note: "Official close Jan 9, 2027. Skip if already submitted by Jan 2 target." },
       { school: "all",  id: "all-caca-reg-week", type: "submit", date: daysBefore("2027-02-28", OFF.w1), est: true, title: "Register for C.A.C.A. essay contest this week — 1 week before est. Feb 28 close",
         note: "Registration only — contest day is Mar 14. Confirm lodge location and arrival time." },
-      { school: "all",  id: "all-sdf-week",      type: "submit", date: daysBefore("2027-03-04", OFF.w1), est: true, title: "Submit SDF common scholarship app this week — 1 week before Mar 4 close",
-        note: "Official close Wed Mar 4, 2027, 2:00 PM PST. Includes SDIAS Gandhi + Brian Forbes selections." },
       { school: "all",  id: "all-panhellenic-week", type: "submit", date: daysBefore("2027-03-20", OFF.w1), est: true, title: "Submit Panhellenic merit scholarship this week — 1 week before est. Mar 20 close",
         note: "Est. Mar 20, 2027 (2026 cycle). Skip if already submitted by Mar 13 target." },
     ];
