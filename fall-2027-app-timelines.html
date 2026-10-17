@@ -134,7 +134,6 @@ gantt
     2 Oct                              :milestone, m_cuhk_open, 2026-10-02, 1d
     Advance Offer application window   :crit, cuhk_adv, 2026-10-02, 2026-11-12
     12 Nov                             :milestone, m_cuhk_adv, 2026-11-12, 1d
-    17 Oct                             :milestone, m_cuhk_info, 2026-10-17, 1d
     Regular Round application window   :active, cuhk_reg, 2026-11-13, 2027-01-07
     7 Jan                              :milestone, m_cuhk_reg, 2027-01-07, 1d
     15 Jan                             :milestone, d_cuhk_adv, 2027-01-15, 1d
@@ -258,7 +257,22 @@ gantt
   </div>
 
   <script>
-    const STORAGE_KEY = "fall2027-checklist-v33";
+    const STORAGE_KEY = "fall2027-checklist-v35";
+
+    const NTU_AM_HS =
+      "https://www.ntu.edu.sg/admissions/undergraduate/admissions/general-admission-requirements/international-qualifications/American-high-school-diploma";
+    const NTU_APPLY_PORTAL = "https://wis.ntu.edu.sg/pls/webexe/adm_fore_appl.login";
+    const NTU_IMPORTANT_DATES =
+      "https://www.ntu.edu.sg/admissions/undergraduate/important-links/important-dates";
+    const NTU_SCHOL_CANDIDATES =
+      "https://www.ntu.edu.sg/admissions/ug/scholarships/scholarship-opportunities?listingKeyword=&categories=be8721c2-fb96-4e18-8282-6eb3a974ebb5%7C95b2f41c-487d-4e16-a328-181b6f210de1%7C9a00848e-6ff6-4855-91d7-497a720fa643%7C308eb3ac-12a6-4cec-9da5-193404375b8d&page=1";
+    const NTU_SCHOL_PROCESS =
+      "https://www.ntu.edu.sg/admissions/undergraduate/scholarships-and-awards/scholarship-application-process";
+    const NTU_SCHOL_FOCUS =
+      "Targets: NTU President Award + NTU Talent Scholarship (freshmen; not Mid-Term). " +
+      "Business: NBS Global Leaders Programme Scholarship if NBS / Global Leaders is on your application. " +
+      "HASS: Mr & Mrs Goh Chan Boo Scholarship + Wee Kim Wee Legacy Fund Undergraduate Scholarship if a Humanities, Arts & Social Sciences programme is on your application. " +
+      "One WIS scholarship form — select matching scholarship types; skip signature-programme-only awards unless you apply to that programme.";
 
     /* Target submit dates — prep/counselor/scores items are offset from these */
     const TARGETS = {
@@ -331,7 +345,7 @@ gantt
       thu: { name: "Tsinghua English-taught", short: "Tsinghua EN", link: "https://international.join-tsinghua.edu.cn/English_Taught_Programs.htm", apply: "https://apply.join-tsinghua.edu.cn/international" },
       ubc: { name: "UBC HKU Dual Degree", short: "UBC HKU", link: "https://www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce/overview/study-globally/hku-dual-degree", apply: "https://apply.educationplannerbc.ca/" },
       nus: { name: "NUS", short: "NUS", link: "https://www.nus.edu.sg/oam/admissions/international-qualifications-for-foreigners", apply: "https://myaces.nus.edu.sg/applicantPortal/" },
-      ntu: { name: "NTU (SG)", short: "NTU (SG)", link: "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications", apply: "https://www.wired.ntu.edu.sg/apply/" },
+      ntu: { name: "NTU (SG)", short: "NTU (SG)", link: NTU_AM_HS, apply: NTU_APPLY_PORTAL },
       ntutw: { name: "NTU Taiwan (intl)", short: "NTU TW intl", link: "https://admissions.ntu.edu.tw/apply/degree-students/international-students/", apply: "https://oiasystem.ntu.edu.tw/globaladmission/foreign/" },
       um:  { name: "UM", short: "UM", link: "https://study.um.edu.my/how-to-apply", apply: "https://maya.um.edu.my/" },
       wbb: { name: "USC WBB (Marshall)", short: "USC WBB", link: "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-degrees/world-bachelor-in-business", apply: "https://www.commonapp.org/" },
@@ -365,9 +379,10 @@ gantt
       "nus-info-reg": "https://www.nus.edu.sg/oam/admissions/important-dates",
       "nus-info": "https://www.nus.edu.sg/oam/admissions/important-dates",
       "nus-campus": "https://www.nus.edu.sg/oam/admissions/important-dates",
-      "ntu-info-reg": "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications",
-      "ntu-info": "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications",
-      "ntu-oh": "https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications",
+      "ntu-counselor-ask": NTU_AM_HS,
+      "ntu-info-reg": NTU_IMPORTANT_DATES,
+      "ntu-info": NTU_IMPORTANT_DATES,
+      "ntu-oh": NTU_IMPORTANT_DATES,
       "ap-exam-register": "https://apstudents.collegeboard.org/register-for-ap-exams",
       "scores-sat-send-early": "https://satsuite.collegeboard.org/sat/scores/send-scores",
       "scores-sat-nus": "https://satsuite.collegeboard.org/sat/scores/send-scores",
@@ -388,7 +403,10 @@ gantt
       "thu-csc": "https://international.join-tsinghua.edu.cn/Admission1/Freshmen_Scholarships1.htm",
       "wbb-tg": "https://townandgownofusc.org/students/scholarship-information/",
       "wbb-apaa": "https://alumni.usc.edu/apaa/scholarships/",
-      "ntu-schol": "https://www.ntu.edu.sg/admissions/undergraduate/scholarships-and-awards/scholarship-application-process",
+      "ntu-schol-prep": NTU_SCHOL_CANDIDATES,
+      "ntu-schol": NTU_SCHOL_PROCESS,
+      "ntu-schol-week": NTU_SCHOL_PROCESS,
+      "ntu-schol-dead-week": NTU_SCHOL_PROCESS,
       "ntutw-moe": "https://english.moe.gov.tw/cp-24-16833-23C09-1.html",
       "uc-ucla-schol": "https://alumni.ucla.edu/scholarships/prospective-students/",
       "uc-davis-caaa": "https://alumni.ucdavis.edu/scholarships/caaa-leadership-scholarship",
@@ -429,6 +447,11 @@ gantt
       if (sk === "all" || sk === "scores") return ITEM_LINKS[item.id] || null;
       const s = SCHOOLS[sk];
       if (!s) return null;
+      if (item.type === "scholarship") {
+        if (ITEM_LINKS[item.id]) return ITEM_LINKS[item.id];
+        if (sk === "ntu") return NTU_SCHOL_PROCESS;
+        return s.link;
+      }
       if (item.type === "open" || item.type === "prep" || item.type === "rolling" || item.type === "submit" || item.type === "target") return s.apply;
       if (item.type === "deadline") return s.link;
       return s.link;
@@ -626,10 +649,10 @@ gantt
         note: "2 weeks before target (official close 19 Mar). Send via College Board to NTU (SG). Upload copies per NTU checklist." },
       { school: "nus",  id: "nus-campus",        type: "info",      date: "2027-03-07", est: true,  title: "NUS Open House on-campus day",
         note: "Kent Ridge campus, Singapore." },
-      { school: "ntu",  id: "ntu-schol-prep",    type: "scholarship", date: daysBefore(SCHOL_TARGETS.ntu_schol, OFF.w2), est: false, title: "NTU (SG) scholarship — draft essay + ask teacher for appraisal",
-        note: "2 weeks before target. Separate scholarship form after admission submit: one application covers Nanyang Global, Nanyang Merit, President Award, Talent, and programme-linked awards. Essay + photo + teacher appraisal required." },
-      { school: "ntu",  id: "ntu-schol",         type: "scholarship", date: SCHOL_TARGETS.ntu_schol, est: false, title: "Target submit — NTU (SG) scholarship application",
-        note: "Concurrent with admission target. Submit admission first, then click “Apply for Scholarship” in portal. Official close 19 Mar 2027; photo/appraisal by 26 Mar." },
+      { school: "ntu",  id: "ntu-schol-prep",    type: "scholarship", date: daysBefore(SCHOL_TARGETS.ntu_schol, OFF.w2), est: false, title: "NTU (SG) scholarship — President + Talent; tailor essay for NBS / HASS targets",
+        note: "2 weeks before target. " + NTU_SCHOL_FOCUS + " Read each award on the Open link. Draft essay + photo; ask teacher for appraisal." },
+      { school: "ntu",  id: "ntu-schol",         type: "scholarship", date: SCHOL_TARGETS.ntu_schol, est: false, title: "Target submit — NTU (SG) scholarship (President, Talent, NBS / HASS)",
+        note: "Concurrent with admission target. Submit admission in WIS first, then “Apply for Scholarship”. " + NTU_SCHOL_FOCUS + " Official close 19 Mar 2027; photo/appraisal by 26 Mar." },
       { school: "ntutw",id: "ntutw-moe",         type: "scholarship", date: SCHOL_TARGETS.ntutw_moe, est: true, title: "Target submit — MOE Taiwan Scholarship via TECO (drop if TECO says ineligible)",
         note: "Delayed to late window (Mar 24). Requires NTU application proof. Cannot combine with NTU intl scholarship checkbox. Skip if TECO confirms ROC-by-birth disqualifies." },
       { school: "thu",  id: "thu-csc",           type: "scholarship", date: SCHOL_TARGETS.thu_csc, est: true, title: "Target submit — CSC Type A via US embassy (watch for 2027 notice ~Oct 2026)",
@@ -734,9 +757,9 @@ gantt
       { school: "hku",  id: "hku-week",          type: "submit",    date: "2027-08-18", est: false, title: "Submit HKU this week — 1 week before rolling window closes",
         note: "Official final deadline noon 25 Aug 2027. Only if still in rolling phase. Skip if already submitted by your 16 Nov target." },
       { school: "ntu",  id: "ntu-schol-week",    type: "submit",    date: daysBefore(SCHOL_TARGETS.ntu_schol, OFF.w1), est: false, title: "Submit NTU (SG) scholarship this week — 1 week before target",
-        note: "Backup reminder. Official close 19 Mar. Admission must be submitted first." },
+        note: "Backup reminder. President + Talent + NBS / HASS awards per your shortlist. Admission must be in WIS first. Official close 19 Mar." },
       { school: "ntu",  id: "ntu-schol-dead-week", type: "submit", date: "2027-03-12", est: false, title: "Submit NTU (SG) scholarship this week — 1 week before official close",
-        note: "Official close 19 Mar 2027. Skip if already submitted by your 12 Mar target." },
+        note: "Official close 19 Mar 2027. Skip if already submitted by your 12 Mar target. Same award set: President, Talent, NBS Global Leaders (if NBS), Goh Chan Boo + Wee Kim Wee (if HASS)." },
       { school: "ntutw",id: "ntutw-moe-week",    type: "submit",    date: daysBefore(SCHOL_TARGETS.ntutw_moe, OFF.w1), est: true, title: "Submit MOE Taiwan Scholarship via TECO this week — 1 week before target",
         note: "Backup reminder. Est. TECO window closes Mar 31, 2027." },
       { school: "ntutw",id: "ntutw-moe-dead-week",type: "submit",   date: "2027-03-24", est: true, title: "Submit MOE Taiwan Scholarship this week — 1 week before est. Mar 31 close",
